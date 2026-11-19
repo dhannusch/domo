@@ -124,3 +124,17 @@ test("set_goal records a goal that later turns can see", async ({ page }) => {
   })
   expect(await listed.text()).toContain("Ship kettlebell v2")
 })
+
+test("Domo can suggest a change to domo.md, and it's saved only after you say yes", async ({
+  page,
+}) => {
+  await page.goto("/")
+  await page.getByTestId("composer-input").fill("[[instructions]] keep it short from now on")
+  await page.getByTestId("composer-input").press("Enter")
+  const save = page.getByRole("button", { name: /Save it/ }).last()
+  await expect(save).toBeVisible()
+  await save.click()
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("instructions-edit").click()
+  await expect(page.getByTestId("instructions-text")).toHaveValue(/Keep answers under 100 words/)
+})

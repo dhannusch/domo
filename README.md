@@ -124,6 +124,14 @@ domo update           # pull, install, rebuild, restart, and confirm Domo is hea
 
 Your conversation, memory and settings live in `~/.domo` and carry over, and database changes apply on their own. If installing, building or the restart fails, `domo update` puts the previous version back and restarts it. It won't touch a checkout with local edits or local commits, so the host only ever moves forward from GitHub. Reload the app on your devices afterwards to get the new interface.
 
+## Your instructions for Domo
+
+`~/.domo/domo.md` is where you tell Domo how to be, in your own words: its tone, how long answers should be, when to push back, and standing rules like "always ask before booking anything". Domo reads it before every reply. Edit it under Settings › Your instructions for Domo, or just say "be blunter with me from now on". Domo will suggest the change and save it only if you say yes. Every edit is a commit in `~/.domo`, so it can be undone, and the self-improvement loop never touches it.
+
+## Talking to a specific model
+
+Start a message with `@` and Domo suggests the models it can use. Pick one (say `@codex`) to keep that conversation with that model. Everything else follows the default model you choose in Settings.
+
 ## Settings
 
 <p align="center"><img src="docs/images/settings.png" alt="The settings sheet: notifications, tidy timer, who answers, what Domo knows, self-improvement, and devices" width="70%"></p>

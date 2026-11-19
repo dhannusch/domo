@@ -59,6 +59,13 @@ export const settingsAtom = DomoClient.query("Settings", undefined, {
 
 export const updateSettingsAtom = DomoClient.mutation("UpdateSettings")
 
+/** The user's instructions for Domo (domo.md), refreshed after a save. */
+export const instructionsAtom = DomoClient.query("Instructions", undefined, {
+  reactivityKeys: ["instructions"],
+})
+
+export const saveInstructionsAtom = DomoClient.mutation("SaveInstructions")
+
 /** The models Domo can route to, for the default-model setting. */
 export const modelsAtom = DomoClient.query("Models", undefined)
 

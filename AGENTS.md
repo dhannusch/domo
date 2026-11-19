@@ -46,7 +46,7 @@ The compiler runs with `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndex
 
 - The client is `DomoClient` (`AtomRpc` over one WebSocket at `/rpc`). State lives in Effect Atom and is fed by the RPC stream: history once, then the live feed folded by `chat/view.ts`. Components are small and presentational.
 - Styling is plain CSS with variables in `apps/web/src/styles.css` (no Tailwind). Use tokens only, with no ad-hoc colors. The paper grain (the only texture, with no ruled lines) and the "night paper" dark theme come from tokens. `--line` is the prose line-height and the spacing unit. Palette is graphite ink with a sage accent (`--accent`), on cool laid paper; no navy or blue. Agent prose is Literata, the user's messages are Instrument Sans.
-- The composer says "Message Domo…". There is no per-message model picker: Domo routes, from the default model chosen in settings. A leading `@alias` is a hidden override that pins a topic, and must never appear in UI copy.
+- The composer says "Message Domo…". There is no per-message model picker: Domo routes, from the default model chosen in settings. Typing `@` at the start of a message suggests models (`chat/MentionMenu.tsx`). Picking one pins the current topic to that model; nothing else in the UI mentions aliases.
 - Feed events may only append or complete messages. Never reorder or remove anything already on the page (UX-02).
 - Phone width (375px) is the first layout target. Every action works without hover. Respect `prefers-reduced-motion`.
 - Every interactive element has a stable `data-testid`.
@@ -112,8 +112,10 @@ The Lab improves domo without a human watching, so every change must be testable
 
 ## Settings
 
+- `~/.domo/domo.md` holds the user's own instructions for Domo (`instructions/Instructions.ts`). It's injected into every turn's system prompt right after the persona, with comments stripped. It's human-owned: the settings sheet edits it, Domo may only propose a change through `propose_instructions_change` (saved only on the user's "Save it"), and the Lab never touches it. Every save is a `~/.domo` commit. `profile.md` is different: it's Domo's nightly summary of what it knows, and is rewritten by Sleep.
+
 - The gear beside the date opens the settings sheet (`remote/SettingsSheet.tsx`), so the main page gains only that one quiet icon. It covers notifications, the away clock, the default model, appearance (system, light or dark, per device in `localStorage`, applied as `data-theme` before first paint), the Lab on/off with an undo for each promoted change, what Domo knows, and devices.
-- Model routing: an unpinned topic follows the default model from settings, even after it changes. A leading `@alias` pins its topic to that model (`modelPinned`); this is a power-user shortcut and never appears in UI copy.
+- Model routing: an unpinned topic follows the default model from settings, even after it changes. A leading `@alias` pins its topic to that model (`modelPinned`). The composer suggests the aliases when the user types `@`.
 - `settings/Settings.ts` stores only the user's overrides in `meta`; defaults come from `DomoConfig`. Anything that depends on the away clock reads `Settings.awayMs`, never `config.awaySeconds`. Every change emits `SettingChanged`.
 - Components follow the "index cards" style: quiet bordered cards on the paper, with a 2px sage border for the pick or the selected value. Settings controls use the same cards.
 

@@ -32,6 +32,7 @@ import { ChatStore } from "../chat/ChatStore.ts"
 import { Tasks } from "../conductor/Tasks.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { GoalStore } from "../goals/GoalStore.ts"
+import { INSTRUCTIONS_MAX, Instructions } from "../instructions/Instructions.ts"
 import { Memory } from "../memory/Memory.ts"
 import { MemoryType } from "../memory/note.ts"
 import { labelFor, MODEL_ALIASES, resolveModel } from "../models/registry.ts"
@@ -175,6 +176,21 @@ const AskUser = Tool.make("ask_user", {
   dependencies: [CurrentRun],
 })
 
+const ProposeInstructions = Tool.make("propose_instructions_change", {
+  description:
+    "Suggest a change to domo.md, the user's own instructions for how you behave (tone, length, " +
+    "standing rules), when they ask you to behave differently from now on or a preference clearly " +
+    "should stick. It shows the change and saves it only if they approve. Send the complete new " +
+    "file in `content` (keep their wording, change only what's needed) and, in `change`, the exact " +
+    "words added or removed (e.g. 'Add: Keep answers under 100 words').",
+  parameters: Schema.Struct({
+    content: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(INSTRUCTIONS_MAX))),
+    change: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(120))),
+  }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
 const StartTask = Tool.make("start_task", {
   description:
     "Run long or multi-step work in the background (more than a couple of minutes: a migration, a " +
@@ -287,6 +303,7 @@ export const DomoTools = Toolkit.make(
   Delegate,
   Council,
   AskUser,
+  ProposeInstructions,
   StartTask,
   TaskStatus,
   CancelTask,
@@ -313,6 +330,7 @@ const DomoToolHandlers = DomoTools.toLayer(
   Effect.gen(function* () {
     const bus = yield* ChatBus
     const notifier = yield* Notifier
+    const instructionsFile = yield* Instructions
     const visualCheck = yield* VisualCheck
     /** How many times each run's visual was sent back for fixes. */
     const visualTries = yield* Ref.make<ReadonlyMap<string, number>>(new Map())
@@ -490,6 +508,37 @@ const DomoToolHandlers = DomoTools.toLayer(
         if (value === "decline")
           return "Declined. Don't do it; say in one sentence what you'll do instead."
         return `The user chose: ${label}.`
+      }),
+
+      propose_instructions_change: Effect.fnUntraced(function* ({ content, change }) {
+        const { runId } = yield* CurrentRun
+        const run = yield* bus.lookupRun(runId)
+        if (Option.isNone(run))
+          return "This conversation turn has already ended; suggest the change in your reply instead."
+        yield* attach(
+          (id) => ({
+            _tag: "Choice",
+            id,
+            question: "Save this to your instructions for me?",
+            options: [
+              { value: "approve", label: "Save it", consequence: change },
+              { value: "decline", label: "Leave them as they are" },
+            ],
+            reversible: true,
+          }),
+          "",
+        )
+        const answer = yield* Deferred.await(yield* bus.registerAsk(run.value.messageId)).pipe(
+          Effect.timeout("25 minutes"),
+          Effect.option,
+        )
+        if (Option.isNone(answer) || answer.value._tag === "MovedOn")
+          return "Not saved: the user didn't answer. Don't mention it again unless they bring it up."
+        if (answer.value.freeText)
+          return `Not saved yet. The user replied: "${answer.value.label}". Adjust and propose again if it fits.`
+        if (answer.value.value !== "approve") return "Not saved. Carry on as before."
+        yield* instructionsFile.save(content, "domo")
+        return "Saved to domo.md. Follow it from now on; confirm in one short sentence."
       }),
 
       start_task: Effect.fnUntraced(function* ({ title, instructions, model: name, cwd }) {

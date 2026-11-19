@@ -12,6 +12,7 @@ import {
   updateSettingsAtom,
 } from "../chat/atoms.ts"
 import { deviceId } from "../chat/usePresence.ts"
+import { InstructionsEditor } from "./InstructionsEditor.tsx"
 import { enablePush, pushSupported } from "./PushOffer.tsx"
 import { readTheme, saveTheme, type ThemeChoice } from "./theme.ts"
 
@@ -169,6 +170,15 @@ function SettingsBody({ view }: { view: SettingsView }) {
           It answers your messages and leads councils. Domo still hands coding and reviews to other
           models when they fit, and a conversation you pointed at a specific model stays with it.
         </p>
+      </section>
+
+      <section className="setting">
+        <h3>Your instructions for Domo</h3>
+        <p className="setting-note">
+          How Domo should talk and behave, in your own words. Domo reads them before every reply,
+          and only saves a change it suggests if you say yes.
+        </p>
+        <InstructionsEditor />
       </section>
 
       <section className="setting">

@@ -97,6 +97,9 @@ export class DomoRpc extends RpcGroup.make(
   /** Everything the settings sheet shows. */
   Rpc.make("Settings", { success: SettingsView }),
   Rpc.make("UpdateSettings", { payload: { patch: SettingsPatch }, success: DomoSettings }),
+  /** The user's own instructions for Domo (~/.domo/domo.md). */
+  Rpc.make("Instructions", { success: Schema.String }),
+  Rpc.make("SaveInstructions", { payload: { text: Schema.String } }),
   /** Reverts one change the Lab promoted. */
   Rpc.make("UndoLabChange", { payload: { id: Schema.String }, success: Schema.Boolean }),
   /** The VAPID public key devices subscribe with. */

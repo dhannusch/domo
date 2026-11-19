@@ -10,6 +10,7 @@ import { ChatStore } from "../chat/ChatStore.ts"
 import { Conductor } from "../conductor/Conductor.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { CheckIns } from "../goals/CheckIns.ts"
+import { Instructions } from "../instructions/Instructions.ts"
 import { Lab } from "../lab/Lab.ts"
 import { DomoMcpLive } from "../mcp/DomoMcp.ts"
 import { Memory } from "../memory/Memory.ts"
@@ -36,6 +37,7 @@ const RpcHandlers = DomoRpc.toLayer(
     const settings = yield* Settings
     const memory = yield* Memory
     const lab = yield* Lab
+    const instructions = yield* Instructions
     const clamp = (limit: number) => Math.min(Math.max(limit, 1), 500)
     return DomoRpc.of({
       Send: (payload) => conductor.send(payload),
@@ -66,6 +68,8 @@ const RpcHandlers = DomoRpc.toLayer(
         }),
       UpdateSettings: ({ patch }) => settings.update(patch),
       UndoLabChange: ({ id }) => lab.undo(id),
+      Instructions: () => instructions.read,
+      SaveInstructions: ({ text }) => instructions.save(text, "you"),
       PushKey: () => Effect.succeed(notifier.publicKey),
       Subscribe: ({ subscription }) => notifier.subscribe(subscription),
       Track: ({ event }) => telemetry.record(event),

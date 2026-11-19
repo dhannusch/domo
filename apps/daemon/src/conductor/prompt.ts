@@ -1,6 +1,7 @@
 import { Effect, FileSystem } from "effect"
 import type { DomoConfigShape } from "../config/DomoConfig.ts"
 import type { GoalStore } from "../goals/GoalStore.ts"
+import { instructionsForPrompt, readInstructions } from "../instructions/Instructions.ts"
 import { skillIndex, skillIndexText } from "../mcp/skills.ts"
 import type { Memory } from "../memory/Memory.ts"
 import { labelFor, resolveModel } from "../models/registry.ts"
@@ -41,6 +42,7 @@ export const makeSystemPrompt = (
   memory: Memory["Service"],
 ): Effect.Effect<string> =>
   Effect.all([
+    readInstructions(fs, config.home).pipe(Effect.map(instructionsForPrompt)),
     profileText(memory),
     skillIndex(config.home).pipe(
       Effect.provideService(FileSystem.FileSystem, fs),
@@ -48,8 +50,10 @@ export const makeSystemPrompt = (
     ),
     goalsText(goals),
   ]).pipe(
-    Effect.map(([profile, skills, active]) =>
-      [PERSONA, profile, skills, active].filter((part) => part.length > 0).join("\n\n"),
+    Effect.map(([instructions, profile, skills, active]) =>
+      [PERSONA, instructions, profile, skills, active]
+        .filter((part) => part.length > 0)
+        .join("\n\n"),
     ),
   )
 

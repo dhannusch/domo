@@ -50,3 +50,37 @@ test("the default model can be changed from settings", async ({ page }) => {
   await page.getByTestId("setting-model-opus").click()
   await expect(page.getByTestId("setting-model-opus")).toHaveAttribute("aria-pressed", "true")
 })
+
+test("domo.md can be edited in settings and keeps its text", async ({ page }, info) => {
+  const line = `Be brief with me (${info.project.name}).`
+  await page.goto("/")
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("instructions-edit").click()
+  const editor = page.getByTestId("instructions-text")
+  await expect(editor).toContainText("# Domo")
+  await editor.fill(`# Domo\n\n${line}`)
+  await page.getByTestId("instructions-save").click()
+  await expect(page.getByTestId("instructions-saved")).toBeVisible()
+  await page.reload()
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("instructions-edit").click()
+  await expect(page.getByTestId("instructions-text")).toHaveValue(
+    new RegExp(line.replace(/[()]/g, "\\$&")),
+  )
+})
+
+test("typing @ suggests models; picking one fills it in", async ({ page }) => {
+  await page.goto("/")
+  const input = page.getByTestId("composer-input")
+  await input.fill("@co")
+  await expect(page.getByTestId("mention-menu")).toBeVisible()
+  await expect(page.getByTestId("mention-codex")).toBeVisible()
+  await input.press("Enter")
+  await expect(input).toHaveValue("@codex ")
+  await expect(page.getByTestId("mention-menu")).toHaveCount(0)
+  await input.fill("@")
+  await expect(page.getByTestId("mention-opus")).toBeVisible()
+  await input.press("Escape")
+  await expect(page.getByTestId("mention-menu")).toHaveCount(0)
+  await input.fill("")
+})

@@ -139,6 +139,14 @@ const ECHO_ORCHESTRATION: ReadonlyArray<readonly [string, string, unknown]> = [
     { title: "Gather contractor quotes", instructions: "[[slow]] Gather three contractor quotes" },
   ],
   [
+    "[[instructions]]",
+    "propose_instructions_change",
+    {
+      content: "# Domo\n\nKeep answers under 100 words.",
+      change: "Add: Keep answers under 100 words",
+    },
+  ],
+  [
     "[[ask]]",
     "ask_user",
     {
