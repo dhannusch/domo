@@ -1,6 +1,6 @@
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { AsyncResult } from "effect/reactivity"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { instructionsAtom, saveInstructionsAtom, trackAtom } from "../chat/atoms.ts"
 
 /** Settings' editor for domo.md: the user's own words on how Domo should be. */
@@ -11,6 +11,15 @@ export function InstructionsEditor() {
   const track = useAtomSet(trackAtom)
   const [draft, setDraft] = useState<string | undefined>(undefined)
   const [saved, setSaved] = useState(false)
+  // Opening waits for a fresh read: Domo may have changed the file since, and an editor that
+  // opened empty could overwrite the user's instructions with nothing.
+  const [opening, setOpening] = useState(false)
+  useEffect(() => {
+    if (opening && AsyncResult.isSuccess(result) && !result.waiting) {
+      setDraft(result.value)
+      setOpening(false)
+    }
+  }, [opening, result])
 
   if (draft === undefined)
     return (
@@ -19,13 +28,14 @@ export function InstructionsEditor() {
           type="button"
           className="quiet-action"
           data-testid="instructions-edit"
+          disabled={opening}
           onClick={() => {
             refresh()
             setSaved(false)
-            setDraft(AsyncResult.isSuccess(result) ? result.value : "")
+            setOpening(true)
           }}
         >
-          Edit domo.md
+          {opening ? "Opening…" : "Edit domo.md"}
         </button>
         {saved ? (
           <p className="setting-note" data-testid="instructions-saved">

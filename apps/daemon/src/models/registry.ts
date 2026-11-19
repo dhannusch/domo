@@ -35,6 +35,12 @@ const ALIASES: ReadonlyArray<{
     label: "Codex (default model)",
     model: new ModelRef({ provider: "codex", id: "default" }),
   },
+  {
+    // Codex's "fast and affordable" tier on a ChatGPT login (gpt-*-mini models aren't offered there).
+    alias: "luna",
+    label: "Codex Luna",
+    model: new ModelRef({ provider: "codex", id: "gpt-6-luna" }),
+  },
 ]
 
 export const modelOptions: ReadonlyArray<ModelOption> = ALIASES.map(({ alias, label }) => ({

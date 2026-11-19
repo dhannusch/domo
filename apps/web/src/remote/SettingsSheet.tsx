@@ -16,6 +16,9 @@ import { InstructionsEditor } from "./InstructionsEditor.tsx"
 import { enablePush, pushSupported } from "./PushOffer.tsx"
 import { readTheme, saveTheme, type ThemeChoice } from "./theme.ts"
 
+/** Cheap, quick models suited to background work. */
+const BACKGROUND_CHOICES = ["haiku", "luna", "sonnet"]
+
 const AWAY_CHOICES = [
   { seconds: 30 * 60, label: "30 minutes" },
   { seconds: 2 * 60 * 60, label: "2 hours" },
@@ -169,6 +172,28 @@ function SettingsBody({ view }: { view: SettingsView }) {
         <p className="setting-note">
           It answers your messages and leads councils. Domo still hands coding and reviews to other
           models when they fit, and a conversation you pointed at a specific model stays with it.
+        </p>
+      </section>
+
+      <section className="setting">
+        <h3>Background model</h3>
+        {AsyncResult.match(models, {
+          onInitial: () => null,
+          onFailure: () => null,
+          onSuccess: ({ value }) => (
+            <Cards
+              name="background"
+              value={settings.backgroundModel}
+              options={value
+                .filter((m) => BACKGROUND_CHOICES.includes(m.key))
+                .map((m) => ({ value: m.key, label: m.label }))}
+              onPick={(backgroundModel) => set({ backgroundModel }, "backgroundModel")}
+            />
+          ),
+        })}
+        <p className="setting-note">
+          Files each exchange into a topic and keeps its summary, in the background. The cheapest
+          option is fine here: Haiku uses your Claude plan, Luna your ChatGPT plan.
         </p>
       </section>
 

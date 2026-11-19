@@ -1,8 +1,10 @@
-import { DEFAULT_MAIN_MODEL, type DomoSettings, type ModelRef, SettingsPatch } from "@domo/domain"
+import { DEFAULT_MAIN_MODEL, type DomoSettings, ModelRef, SettingsPatch } from "@domo/domain"
 import { Context, Effect, Layer, Option, Schema } from "effect"
 import { SqlClient } from "effect/sql"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { resolveModel } from "../models/registry.ts"
+
+const BACKGROUND_DEFAULT = new ModelRef({ provider: "claude", id: "claude-haiku-5-5" })
 
 const Overrides = Schema.fromJsonString(SettingsPatch)
 const decodeOverrides = Schema.decodeUnknownOption(Overrides)
@@ -21,6 +23,8 @@ export class Settings extends Context.Service<
     readonly awayMs: Effect.Effect<number>
     /** The model that answers unless a topic is pinned to another. */
     readonly mainModel: Effect.Effect<ModelRef>
+    /** The cheap model for background work (filing, topic summaries). */
+    readonly backgroundModel: Effect.Effect<ModelRef>
   }
 >()("domo/settings/Settings") {
   static readonly layer = Layer.effect(
@@ -33,6 +37,7 @@ export class Settings extends Context.Service<
         awaySeconds: config.awaySeconds,
         lab: true,
         model: "opus",
+        backgroundModel: "haiku",
       }
       const overrides = sql<{ value: string }>`SELECT value FROM meta WHERE key = 'settings'`.pipe(
         Effect.map((rows) => Option.getOrElse(decodeOverrides(rows[0]?.value ?? "{}"), () => ({}))),
@@ -47,7 +52,11 @@ export class Settings extends Context.Service<
       })
       const awayMs = Effect.map(current, (s) => s.awaySeconds * 1000)
       const mainModel = Effect.map(current, (s) => resolveModel(s.model) ?? DEFAULT_MAIN_MODEL)
-      return Settings.of({ current, update, awayMs, mainModel })
+      const backgroundModel = Effect.map(
+        current,
+        (s) => resolveModel(s.backgroundModel) ?? BACKGROUND_DEFAULT,
+      )
+      return Settings.of({ current, update, awayMs, mainModel, backgroundModel })
     }),
   )
 }

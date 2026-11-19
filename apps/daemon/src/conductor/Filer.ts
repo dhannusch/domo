@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto"
 import { ModelRef, RunId, Stakes, type Topic, type TopicId } from "@domo/domain"
 import { Context, Effect, Layer, Option, Ref, Schema, Stream } from "effect"
 import { Providers } from "../providers/Providers.ts"
+import { Settings } from "../settings/Settings.ts"
 
 /** Where an exchange belongs. The default — and every failure — is "same". */
 export type Placement =
@@ -116,6 +117,7 @@ export class Filer extends Context.Service<
     Filer,
     Effect.gen(function* () {
       const providers = yield* Providers
+      const settings = yield* Settings
 
       const file = Effect.fn("Filer.file")(
         function* (exchange: Exchange, current: Topic, others: ReadonlyArray<Topic>) {
@@ -132,7 +134,7 @@ export class Filer extends Context.Service<
           yield* providers
             .run({
               runId: RunId.make(randomUUID()),
-              model: FILER_MODEL,
+              model: yield* settings.backgroundModel,
               prompt,
               systemPrompt: INSTRUCTIONS,
               mode: "utility",

@@ -49,6 +49,11 @@ test("the default model can be changed from settings", async ({ page }) => {
   // Put it back: the desktop and phone runs share one daemon.
   await page.getByTestId("setting-model-opus").click()
   await expect(page.getByTestId("setting-model-opus")).toHaveAttribute("aria-pressed", "true")
+  await expect(page.getByTestId("setting-background-haiku")).toHaveAttribute("aria-pressed", "true")
+  await page.getByTestId("setting-background-luna").click()
+  await expect(page.getByTestId("setting-background-luna")).toHaveAttribute("aria-pressed", "true")
+  await page.getByTestId("setting-background-haiku").click()
+  await expect(page.getByTestId("setting-background-haiku")).toHaveAttribute("aria-pressed", "true")
 })
 
 test("domo.md can be edited in settings and keeps its text", async ({ page }, info) => {

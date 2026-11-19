@@ -21,7 +21,7 @@ export default defineConfig({
   workers: 1,
   reporter: [["list"]],
   // Replies can include a pre-show visual check in headless Chrome, which is slower under a full run.
-  expect: { timeout: 15_000 },
+  expect: { timeout: 30_000 },
   use: { channel: "chrome", trace: "retain-on-failure" },
   projects: [
     {

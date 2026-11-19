@@ -18,6 +18,7 @@ describe("Settings", () => {
         awaySeconds: 600,
         lab: true,
         model: "opus",
+        backgroundModel: "haiku",
       })
       yield* settings.update({ awaySeconds: 1800 })
       yield* settings.update({ lab: false })
@@ -26,6 +27,7 @@ describe("Settings", () => {
         awaySeconds: 1800,
         lab: false,
         model: "opus",
+        backgroundModel: "haiku",
       })
       expect(yield* settings.awayMs).toBe(1_800_000)
     }).pipe(Effect.provide(TestLayer)),

@@ -128,6 +128,10 @@ Your conversation, memory and settings live in `~/.domo` and carry over, and dat
 
 `~/.domo/domo.md` is where you tell Domo how to be, in your own words: its tone, how long answers should be, when to push back, and standing rules like "always ask before booking anything". Domo reads it before every reply. Edit it under Settings › Your instructions for Domo, or just say "be blunter with me from now on". Domo will suggest the change and save it only if you say yes. Every edit is a commit in `~/.domo`, so it can be undone, and the self-improvement loop never touches it.
 
+## Background model
+
+Each exchange is filed into a topic and summarized by a cheap model, in the background. Choose it in Settings: Claude Haiku 5.5 (the default, on your Claude plan), Codex Luna (Codex's affordable tier, on your ChatGPT plan), or Claude Sonnet 5.5 if you want more care at higher cost.
+
 ## Talking to a specific model
 
 Start a message with `@` and Domo suggests the models it can use. Pick one (say `@codex`) to keep that conversation with that model. Everything else follows the default model you choose in Settings.
