@@ -8,6 +8,7 @@ import { Tasks } from "../conductor/Tasks.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { CheckIns } from "../goals/CheckIns.ts"
 import { GoalStore } from "../goals/GoalStore.ts"
+import { initHome } from "../init/init.ts"
 import { Instructions } from "../instructions/Instructions.ts"
 import { Lab } from "../lab/Lab.ts"
 import { HomeGit } from "../memory/HomeGit.ts"
@@ -35,10 +36,24 @@ const Announce = Layer.effectDiscard(
   }),
 )
 
+/**
+ * Adds seed skills this home doesn't have yet (new ones arrive with updates).
+ * Existing skills are never touched: they're the agent's to refine.
+ */
+const SeedHome = Layer.effectDiscard(
+  Effect.gen(function* () {
+    const created = yield* initHome()
+    if (created.length === 0) return
+    yield* (yield* HomeGit).commit(`chore: add ${created.join(", ")}`)
+    yield* Effect.logInfo(`added to the agent home: ${created.join(", ")}`)
+  }).pipe(Effect.catch((error) => Effect.logWarning("couldn't seed the agent home", error))),
+)
+
 /** The whole daemon; requires only DomoConfig, so shadow instances can run side by side. */
 export const DaemonLive = Layer.mergeAll(
   ServerLive,
   Announce,
+  SeedHome,
   Tidier.loop,
   Sleep.loop,
   Lab.loop,

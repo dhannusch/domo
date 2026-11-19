@@ -110,6 +110,10 @@ The Lab improves domo without a human watching, so every change must be testable
 - For UI work: run `bun run serve`, then `bun run dev:web` (Vite on 5173 proxies `/rpc` to the daemon; set `DOMO_PORT` if it isn't 7420).
 - Use `--home ~/.domo-dev --port 7421` for development so test chats stay out of the real agent home.
 
+## Seed skills
+
+- `skills/` in the repo are seeds. At every daemon start, `initHome` copies in any seed skill the home doesn't have yet and commits it, so new skills reach existing installs through `domo update`. Skills already in the home are never overwritten: they're the agent's to refine, so changes to an existing seed skill don't propagate.
+
 ## Settings
 
 - `~/.domo/domo.md` holds the user's own instructions for Domo (`instructions/Instructions.ts`). It's injected into every turn's system prompt right after the persona, with comments stripped. It's human-owned: the settings sheet edits it, Domo may only propose a change through `propose_instructions_change` (saved only on the user's "Save it"), and the Lab never touches it. Every save is a `~/.domo` commit. `profile.md` is different: it's Domo's nightly summary of what it knows, and is rewritten by Sleep.

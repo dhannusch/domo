@@ -89,3 +89,13 @@ test("typing @ suggests models; picking one fills it in", async ({ page }) => {
   await expect(page.getByTestId("mention-menu")).toHaveCount(0)
   await input.fill("")
 })
+
+test("Let Domo interview you sends the request and closes settings", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("interview-start").click()
+  await expect(page.getByTestId("settings")).toBeHidden()
+  await expect(
+    page.getByText("Interview me. I'd like you to get to know me better").last(),
+  ).toBeVisible()
+})

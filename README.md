@@ -124,6 +124,12 @@ domo update           # pull, install, rebuild, restart, and confirm Domo is hea
 
 Your conversation, memory and settings live in `~/.domo` and carry over, and database changes apply on their own. If installing, building or the restart fails, `domo update` puts the previous version back and restarts it. It won't touch a checkout with local edits or local commits, so the host only ever moves forward from GitHub. Reload the app on your devices afterwards to get the new interface.
 
+## Helping Domo get to know you
+
+Domo remembers durable facts as you talk, and rewrites a short profile of you every night. To get there faster, say "interview me", or tap Settings › What Domo knows › Let Domo interview you. Domo asks one question at a time about your work, people, rhythm, goals and preferences, saves what matters, asks before keeping anything sensitive, and ends with a summary you can correct.
+
+You can also paste what another assistant knows about you, such as a ChatGPT or Claude memory export, and say "remember what's still true". Domo goes through it fact by fact.
+
 ## Your instructions for Domo
 
 `~/.domo/domo.md` is where you tell Domo how to be, in your own words: its tone, how long answers should be, when to push back, and standing rules like "always ask before booking anything". Domo reads it before every reply. Edit it under Settings › Your instructions for Domo, or just say "be blunter with me from now on". Domo will suggest the change and save it only if you say yes. Every edit is a commit in `~/.domo`, so it can be undone, and the self-improvement loop never touches it.

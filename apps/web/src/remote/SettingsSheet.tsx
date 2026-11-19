@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react"
 import {
   modelsAtom,
   pushKeyAtom,
+  sendAtom,
   settingsAtom,
   subscribeAtom,
   trackAtom,
@@ -15,6 +16,10 @@ import { deviceId } from "../chat/usePresence.ts"
 import { InstructionsEditor } from "./InstructionsEditor.tsx"
 import { enablePush, pushSupported } from "./PushOffer.tsx"
 import { readTheme, saveTheme, type ThemeChoice } from "./theme.ts"
+
+/** What the interview button sends, in the user's voice. */
+const INTERVIEW_REQUEST =
+  "Interview me. I'd like you to get to know me better: one question at a time, and remember what matters."
 
 /** Cheap, quick models suited to background work. */
 const BACKGROUND_CHOICES = ["haiku", "luna", "sonnet"]
@@ -97,8 +102,9 @@ function LabChanges({ changes }: { changes: ReadonlyArray<LabChange> }) {
   )
 }
 
-function SettingsBody({ view }: { view: SettingsView }) {
+function SettingsBody({ view, onClose }: { view: SettingsView; onClose: () => void }) {
   const update = useAtomSet(updateSettingsAtom, { mode: "promise" })
+  const send = useAtomSet(sendAtom, { mode: "promise" })
   const track = useAtomSet(trackAtom)
   const getKey = useAtomSet(pushKeyAtom, { mode: "promise" })
   const subscribe = useAtomSet(subscribeAtom, { mode: "promise" })
@@ -234,6 +240,18 @@ function SettingsBody({ view }: { view: SettingsView }) {
           <p className="setting-profile">{view.profile.trim() || "Nothing yet."}</p>
         </details>
         <p className="setting-note">To change or remove something, tell Domo.</p>
+        <button
+          type="button"
+          className="quiet-action"
+          data-testid="interview-start"
+          onClick={() => {
+            track({ payload: { event: { _tag: "SettingChanged", key: "interview" } } })
+            void send({ payload: { text: INTERVIEW_REQUEST } })
+            onClose()
+          }}
+        >
+          Let Domo interview you
+        </button>
       </section>
 
       <section className="setting">
@@ -299,7 +317,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
             onFailure: () => (
               <p className="setting-note">Couldn’t load your settings. Try again in a moment.</p>
             ),
-            onSuccess: ({ value }) => <SettingsBody view={value} />,
+            onSuccess: ({ value }) => <SettingsBody view={value} onClose={onClose} />,
           })
         : null}
     </dialog>
