@@ -2,8 +2,8 @@ import { createServer } from "node:http"
 import { join } from "node:path"
 import { DomoRpc } from "@domo/domain"
 import { NodeHttpServer } from "@effect/platform-node"
-import { Effect, Layer, Option } from "effect"
-import { HttpRouter, HttpStaticServer } from "effect/http"
+import { DateTime, Effect, Layer, Option } from "effect"
+import { HttpRouter, HttpServerResponse, HttpStaticServer } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import { ChatBus } from "../chat/ChatBus.ts"
 import { ChatStore } from "../chat/ChatStore.ts"
@@ -78,6 +78,18 @@ const RpcRoute = RpcServer.layerHttp({ group: DomoRpc, path: "/rpc", protocol: "
   Layer.provide(RpcSerialization.layerNdjson),
 )
 
+/** Public liveness check; `domo update` uses `startedAt` to see that the new daemon is up. */
+const HealthRoute = Layer.unwrap(
+  Effect.gen(function* () {
+    const body = JSON.stringify({ ok: true, startedAt: DateTime.formatIso(yield* DateTime.now) })
+    return HttpRouter.add(
+      "GET",
+      "/health",
+      HttpServerResponse.text(body, { contentType: "application/json" }),
+    )
+  }),
+)
+
 /** The built PWA. In development Vite serves the UI and proxies /rpc here. */
 const StaticRoute = HttpStaticServer.layer({ root: WEB_DIST, spa: true })
 
@@ -88,7 +100,9 @@ const StaticRoute = HttpStaticServer.layer({ root: WEB_DIST, spa: true })
 export const ServerLive = Layer.unwrap(
   Effect.gen(function* () {
     const config = yield* DomoConfig
-    return HttpRouter.serve(Layer.mergeAll(AccessLive, RpcRoute, DomoMcpLive, StaticRoute)).pipe(
+    return HttpRouter.serve(
+      Layer.mergeAll(AccessLive, HealthRoute, RpcRoute, DomoMcpLive, StaticRoute),
+    ).pipe(
       Layer.provide(NodeHttpServer.layer(createServer, { port: config.port, host: "127.0.0.1" })),
     )
   }),

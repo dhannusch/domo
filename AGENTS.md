@@ -124,6 +124,11 @@ The Lab improves domo without a human watching, so every change must be testable
 - An access token (`<home>/token`, created on first `serve`) guards `/rpc`, `/mcp` and `/auth` (`http/access.ts`). The app shell stays public. `domo pair` prints the unlocking links and code. The browser sends the token as `?token=` on the WebSocket, and agent runs send it as a bearer header to MCP. `DOMO_TOKEN=off` is for tests only.
 - Web Push (`notify/Notifier.ts`, VAPID keys in `<home>/vapid.json`) is sent only for `ask_user`, and only if no device was active in the last minute. The installed app offers notifications once (`PushOffer`), because iOS needs a tap to ask permission.
 
+## Updating a host
+
+- `domo update` (`update/update.ts`) fast-forwards the checkout to its upstream, runs `bun install --frozen-lockfile` and `bun run build:web`, then restarts the launchd job and waits for `/health` to report a newer `startedAt`. If any of that fails, it resets to the previous commit, rebuilds and restarts. It refuses a checkout with local edits or commits. `--check` only lists what's waiting.
+- Keep `/health` public and free of user data.
+
 ## Workflow
 
 - `bun run check` (Biome, tsc, vitest) must pass before every commit. `bun run fix` formats.

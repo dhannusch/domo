@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { join } from "node:path"
 import { DEFAULT_MAIN_MODEL } from "@domo/domain"
 import { NodeRuntime, NodeServices } from "@effect/platform-node"
 import { Console, Effect, Layer, Option } from "effect"
@@ -11,6 +12,8 @@ import { loadToken } from "../http/access.ts"
 import { DaemonLive } from "../http/app.ts"
 import { initHome } from "../init/init.ts"
 import { ProvidersLive } from "../providers/live.ts"
+import { launchdRestart } from "../update/launchd.ts"
+import { update } from "../update/update.ts"
 
 const domo = Command.make("domo").pipe(
   Command.withSharedFlags({
@@ -130,6 +133,62 @@ const pair = Command.make(
   }),
 ).pipe(Command.withDescription("Print the links that unlock Domo on this Mac and your phone"))
 
+/** The checkout this command runs from (the wrapper and launchd both point here). */
+const REPO_ROOT = join(import.meta.dirname, "../../../..")
+
+const updateCommand = Command.make(
+  "update",
+  {
+    check: Flag.Boolean("check").pipe(Flag.withDescription("Only show what's new; change nothing")),
+  },
+  Effect.fn(function* ({ check }) {
+    const config = yield* withConfig(
+      Effect.gen(function* () {
+        return yield* DomoConfig
+      }),
+    )
+    const restart = yield* launchdRestart(config.port)
+    yield* Console.log(check ? "Checking GitHub for changes…" : "Updating Domo…")
+    const outcome = yield* update({
+      repo: REPO_ROOT,
+      checkOnly: check,
+      steps: [
+        { name: "install", command: "bun", args: ["install", "--frozen-lockfile"] },
+        { name: "build", command: "bun", args: ["run", "build:web"] },
+      ],
+      restart,
+    }).pipe(
+      Effect.catchTag("UpdateFailed", (failure) =>
+        Console.log(`✗ Update stopped at "${failure.step}".\n${failure.detail}`).pipe(
+          Effect.andThen(Effect.sync(() => (process.exitCode = 1))),
+          Effect.as(undefined),
+        ),
+      ),
+    )
+    if (outcome === undefined) return
+    const list = (changes: ReadonlyArray<string>) => changes.map((c) => `  • ${c}`).join("\n")
+    switch (outcome._tag) {
+      case "UpToDate":
+        return yield* Console.log("Domo is up to date.")
+      case "Available":
+        return yield* Console.log(
+          `${outcome.changes.length} change(s) waiting:\n${list(outcome.changes)}\nRun domo update to apply them.`,
+        )
+      case "Updated":
+        yield* Console.log(`✓ Updated ${outcome.from} → ${outcome.to}:\n${list(outcome.changes)}`)
+        return yield* Console.log(
+          outcome.restarted
+            ? "Domo restarted and is healthy. Reload the app on your devices to get the new version."
+            : "Restart domo serve to run the new version.",
+        )
+    }
+  }),
+).pipe(
+  Command.withDescription(
+    "Update this checkout from GitHub, rebuild, and restart Domo (rolls back if anything fails)",
+  ),
+)
+
 const serve = Command.make(
   "serve",
   {},
@@ -140,7 +199,7 @@ const serve = Command.make(
 ).pipe(Command.withDescription("Run the daemon: chat API and web app on localhost"))
 
 domo.pipe(
-  Command.withSubcommands([doctor, init, askCommand, pair, serve]),
+  Command.withSubcommands([doctor, init, askCommand, pair, updateCommand, serve]),
   Command.run({ version: "0.1.0" }),
   Effect.provide(NodeServices.layer),
   NodeRuntime.runMain,

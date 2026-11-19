@@ -80,6 +80,15 @@ There's nothing to pair on your own devices. Domo lets in anything signed in to 
 
 The daemon only ever listens on `127.0.0.1`, so Tailscale is the only way in from another device.
 
+## Updating
+
+```bash
+domo update --check   # what's new on GitHub, without changing anything
+domo update           # pull, install, rebuild, restart, and confirm Domo is healthy
+```
+
+Your conversation, memory and settings live in `~/.domo` and carry over, and database changes apply on their own. If installing, building or the restart fails, `domo update` puts the previous version back and restarts it. It won't touch a checkout with local edits or local commits, so the host only ever moves forward from GitHub. Reload the app on your devices afterwards to get the new interface.
+
 ## Settings
 
 <p align="center"><img src="docs/images/settings.png" alt="The settings sheet: notifications, tidy timer, who answers, what Domo knows, self-improvement, and devices" width="70%"></p>
