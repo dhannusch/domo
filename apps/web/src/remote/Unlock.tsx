@@ -33,7 +33,12 @@ export function Unlock() {
             setWrong(false)
           }}
         />
-        <button type="submit" className="quiet-action" data-testid="unlock-submit">
+        <button
+          type="submit"
+          className="unlock-submit"
+          data-testid="unlock-submit"
+          disabled={code.trim().length === 0}
+        >
           Unlock
         </button>
       </form>
