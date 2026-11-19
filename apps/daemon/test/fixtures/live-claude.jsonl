@@ -1,0 +1,4 @@
+{"_tag":"RunStarted","runId":"a8b6fe61-a520-4767-80b5-cca2ab0e0436","sessionId":"a8fae673-9a5a-41ad-8297-715b68662f3c"}
+{"_tag":"TextDelta","runId":"a8b6fe61-a520-4767-80b5-cca2ab0e0436","text":"dom"}
+{"_tag":"TextDelta","runId":"a8b6fe61-a520-4767-80b5-cca2ab0e0436","text":"o online"}
+{"_tag":"RunCompleted","runId":"a8b6fe61-a520-4767-80b5-cca2ab0e0436","text":"domo online","usage":{"inputTokens":2,"outputTokens":5,"cachedInputTokens":0}}

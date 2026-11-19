@@ -1,0 +1,33 @@
+{
+  "name": "domo",
+  "private": true,
+  "description": "A personal chief of staff on your own Claude Code and Codex subscriptions",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "check": "node scripts/check-human-owned.ts && biome check . && tsc --noEmit -p . && vitest run",
+    "fix": "biome check --write .",
+    "test": "vitest run",
+    "doctor": "node apps/daemon/src/bin/domo.ts doctor",
+    "serve": "node --no-warnings apps/daemon/src/bin/domo.ts serve",
+    "build:web": "cd apps/web && vite build",
+    "dev:web": "cd apps/web && vite",
+    "test:e2e": "bun run build:web && cd apps/web && playwright test"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.8",
+    "@effect/language-service": "0.87.5",
+    "@effect/vitest": "4.1.4",
+    "@playwright/test": "1.65.1",
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3",
+    "vitest": "5.1.1"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

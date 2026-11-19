@@ -1,0 +1,14 @@
+node_modules
+dist
+.tsbuild
+*.db
+*.db-*
+.DS_Store
+test-results
+playwright-report
+.env*
+apps/web/test-results
+apps/web/playwright-report
+.claude/
+*.log
+.vite

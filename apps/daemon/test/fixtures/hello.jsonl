@@ -1,0 +1,3 @@
+{"_tag":"RunStarted","runId":"fixture","sessionId":"s-1"}
+{"_tag":"TextDelta","runId":"fixture","text":"Hello"}
+{"_tag":"RunCompleted","runId":"fixture","text":"Hello","usage":{"inputTokens":10,"outputTokens":2,"cachedInputTokens":0}}

@@ -1,0 +1,134 @@
+import { Schema } from "effect"
+import { ComponentId, RunId } from "./ids.ts"
+
+/**
+ * The fixed intelligent-UI vocabulary: five components. Choice, Comparison,
+ * Checklist and Visual are rendered by the agent (render_* tools); WorkReceipt
+ * is produced by Domo from the run itself. Adding another requires a rubric
+ * change and the user's approval (see AGENTS.md).
+ */
+
+const Label = Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(120)))
+
+export const ChoiceOption = Schema.Struct({
+  value: Schema.NonEmptyString,
+  label: Label,
+  consequence: Schema.optionalKey(Label),
+})
+export type ChoiceOption = typeof ChoiceOption.Type
+
+const choiceFields = {
+  question: Label,
+  options: Schema.Array(ChoiceOption).pipe(
+    Schema.check(Schema.isMinLength(2), Schema.isMaxLength(4)),
+  ),
+  reversible: Schema.Boolean,
+  recommended: Schema.optionalKey(Schema.NonEmptyString),
+}
+
+/** What the agent sends to render_choice (Domo assigns the id). */
+export const ChoiceInput = Schema.Struct(choiceFields)
+
+/** Also covers approvals. Always offers free text; preselects only reversible options. */
+export const Choice = Schema.TaggedStruct("Choice", { id: ComponentId, ...choiceFields })
+export type Choice = typeof Choice.Type
+
+const comparisonFields = {
+  attributes: Schema.Array(Label).pipe(Schema.check(Schema.isMinLength(1), Schema.isMaxLength(4))),
+  rows: Schema.Array(Schema.Struct({ option: Label, values: Schema.Array(Schema.String) })).pipe(
+    Schema.check(Schema.isMinLength(2), Schema.isMaxLength(4)),
+  ),
+  recommended: Schema.optionalKey(Label),
+}
+
+export const ComparisonInput = Schema.Struct(comparisonFields)
+
+export const Comparison = Schema.TaggedStruct("Comparison", {
+  id: ComponentId,
+  ...comparisonFields,
+})
+export type Comparison = typeof Comparison.Type
+
+const checklistFields = {
+  items: Schema.Array(Schema.Struct({ label: Label, done: Schema.Boolean })).pipe(
+    Schema.check(Schema.isMinLength(1), Schema.isMaxLength(12)),
+  ),
+}
+
+export const ChecklistInput = Schema.Struct(checklistFields)
+
+export const Checklist = Schema.TaggedStruct("Checklist", { id: ComponentId, ...checklistFields })
+export type Checklist = typeof Checklist.Type
+
+/** The most HTML one visual may carry (inline CSS, JS and SVG included). */
+export const VISUAL_MAX_HTML = 100_000
+
+const visualFields = {
+  title: Label,
+  /** A self-contained HTML fragment, run in a sandboxed frame with no network. */
+  html: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(VISUAL_MAX_HTML))),
+  /** What the visual shows, in words: read by screen readers and used wherever it can't render. */
+  summary: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(600))),
+}
+
+export const VisualInput = Schema.Struct(visualFields)
+
+export const Visual = Schema.TaggedStruct("Visual", { id: ComponentId, ...visualFields })
+export type Visual = typeof Visual.Type
+
+export const WorkStatus = Schema.Literals(["running", "done", "failed", "blocked"])
+export type WorkStatus = typeof WorkStatus.Type
+
+/** One line for any agent work; "view" opens the run (models, tools, usage, sources). */
+export const WorkReceipt = Schema.TaggedStruct("WorkReceipt", {
+  id: ComponentId,
+  runId: RunId,
+  status: WorkStatus,
+  summary: Label,
+  models: Schema.Array(Schema.String),
+  project: Schema.optionalKey(Schema.String),
+})
+export type WorkReceipt = typeof WorkReceipt.Type
+
+/** The components an agent can put on its message (at most one per message). */
+export const UiComponent = Schema.Union([Choice, Comparison, Checklist, Visual])
+export type UiComponent = typeof UiComponent.Type
+
+/** A resolved Choice collapses into an inert receipt ("Chose Hale & Co."). */
+export const ComponentResolution = Schema.Struct({
+  value: Schema.String,
+  label: Schema.String,
+  freeText: Schema.Boolean,
+  at: Schema.DateTimeUtcFromString,
+})
+export type ComponentResolution = typeof ComponentResolution.Type
+
+/** Everything "view" shows about a run: tools, files, models, usage. */
+export const RunDetail = Schema.Struct({
+  id: RunId,
+  model: Schema.String,
+  tools: Schema.Array(
+    Schema.Struct({ name: Schema.String, ok: Schema.Boolean, summary: Schema.String }),
+  ),
+  files: Schema.Array(Schema.String),
+  /** Work handed to other models (delegate) or a council's members. */
+  delegations: Schema.optionalKey(
+    Schema.Array(
+      Schema.Struct({
+        kind: Schema.Literals(["delegate", "council"]),
+        model: Schema.String,
+        task: Schema.String,
+        summary: Schema.String,
+        ok: Schema.Boolean,
+      }),
+    ),
+  ),
+  usage: Schema.optionalKey(
+    Schema.Struct({
+      inputTokens: Schema.Int,
+      outputTokens: Schema.Int,
+      cachedInputTokens: Schema.Int,
+    }),
+  ),
+})
+export type RunDetail = typeof RunDetail.Type
