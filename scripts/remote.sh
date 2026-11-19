@@ -6,5 +6,5 @@ PORT="${DOMO_PORT:-7420}"
 tailscale serve --bg --https=443 "http://127.0.0.1:${PORT}"
 tailscale serve status
 echo
-echo "Now run 'node apps/daemon/src/bin/domo.ts pair' and open the phone link on your iPhone,"
+echo "Now run 'domo pair' and open the phone link on your iPhone,"
 echo "then Share > Add to Home Screen."

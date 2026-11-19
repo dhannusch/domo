@@ -4,6 +4,11 @@ A personal chief of staff that runs on your own Claude Code and Codex subscripti
 
 Domo is one calm chat. Behind it, a small daemon on your Mac routes each message to the right model, from either provider. It runs councils of mixed models, remembers what matters, and keeps working while you're away. You talk to it from your laptop or your phone. You never pick a model, manage threads, or file anything yourself.
 
+<p align="center">
+  <img src="docs/images/desktop.png" alt="Domo on the desktop: a comparison of two contractor quotes with a recommendation, then a checklist of next steps" width="68%">
+  <img src="docs/images/phone.png" alt="Domo on a phone in dark mode: a work receipt, then a diagram of how a heat pump moves heat" width="26%">
+</p>
+
 > **Status:** early and personal. It's built and used daily on macOS by one person. Expect rough edges and breaking changes.
 
 ## What it does
@@ -46,19 +51,20 @@ Domo drives the `claude` and `codex` command-line tools that are already signed 
 ## Quick start (one machine)
 
 ```bash
-git clone <this repository> domo && cd domo
-bun install
-bun run build:web
-node apps/daemon/src/bin/domo.ts init
-node apps/daemon/src/bin/domo.ts doctor
-node apps/daemon/src/bin/domo.ts serve
+git clone https://github.com/dhannusch/domo.git && cd domo
+bun run setup    # installs, builds the app, and puts a `domo` command on your PATH
+domo init        # creates your agent home in ~/.domo
+domo doctor      # checks your Claude and Codex logins
+domo serve       # starts Domo on 127.0.0.1:7420
 ```
 
 Then, in another terminal, print the link that unlocks the app on this machine:
 
 ```bash
-node apps/daemon/src/bin/domo.ts pair
+domo pair
 ```
+
+`domo` is a small wrapper around this checkout, so `git pull` updates it. Rerun `bun run cli` if you switch Node versions. `domo ask --model codex:default "…"` sends one message to any model from the terminal.
 
 ## Always-on host, with your phone and laptop
 
@@ -73,6 +79,8 @@ This installs and builds Domo, keeps it running at login (launchd), and serves i
 The daemon only ever listens on `127.0.0.1`. Tailscale is the only way in, and an access token guards the chat and the agent tools.
 
 ## Settings
+
+<p align="center"><img src="docs/images/settings.png" alt="The settings sheet: notifications, tidy timer, who answers, what Domo knows, self-improvement, and devices" width="70%"></p>
 
 Tap the date at the top of the chat. From there you can change notifications, how long Domo waits before tidying, and whether the Lab runs. You can also see (and undo) what the Lab changed, read what Domo knows about you, and list your devices. Or just tell Domo, for example "no notifications after 10pm".
 
@@ -93,6 +101,7 @@ bun run check          # Biome, tsc, and unit tests (no live models)
 bun run test:e2e       # builds the web app, then Playwright against echo daemons
 bun run serve          # daemon on 127.0.0.1:7420
 bun run dev:web        # Vite on 5173, proxying /rpc to the daemon
+bun run screenshots    # regenerates the README images from a fictional demo conversation
 ```
 
 Use `--home ~/.domo-dev --port 7421` while developing, so test chats stay out of your real agent home. Tests never call live models: the echo provider understands directives like `[[choice]]`, `[[visual]]` and `[[council]]`, and drives the real MCP path end to end.

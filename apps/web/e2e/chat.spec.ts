@@ -44,9 +44,10 @@ test("reply-to: the Reply action shows a chip and the sent message keeps it", as
   await expect(reply).toHaveAttribute("data-status", "done")
   await reply.getByTestId("reply").click()
   await expect(page.getByTestId("reply-chip")).toContainText("Replying to")
-  await send(page, "following up")
+  // Unique per project: the desktop and phone runs share one daemon.
+  await send(page, `following up ${info.project.name}`)
   await expect(page.getByTestId("reply-chip")).toHaveCount(0)
-  await expect(agentReply(page, "Echo: following up")).toBeVisible()
+  await expect(agentReply(page, `Echo: following up ${info.project.name}`)).toBeVisible()
 })
 
 test("reply with quote: selecting text anchors the reply to the fragment", async ({

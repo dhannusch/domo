@@ -259,7 +259,7 @@ body {
   inset: auto 0 0 0;
   padding: calc(var(--line) / 2) var(--gutter)
     max(calc(var(--line) / 2), env(safe-area-inset-bottom));
-  background: linear-gradient(to bottom, transparent, var(--paper) 35%);
+  background: linear-gradient(to bottom, transparent, var(--paper) calc(var(--line) * 0.6));
 }
 
 .push-offer {

@@ -12,8 +12,10 @@ command -v bun >/dev/null || { echo "Install Bun first (it's only the package ma
 command -v tailscale >/dev/null || { echo "Install and sign in to Tailscale first."; exit 1; }
 bun install
 bun run build:web
-node --no-warnings apps/daemon/src/bin/domo.ts init
-node --no-warnings apps/daemon/src/bin/domo.ts doctor || true
+sh scripts/install-cli.sh
+DOMO="node --no-warnings apps/daemon/src/bin/domo.ts"
+$DOMO init
+$DOMO doctor || true
 sh scripts/install-launchd.sh
 sh scripts/remote.sh
-node --no-warnings apps/daemon/src/bin/domo.ts pair
+$DOMO pair

@@ -16,7 +16,10 @@
     "serve": "node --no-warnings apps/daemon/src/bin/domo.ts serve",
     "build:web": "cd apps/web && vite build",
     "dev:web": "cd apps/web && vite",
-    "test:e2e": "bun run build:web && cd apps/web && playwright test"
+    "test:e2e": "bun run build:web && cd apps/web && playwright test",
+    "screenshots": "bun run build:web && node --no-warnings scripts/demo/screenshots.ts",
+    "cli": "sh scripts/install-cli.sh",
+    "setup": "bun install && bun run build:web && sh scripts/install-cli.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
