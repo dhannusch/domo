@@ -105,7 +105,17 @@ const resolvedConfig = Effect.gen(function* () {
   const token =
     config.token === "off" ? undefined : (config.token ?? (yield* loadToken(config.home)))
   const trustedLogins = config.trustOwner
-    ? [...config.trustedLogins, ...Option.toArray(yield* tailnetOwner)]
+    ? [
+        ...config.trustedLogins,
+        ...(yield* tailnetOwner.pipe(
+          Effect.map((login) => [login]),
+          Effect.catch((why) =>
+            Effect.logWarning(
+              `couldn't read this Mac's Tailscale login: ${why}. Run scripts/install-launchd.sh again, or set DOMO_TAILSCALE_USERS.`,
+            ).pipe(Effect.as([])),
+          ),
+        )),
+      ]
     : config.trustedLogins
   return { ...config, token, trustedLogins }
 })

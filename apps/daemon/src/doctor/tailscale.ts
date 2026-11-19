@@ -27,8 +27,13 @@ export const tailnetHost = tailscaleStatus.pipe(
   Effect.orElseSucceed(() => Option.none<string>()),
 )
 
-/** The Tailscale login that owns this Mac: your own devices sign in as it. */
+/** The Tailscale login that owns this Mac (your own devices sign in as it), or why it couldn't be read. */
 export const tailnetOwner = tailscaleStatus.pipe(
-  Effect.map((s) => Option.fromNullishOr(s.User?.[String(s.Self.UserID)]?.LoginName)),
-  Effect.orElseSucceed(() => Option.none<string>()),
+  Effect.mapError((error) => String(error).slice(0, 300)),
+  Effect.flatMap((s) =>
+    Option.match(Option.fromNullishOr(s.User?.[String(s.Self.UserID)]?.LoginName), {
+      onNone: () => Effect.fail("Tailscale is running but no one is signed in"),
+      onSome: Effect.succeed,
+    }),
+  ),
 )

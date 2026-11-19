@@ -6,6 +6,22 @@ REPO="$(cd "$(dirname "$0")/.." && pwd)"
 NODE="$(command -v node)"
 HOME_DIR="${DOMO_HOME:-$HOME/.domo}"
 PLIST="$HOME/Library/LaunchAgents/com.domo.daemon.plist"
+TAILSCALE="$(command -v tailscale 2>/dev/null || true)"
+[ -x "$TAILSCALE" ] || TAILSCALE=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+
+# Your Tailscale login, looked up now: a process started by launchd can't always ask
+# Tailscale itself, and this is what lets your own devices in without a token.
+OWNER="${DOMO_TAILSCALE_USERS:-$("$TAILSCALE" status --json 2>/dev/null | "$NODE" -e '
+let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
+  try { const j = JSON.parse(s); process.stdout.write(j.User[String(j.Self.UserID)].LoginName || "") } catch {}
+})' || true)}"
+if [ -n "$OWNER" ]; then
+  ENV_OWNER="<key>DOMO_TAILSCALE_USERS</key><string>$OWNER</string>"
+  echo "Your devices signed in to Tailscale as $OWNER won't need pairing."
+else
+  ENV_OWNER=""
+  echo "Couldn't read your Tailscale login; every device will need the token from domo pair."
+fi
 mkdir -p "$HOME/Library/LaunchAgents" "$HOME_DIR/logs"
 cat > "$PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -23,7 +39,7 @@ cat > "$PLIST" <<PLIST
   </array>
   <key>WorkingDirectory</key><string>$REPO</string>
   <key>EnvironmentVariables</key>
-  <dict><key>PATH</key><string>$(dirname "$NODE"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string></dict>
+  <dict>$ENV_OWNER<key>PATH</key><string>$(dirname "$NODE"):/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin</string></dict>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>StandardOutPath</key><string>$HOME_DIR/logs/daemon.log</string>
