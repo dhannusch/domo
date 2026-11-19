@@ -68,17 +68,52 @@ domo pair
 
 ## Always-on host, with your phone and laptop
 
-Run Domo on one always-on Mac (a Mac mini is ideal). Sign in to Tailscale, Claude Code and Codex on that Mac, then:
+Run Domo on one always-on Mac (a Mac mini is ideal). Your laptop and phone are clients: they just open the host's address. All agent work, coding included, happens on the host, so keep the repos you want Domo to work on there.
+
+### 1. Sign in on the host
+
+Use the **same Tailscale account** everywhere: on the host, your laptop and your phone. A different account means a different tailnet, so your devices won't see the host and Domo won't recognise them as yours.
+
+- **Tailscale:** install it and sign in. With the App Store version the CLI lives inside the app, at `/Applications/Tailscale.app/Contents/MacOS/Tailscale`. Domo's scripts find it there.
+- **Claude Code:** `claude auth login`
+- **Codex:** `codex login`
+
+You don't need to sit at the host for this. `tailscale up` and `claude auth login` each print a link that you can open on your phone. Approve the device in Tailscale. Claude shows a one-time code to paste back into the waiting login; it only works for that login and expires in minutes. Screen Sharing over Tailscale works for anything else.
+
+### 2. Install and serve
 
 ```bash
+git clone https://github.com/dhannusch/domo.git && cd domo
 sh scripts/setup-host.sh
 ```
 
-This installs and builds Domo, keeps it running at login (launchd), and serves it on your tailnet over HTTPS. Then it prints pairing links. On your iPhone, open the link and choose Share › Add to Home Screen. On a laptop, open it in Chrome and choose Install. Clients install nothing else. All agent work, coding included, happens on the host.
+This installs and builds Domo, adds the `domo` command, keeps the daemon running at login (launchd), and serves it on your tailnet over HTTPS (`tailscale serve`).
+
+### 3. Approve Tailscale Serve (first time only)
+
+The first `tailscale serve` on a tailnet asks you to approve it in a browser, on a page titled "Start using Serve":
+
+- **Leave HTTPS certificates on.** Installing the app and push notifications need HTTPS.
+- **Uncheck Tailscale Funnel.** Funnel exposes services to the public internet, and Domo is only meant for your tailnet. Turning it on also edits your tailnet's access policy for every member. With Funnel unchecked, the button reads "Enable HTTPS".
+- **Check the host's name first.** The certificate puts the machine's tailnet name, such as `mac-mini.tail1234.ts.net`, in public certificate logs, permanently. It reveals nothing else and opens nothing up. But if the name contains your name, rename the machine first in the admin console (Machines › ⋯ › Edit machine name).
+
+You can also do this up front in the admin console under **DNS**. Turn on MagicDNS, then HTTPS Certificates. If setup gave up waiting, run `sh scripts/remote.sh` again.
+
+### 4. Open it on your devices
+
+- **Laptop:** open the `https://….ts.net` address that setup printed. In Chrome, choose Install for a desktop window.
+- **iPhone:** install the Tailscale app and sign in with the same account. Open the address in Safari, then choose Share › Add to Home Screen. In the installed app, turn on notifications when Domo offers; it only notifies you when a decision is waiting on you.
 
 There's nothing to pair on your own devices. Domo lets in anything signed in to Tailscale as the account that owns the host. Everything else needs the access token from `domo pair`, such as a shared device or another tailnet member. Set `DOMO_TAILSCALE_USERS` to list other logins to let in, or `off` to always require the token.
 
 The daemon only ever listens on `127.0.0.1`, so Tailscale is the only way in from another device.
+
+### Setting up through another agent
+
+If you have an agent on the host (over Telegram, say), you can ask it to do steps 2 to 4. Two cautions:
+
+- **Never let it send you the access token,** the `?token=` links or the pairing code from `domo pair`. Chat apps keep history on their servers, and your own devices don't need them anyway. Tailscale's own sign-in and Serve approval links are fine to pass through; they only work for someone signed in to your account.
+- **Sign in yourself:** the agent can't sign in for you. Have it send you the sign-in links from step 1.
 
 ## Updating
 
