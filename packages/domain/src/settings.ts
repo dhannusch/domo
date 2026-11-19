@@ -11,6 +11,8 @@ export const DomoSettings = Schema.Struct({
   ),
   /** Whether the Lab runs its nightly experiments. */
   lab: Schema.Boolean,
+  /** The model that answers unless a topic was pinned to another (`@alias`): an alias such as "opus". */
+  model: Schema.NonEmptyString,
 })
 export type DomoSettings = typeof DomoSettings.Type
 
@@ -18,6 +20,7 @@ export const SettingsPatch = Schema.Struct({
   notifications: Schema.optionalKey(DomoSettings.fields.notifications),
   awaySeconds: Schema.optionalKey(DomoSettings.fields.awaySeconds),
   lab: Schema.optionalKey(Schema.Boolean),
+  model: Schema.optionalKey(Schema.NonEmptyString),
 })
 export type SettingsPatch = typeof SettingsPatch.Type
 

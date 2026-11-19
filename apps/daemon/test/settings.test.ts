@@ -17,6 +17,7 @@ describe("Settings", () => {
         notifications: "needed",
         awaySeconds: 600,
         lab: true,
+        model: "opus",
       })
       yield* settings.update({ awaySeconds: 1800 })
       yield* settings.update({ lab: false })
@@ -24,6 +25,7 @@ describe("Settings", () => {
         notifications: "needed",
         awaySeconds: 1800,
         lab: false,
+        model: "opus",
       })
       expect(yield* settings.awayMs).toBe(1_800_000)
     }).pipe(Effect.provide(TestLayer)),

@@ -22,8 +22,9 @@
   color-scheme: light;
 }
 
+/* Night paper: when the system is dark (unless this device chose light), or when it chose dark. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: #181b19;
     --paper-deep: #202421;
     --ink: #daddd6;
@@ -33,6 +34,17 @@
     --grain-opacity: 0.18;
     color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --paper: #181b19;
+  --paper-deep: #202421;
+  --ink: #daddd6;
+  --accent: #9bb89f;
+  --pencil: #8d928c;
+  --margin-rule: #4e6553;
+  --grain-opacity: 0.18;
+  color-scheme: dark;
 }
 
 * {
@@ -61,13 +73,35 @@ body {
   min-height: 100dvh;
 }
 
-.masthead {
-  display: block;
+.masthead-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 var(--line);
+}
+
+.masthead-row .masthead {
+  margin: 0;
+}
+
+.settings-button {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-right: -0.5rem;
   border: 0;
+  border-radius: 50%;
   background: none;
-  padding: 0;
+  color: var(--pencil);
   cursor: pointer;
-  text-align: left;
+}
+
+.settings-button:hover {
+  color: var(--accent);
+}
+
+.masthead {
   font-family: var(--font-prose);
   font-size: 1.05rem;
   font-style: italic;

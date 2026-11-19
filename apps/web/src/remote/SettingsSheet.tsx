@@ -3,6 +3,7 @@ import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { AsyncResult } from "effect/reactivity"
 import { useEffect, useRef, useState } from "react"
 import {
+  modelsAtom,
   pushKeyAtom,
   settingsAtom,
   subscribeAtom,
@@ -12,6 +13,7 @@ import {
 } from "../chat/atoms.ts"
 import { deviceId } from "../chat/usePresence.ts"
 import { enablePush, pushSupported } from "./PushOffer.tsx"
+import { readTheme, saveTheme, type ThemeChoice } from "./theme.ts"
 
 const AWAY_CHOICES = [
   { seconds: 30 * 60, label: "30 minutes" },
@@ -105,6 +107,8 @@ function SettingsBody({ view }: { view: SettingsView }) {
   }
   const { settings } = view
   const here = deviceId()
+  const models = useAtomValue(modelsAtom)
+  const [theme, setTheme] = useState<ThemeChoice>(readTheme)
   return (
     <>
       <section className="setting">
@@ -148,11 +152,42 @@ function SettingsBody({ view }: { view: SettingsView }) {
       </section>
 
       <section className="setting">
-        <h3>Who answers</h3>
+        <h3>Default model</h3>
+        {AsyncResult.match(models, {
+          onInitial: () => null,
+          onFailure: () => null,
+          onSuccess: ({ value }) => (
+            <Cards
+              name="model"
+              value={settings.model}
+              options={value.map((m) => ({ value: m.key, label: m.label }))}
+              onPick={(model) => set({ model }, "model")}
+            />
+          ),
+        })}
         <p className="setting-note">
-          Opus 5.5 leads. Codex writes and reviews code, and councils mix both. Tell Domo if you’d
-          like it to lean differently.
+          It answers your messages and leads councils. Domo still hands coding and reviews to other
+          models when they fit, and a conversation you pointed at a specific model stays with it.
         </p>
+      </section>
+
+      <section className="setting">
+        <h3>Appearance</h3>
+        <Cards
+          name="theme"
+          value={theme}
+          options={[
+            { value: "system", label: "System" },
+            { value: "light", label: "Light" },
+            { value: "dark", label: "Dark" },
+          ]}
+          onPick={(choice) => {
+            setTheme(choice)
+            saveTheme(choice)
+            track({ payload: { event: { _tag: "SettingChanged", key: "theme" } } })
+          }}
+        />
+        <p className="setting-note">Just for this device.</p>
       </section>
 
       <section className="setting">

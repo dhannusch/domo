@@ -18,3 +18,35 @@ test("the date opens settings, a change sticks, and Done closes it", async ({ pa
   await page.keyboard.press("Escape")
   await expect(page.getByTestId("settings")).toBeHidden()
 })
+
+test("appearance: dark sticks on this device, and System follows the OS again", async ({
+  page,
+}) => {
+  await page.emulateMedia({ colorScheme: "light" })
+  await page.goto("/")
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("setting-theme-dark").click()
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
+  const paper = () =>
+    page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
+    )
+  expect(await paper()).toBe("#181b19")
+  await page.reload()
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("setting-theme-system").click()
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/)
+  expect(await paper()).toBe("#ecede8")
+})
+
+test("the default model can be changed from settings", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("settings-open").click()
+  await expect(page.getByTestId("setting-model-opus")).toHaveAttribute("aria-pressed", "true")
+  await page.getByTestId("setting-model-sonnet").click()
+  await expect(page.getByTestId("setting-model-sonnet")).toHaveAttribute("aria-pressed", "true")
+  // Put it back: the desktop and phone runs share one daemon.
+  await page.getByTestId("setting-model-opus").click()
+  await expect(page.getByTestId("setting-model-opus")).toHaveAttribute("aria-pressed", "true")
+})

@@ -59,6 +59,9 @@ export const settingsAtom = DomoClient.query("Settings", undefined, {
 
 export const updateSettingsAtom = DomoClient.mutation("UpdateSettings")
 
+/** The models Domo can route to, for the default-model setting. */
+export const modelsAtom = DomoClient.query("Models", undefined)
+
 export const undoLabChangeAtom = DomoClient.mutation("UndoLabChange")
 
 export const subscribeAtom = DomoClient.mutation("Subscribe")

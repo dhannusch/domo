@@ -126,4 +126,8 @@ export const migrations = {
     const sql = yield* SqlClient.SqlClient
     yield* sql`CREATE TABLE push_subscriptions (endpoint TEXT PRIMARY KEY, p256dh TEXT NOT NULL, auth TEXT NOT NULL)`
   }),
+  "0009_model_pinned": Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    yield* sql`ALTER TABLE topics ADD COLUMN model_pinned INTEGER NOT NULL DEFAULT 0`
+  }),
 }

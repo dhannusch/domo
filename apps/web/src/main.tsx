@@ -6,8 +6,11 @@ import { RegistryProvider } from "@effect/atom-react"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import { App } from "./App.tsx"
+import { applyTheme, readTheme } from "./remote/theme.ts"
 import { accessToken, checkAccess } from "./remote/token.ts"
 import { Unlock } from "./remote/Unlock.tsx"
+
+applyTheme(readTheme())
 
 if ("serviceWorker" in navigator && window.isSecureContext) {
   void navigator.serviceWorker.register("/sw.js").catch(() => undefined)

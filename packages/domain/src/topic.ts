@@ -20,6 +20,8 @@ export class Topic extends Schema.Class<Topic>("domo/domain/Topic")({
   sourceMessageIds: Schema.Array(MessageId),
   folded: Schema.Boolean,
   model: ModelRef,
+  /** Set when the user named a model (`@alias`); otherwise the topic follows the default model. */
+  modelPinned: Schema.optionalKey(Schema.Boolean),
   providerSessionId: Schema.optionalKey(Schema.String),
   project: Schema.optionalKey(Schema.String),
   lastActivityAt: Schema.DateTimeUtcFromString,

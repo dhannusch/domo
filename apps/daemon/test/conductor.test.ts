@@ -64,6 +64,20 @@ const sendAndWait = (text: string, replyTo?: MessageId) =>
   })
 
 describe("Conductor", () => {
+  it.live("unpinned topics follow the default model; @alias pins a topic to its model", () =>
+    Effect.gen(function* () {
+      const settings = yield* Settings
+      expect((yield* sendAndWait("hello")).reply.model).toBe("claude:claude-opus-5-5")
+
+      yield* settings.update({ model: "sonnet" })
+      expect((yield* sendAndWait("still here")).reply.model).toBe("claude:claude-sonnet-5-5")
+
+      expect((yield* sendAndWait("@codex take this one")).reply.model).toBe("codex:default")
+      yield* settings.update({ model: "haiku" })
+      expect((yield* sendAndWait("and this")).reply.model).toBe("codex:default")
+    }).pipe(Effect.provide(makeLayer(layerEcho))),
+  )
+
   it.live("persists the exchange and streams the agent reply", () =>
     Effect.gen(function* () {
       const { reply } = yield* sendAndWait("hello")

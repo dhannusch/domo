@@ -43,6 +43,7 @@ const TopicRow = Schema.Struct({
   source_message_ids: Schema.fromJsonString(Schema.Array(Schema.String)),
   folded: Schema.Number,
   model: Schema.String,
+  model_pinned: Schema.Number,
   provider_session_id: Schema.NullOr(Schema.String),
   project: Schema.NullOr(Schema.String),
   last_activity_at: Schema.String,
@@ -89,6 +90,7 @@ const rowToTopic = Effect.fnUntraced(function* (raw: unknown) {
     sourceMessageIds: row.source_message_ids,
     folded: row.folded === 1,
     model: { provider, id: rest.join(":") },
+    ...(row.model_pinned === 1 ? { modelPinned: true } : {}),
     lastActivityAt: row.last_activity_at,
     ...present("decision", row.decision),
     ...present("nextStep", row.next_step),
@@ -303,15 +305,15 @@ export class ChatStore extends Context.Service<
         const model = new ModelRef(topic.model).key
         yield* sql`
           INSERT INTO topics (id, title, status, stakes, decision, next_step, summary, source_message_ids,
-            folded, model, provider_session_id, project, last_activity_at)
+            folded, model, model_pinned, provider_session_id, project, last_activity_at)
           VALUES (${e.id}, ${e.title}, ${e.status}, ${e.stakes}, ${e.decision ?? null}, ${e.nextStep ?? null},
-            ${e.summary}, ${JSON.stringify(e.sourceMessageIds)}, ${topic.folded ? 1 : 0}, ${model},
+            ${e.summary}, ${JSON.stringify(e.sourceMessageIds)}, ${topic.folded ? 1 : 0}, ${model}, ${topic.modelPinned === true ? 1 : 0},
             ${e.providerSessionId ?? null}, ${e.project ?? null}, ${e.lastActivityAt})
           ON CONFLICT (id) DO UPDATE SET
             title = excluded.title, status = excluded.status, stakes = excluded.stakes,
             decision = excluded.decision, next_step = excluded.next_step, summary = excluded.summary,
             source_message_ids = excluded.source_message_ids, folded = excluded.folded,
-            model = excluded.model, provider_session_id = excluded.provider_session_id,
+            model = excluded.model, model_pinned = excluded.model_pinned, provider_session_id = excluded.provider_session_id,
             project = excluded.project, last_activity_at = excluded.last_activity_at
         `
         // Keep episodic recall in step with the topic's latest summary.

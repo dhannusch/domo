@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto"
 import {
-  DEFAULT_MAIN_MODEL,
   Message,
   MessageId,
   type ModelRef,
@@ -18,6 +17,7 @@ import { Memory } from "../memory/Memory.ts"
 import { parseMention } from "../models/registry.ts"
 import { Tidier } from "../presence/Tidier.ts"
 import { Providers } from "../providers/Providers.ts"
+import { Settings } from "../settings/Settings.ts"
 import { Telemetry } from "../telemetry/Telemetry.ts"
 import { makeChoices } from "./choices.ts"
 import { Filer } from "./Filer.ts"
@@ -96,6 +96,7 @@ export class Conductor extends Context.Service<
       const bus = yield* ChatBus
       const providers = yield* Providers
       const telemetry = yield* Telemetry
+      const settings = yield* Settings
       const filer = yield* Filer
       const tidier = yield* Tidier
       const config = yield* DomoConfig
@@ -135,13 +136,22 @@ export class Conductor extends Context.Service<
         const base = Option.isSome(replied)
           ? yield* store.getTopic(replied.value.topicId)
           : yield* store.currentTopic
-        if (Option.isNone(base))
-          return yield* newTopic("Conversation", requested ?? DEFAULT_MAIN_MODEL)
+        const fallback = yield* settings.mainModel
+        if (Option.isNone(base)) {
+          const fresh = yield* newTopic("Conversation", requested ?? fallback)
+          return requested === undefined ? fresh : new Topic({ ...fresh, modelPinned: true })
+        }
 
         const topic = base.value
-        if (requested === undefined || requested.key === topic.model.key) {
-          return new Topic({ ...topic, folded: false, lastActivityAt: now })
+        if (requested === undefined) {
+          // Unpinned topics follow the default model, even after it changes in settings.
+          if (topic.modelPinned === true || topic.model.key === fallback.key)
+            return new Topic({ ...topic, folded: false, lastActivityAt: now })
+          const { providerSessionId: _old, ...unpinned } = topic
+          return new Topic({ ...unpinned, folded: false, model: fallback, lastActivityAt: now })
         }
+        if (requested.key === topic.model.key)
+          return new Topic({ ...topic, folded: false, modelPinned: true, lastActivityAt: now })
         // A different model means a new provider session; seeding catches it up.
         yield* telemetry.record({
           _tag: "ModelOverridden",
@@ -149,7 +159,13 @@ export class Conductor extends Context.Service<
           to: requested.key,
         })
         const { providerSessionId: _dropped, ...rest } = topic
-        return new Topic({ ...rest, folded: false, model: requested, lastActivityAt: now })
+        return new Topic({
+          ...rest,
+          folded: false,
+          model: requested,
+          modelPinned: true,
+          lastActivityAt: now,
+        })
       })
 
       const { applyFiling, settleConfirmation } = makeFiling({ store, bus, newId, newTopic })

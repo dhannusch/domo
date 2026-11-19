@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Chat } from "./chat/Chat.tsx"
 import { Composer } from "./chat/Composer.tsx"
 import { usePresence } from "./chat/usePresence.ts"
+import { GearIcon } from "./remote/GearIcon.tsx"
 import { PushOffer } from "./remote/PushOffer.tsx"
 import { SettingsSheet } from "./remote/SettingsSheet.tsx"
 
@@ -13,16 +14,20 @@ export function App() {
   return (
     <>
       <main className="page">
-        <button
-          type="button"
-          className="masthead"
-          data-testid="settings-open"
-          aria-haspopup="dialog"
-          title="Settings"
-          onClick={() => setSettingsOpen(true)}
-        >
-          {today.format(new Date())}
-        </button>
+        <div className="masthead-row">
+          <p className="masthead">{today.format(new Date())}</p>
+          <button
+            type="button"
+            className="settings-button"
+            data-testid="settings-open"
+            aria-haspopup="dialog"
+            aria-label="Settings"
+            title="Settings"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <GearIcon />
+          </button>
+        </div>
         <Chat />
         <PushOffer />
       </main>

@@ -12,6 +12,13 @@
     <link rel="icon" href="/icons/icon-192.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>Domo</title>
+    <script>
+      // Apply a light/dark choice before the first paint, so the page never flashes the other theme.
+      try {
+        const theme = localStorage.getItem("domo.theme")
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme
+      } catch {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
