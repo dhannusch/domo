@@ -6,10 +6,12 @@
 # Before running: sign in to Tailscale, and to Claude Code and Codex on this Mac:
 #   claude auth login        codex login
 set -eu
+# The App Store install keeps the CLI inside the app (and a shell alias doesn't reach scripts).
+TAILSCALE="$(command -v tailscale || echo /Applications/Tailscale.app/Contents/MacOS/Tailscale)"
 cd "$(dirname "$0")/.."
 command -v node >/dev/null || { echo "Install Node 24 first."; exit 1; }
 command -v bun >/dev/null || { echo "Install Bun first (it's only the package manager)."; exit 1; }
-command -v tailscale >/dev/null || { echo "Install and sign in to Tailscale first."; exit 1; }
+[ -x "$TAILSCALE" ] || command -v tailscale >/dev/null || { echo "Install and sign in to Tailscale first."; exit 1; }
 bun install
 bun run build:web
 sh scripts/install-cli.sh

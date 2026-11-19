@@ -21,6 +21,22 @@ describe("access", () => {
     expect(isAuthorized(token, `/rpc?token=${token}`, {})).toBe(true)
   })
 
+  it("lets in your own Tailscale login without a token, and nobody else's", () => {
+    const owner = ["you@example.com"]
+    expect(isAuthorized(token, "/rpc", { "tailscale-user-login": "you@example.com" }, owner)).toBe(
+      true,
+    )
+    expect(isAuthorized(token, "/rpc", { "tailscale-user-login": "You@Example.com" }, owner)).toBe(
+      true,
+    )
+    expect(
+      isAuthorized(token, "/rpc", { "tailscale-user-login": "guest@example.com" }, owner),
+    ).toBe(false)
+    expect(isAuthorized(token, "/rpc", { "tailscale-user-login": "you@example.com" }, [])).toBe(
+      false,
+    )
+  })
+
   it("is open when the daemon has no token", () => {
     expect(isAuthorized(undefined, "/rpc", {})).toBe(true)
   })

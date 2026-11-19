@@ -10,17 +10,24 @@ const PROTECTED = ["/rpc", "/mcp", "/auth"]
 const digest = (value: string) => createHash("sha256").update(value).digest()
 const sameToken = (given: string, token: string) => timingSafeEqual(digest(given), digest(token))
 
+/** Set by `tailscale serve` for requests from a signed-in tailnet user (it overwrites any sent value). */
+export const TAILSCALE_LOGIN = "tailscale-user-login"
+
 /**
- * Whether a request may proceed. The token comes as a bearer header (agent
- * runs, the unlock check) or `?token=` (the browser's WebSocket, which can't
- * set headers). Requests outside the protected paths always pass.
+ * Whether a request may proceed. Your own devices pass on their Tailscale
+ * identity, with nothing to pair. Anything else needs the token, as a bearer
+ * header (agent runs, the unlock check) or `?token=` (the browser's WebSocket,
+ * which can't set headers). Requests outside the protected paths always pass.
  */
 export const isAuthorized = (
   token: string | undefined,
   url: string,
   headers: Readonly<Record<string, string | undefined>>,
+  trustedLogins: ReadonlyArray<string> = [],
 ): boolean => {
   if (token === undefined) return true
+  const login = headers[TAILSCALE_LOGIN]
+  if (login !== undefined && trustedLogins.includes(login.toLowerCase())) return true
   const parsed = new URL(url, "http://domo")
   if (!PROTECTED.some((p) => parsed.pathname === p || parsed.pathname.startsWith(`${p}/`)))
     return true
@@ -44,12 +51,12 @@ export const loadToken = Effect.fn("access.loadToken")(function* (home: string) 
 /** Refuses protected paths without the token; `/auth` lets the app check its token. */
 export const AccessLive = Layer.unwrap(
   Effect.gen(function* () {
-    const { token } = yield* DomoConfig
+    const { token, trustedLogins } = yield* DomoConfig
     const guard = HttpRouter.middleware(
       (app) =>
         Effect.gen(function* () {
           const request = yield* HttpServerRequest.HttpServerRequest
-          if (!isAuthorized(token, request.url, request.headers))
+          if (!isAuthorized(token, request.url, request.headers, trustedLogins))
             return HttpServerResponse.text("Unauthorized", { status: 401 })
           return yield* app
         }),

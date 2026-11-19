@@ -6,7 +6,7 @@ import { Argument, Command, Flag } from "effect/cli"
 import { ask } from "../ask/ask.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { runDoctor } from "../doctor/doctor.ts"
-import { tailnetHost } from "../doctor/tailscale.ts"
+import { tailnetHost, tailnetOwner } from "../doctor/tailscale.ts"
 import { loadToken } from "../http/access.ts"
 import { DaemonLive } from "../http/app.ts"
 import { initHome } from "../init/init.ts"
@@ -101,7 +101,10 @@ const resolvedConfig = Effect.gen(function* () {
   )
   const token =
     config.token === "off" ? undefined : (config.token ?? (yield* loadToken(config.home)))
-  return { ...config, token }
+  const trustedLogins = config.trustOwner
+    ? [...config.trustedLogins, ...Option.toArray(yield* tailnetOwner)]
+    : config.trustedLogins
+  return { ...config, token, trustedLogins }
 })
 
 const pair = Command.make(
@@ -120,6 +123,10 @@ const pair = Command.make(
       }),
     )
     yield* Console.log(`Code (if the installed app asks): ${config.token}`)
+    if (config.trustedLogins.length > 0)
+      yield* Console.log(
+        `Devices signed in to Tailscale as ${config.trustedLogins.join(", ")} need none of this: they just open Domo.`,
+      )
   }),
 ).pipe(Command.withDescription("Print the links that unlock Domo on this Mac and your phone"))
 

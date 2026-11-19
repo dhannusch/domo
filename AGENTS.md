@@ -120,6 +120,7 @@ The Lab improves domo without a human watching, so every change must be testable
 
 - The daemon only listens on 127.0.0.1. `scripts/remote.sh` puts it on the tailnet over HTTPS (`tailscale serve`), which the PWA and Web Push need. `scripts/install-launchd.sh` keeps it running at login.
 - Domo's home is one always-on Mac (a Mac mini), set up with `scripts/setup-host.sh`. Other computers and phones are clients only: they open `https://<host>.<tailnet>.ts.net` and install nothing. Agent work, including coding, runs on the host's files with the host's Claude and Codex logins.
+- Requests from the host owner's Tailscale login (the `Tailscale-User-Login` header that `tailscale serve` sets) need no token, so your own devices never pair. `DOMO_TAILSCALE_USERS` changes the list or turns this `off`. The Tailscale CLI is looked up on PATH and then inside `Tailscale.app`, because the App Store install has no CLI on PATH.
 - An access token (`<home>/token`, created on first `serve`) guards `/rpc`, `/mcp` and `/auth` (`http/access.ts`). The app shell stays public. `domo pair` prints the unlocking links and code. The browser sends the token as `?token=` on the WebSocket, and agent runs send it as a bearer header to MCP. `DOMO_TOKEN=off` is for tests only.
 - Web Push (`notify/Notifier.ts`, VAPID keys in `<home>/vapid.json`) is sent only for `ask_user`, and only if no device was active in the last minute. The installed app offers notifications once (`PushOffer`), because iOS needs a tap to ask permission.
 

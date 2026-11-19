@@ -46,7 +46,7 @@ Domo drives the `claude` and `codex` command-line tools that are already signed 
 - [Claude Code](https://docs.claude.com/en/docs/claude-code), signed in (`claude auth login`)
 - [Codex CLI](https://github.com/openai/codex), signed in (`codex login`)
 - Optional: Google Chrome, so Domo can check visuals before showing them
-- Optional: [Tailscale](https://tailscale.com), for access from your phone and other computers
+- [Tailscale](https://tailscale.com), to use Domo from your phone or any other computer. It's how they reach Domo, over the HTTPS that installing the app and push notifications need. You can skip it only if you'll use Domo in a browser on the Mac it runs on.
 
 ## Quick start (one machine)
 
@@ -76,7 +76,9 @@ sh scripts/setup-host.sh
 
 This installs and builds Domo, keeps it running at login (launchd), and serves it on your tailnet over HTTPS. Then it prints pairing links. On your iPhone, open the link and choose Share › Add to Home Screen. On a laptop, open it in Chrome and choose Install. Clients install nothing else. All agent work, coding included, happens on the host.
 
-The daemon only ever listens on `127.0.0.1`. Tailscale is the only way in, and an access token guards the chat and the agent tools.
+There's nothing to pair on your own devices. Domo lets in anything signed in to Tailscale as the account that owns the host. Everything else needs the access token from `domo pair`, such as a shared device or another tailnet member. Set `DOMO_TAILSCALE_USERS` to list other logins to let in, or `off` to always require the token.
+
+The daemon only ever listens on `127.0.0.1`, so Tailscale is the only way in from another device.
 
 ## Settings
 
@@ -91,6 +93,7 @@ Tap the date at the top of the chat. From there you can change notifications, ho
 | `DOMO_AUTH` | `subscription` | `subscription` (local CLI logins) or `api-key` |
 | `DOMO_PROVIDER` | `live` | `echo` is a deterministic fake for tests |
 | `DOMO_TOKEN` | from `<home>/token` | Access token; `off` disables it (tests only) |
+| `DOMO_TAILSCALE_USERS` | the host's owner | Tailscale logins let in without the token (comma-separated), or `off` |
 | `DOMO_AWAY_SECONDS` | `7200` | Default away clock (the settings sheet overrides it) |
 | `DOMO_VISUAL_CHECK` | `on` | Render and review visuals before showing them |
 

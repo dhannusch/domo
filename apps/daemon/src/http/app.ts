@@ -26,6 +26,11 @@ const Announce = Layer.effectDiscard(
   Effect.gen(function* () {
     const config = yield* DomoConfig
     yield* Effect.logInfo(`starting domo on http://127.0.0.1:${config.port}`)
+    yield* Effect.logInfo(
+      config.trustedLogins.length > 0
+        ? `your devices signed in to Tailscale need no token (${config.trustedLogins.length} login trusted)`
+        : "no Tailscale login trusted: every device needs the token (domo pair)",
+    )
   }),
 )
 

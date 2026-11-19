@@ -20,6 +20,10 @@ export interface DomoConfigShape {
   readonly token: string | undefined
   /** Render and review agent visuals before showing them (needs Chrome). */
   readonly visualCheck: boolean
+  /** Tailscale logins let in without the token (lowercase); `serve` defaults it to this Mac's owner. */
+  readonly trustedLogins: ReadonlyArray<string>
+  /** No explicit list was given, so `serve` adds this Mac's Tailscale owner. */
+  readonly trustOwner: boolean
 }
 
 export interface DomoConfigInput {
@@ -31,6 +35,8 @@ export interface DomoConfigInput {
   readonly tidyTickSeconds?: number
   readonly token?: string | undefined
   readonly visualCheck?: boolean
+  readonly trustedLogins?: ReadonlyArray<string>
+  readonly trustOwner?: boolean
 }
 
 /**
@@ -50,6 +56,8 @@ export class DomoConfig extends Context.Service<DomoConfig, DomoConfigShape>()(
     tidyTickSeconds: options.tidyTickSeconds ?? 60,
     token: options.token,
     visualCheck: options.visualCheck ?? false,
+    trustedLogins: (options.trustedLogins ?? []).map((login) => login.toLowerCase()),
+    trustOwner: options.trustOwner ?? false,
   })
 
   static readonly layerFrom = (options: DomoConfigInput) =>
@@ -76,6 +84,8 @@ export class DomoConfig extends Context.Service<DomoConfig, DomoConfigShape>()(
       )
       // "off" disables the token (end-to-end tests); unset means `serve` uses ~/.domo/token.
       const token = yield* Config.String("DOMO_TOKEN").pipe(Config.option)
+      // Comma-separated Tailscale logins to let in, or "off"; unset trusts this Mac's owner.
+      const tailscaleUsers = yield* Config.String("DOMO_TAILSCALE_USERS").pipe(Config.option)
       const visualCheck = yield* Config.Literals(["on", "off"] as const, "DOMO_VISUAL_CHECK").pipe(
         Config.withDefault<"on" | "off">("on"),
       )
@@ -89,6 +99,17 @@ export class DomoConfig extends Context.Service<DomoConfig, DomoConfigShape>()(
           tidyTickSeconds,
           token: Option.getOrUndefined(token),
           visualCheck: visualCheck === "on",
+          trustOwner: Option.isNone(tailscaleUsers),
+          trustedLogins: Option.match(tailscaleUsers, {
+            onNone: () => [],
+            onSome: (list) =>
+              list === "off"
+                ? []
+                : list
+                    .split(",")
+                    .map((login) => login.trim())
+                    .filter((login) => login.length > 0),
+          }),
         }),
       )
     }),
