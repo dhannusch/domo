@@ -15,6 +15,13 @@ export function QuestionsView({ message, questions }: { message: Message; questi
   const [sending, setSending] = useState(false)
   const [empty, setEmpty] = useState(false)
 
+  if (message.resolution?.skipped === true)
+    return (
+      <p className="choice-receipt" data-testid="questions-receipt">
+        You moved on without answering
+      </p>
+    )
+
   if (message.resolution !== undefined) {
     const skipped = message.resolution.label.split("\n\n").filter((b) => b.endsWith("\n(skipped)"))
     const total = questions.questions.length

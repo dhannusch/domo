@@ -49,7 +49,8 @@ const doctor = Command.make(
   "doctor",
   {},
   Effect.fn(function* () {
-    const results = yield* withConfig(runDoctor())
+    yield* Console.log("Checking (sends one tiny request to Claude and to Codex)…")
+    const results = yield* withConfig(runDoctor().pipe(Effect.provide(ProvidersLive)))
     for (const result of results) {
       yield* Console.log(`${result.ok ? "✓" : "✗"} ${result.name.padEnd(16)} ${result.detail}`)
     }

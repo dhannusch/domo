@@ -25,6 +25,7 @@ export const TelemetryEvent = Schema.Union([
   Schema.TaggedStruct("ToolErrored", { tool: Schema.String }),
   Schema.TaggedStruct("ViewOpened", { componentId: ComponentId }),
   Schema.TaggedStruct("SettingChanged", { key: Schema.String }),
+  Schema.TaggedStruct("ChoiceSkipped", { componentId: ComponentId }),
   Schema.TaggedStruct("HighlightCommented", { withComment: Schema.Boolean }),
   Schema.TaggedStruct("ImageAttached", { via: Schema.Literals(["button", "paste", "drop"]) }),
 ])

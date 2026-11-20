@@ -64,7 +64,12 @@ export const makeChoices = ({ store, bus, telemetry, tidier }: Deps) => {
     if (Option.isNone(message)) return yield* fail("That message no longer exists.")
     const { resolution, ...rest } = message.value
     const choice = message.value.component
-    if (resolution === undefined || choice?._tag !== "Choice" || !choice.reversible) {
+    if (
+      resolution === undefined ||
+      resolution.skipped === true ||
+      choice?._tag !== "Choice" ||
+      !choice.reversible
+    ) {
       return yield* fail("That can't be undone.")
     }
     // One undo rule everywhere: reversible things stay undoable until the next tidy.
@@ -91,5 +96,32 @@ export const makeChoices = ({ store, bus, telemetry, tidier }: Deps) => {
     yield* store.upsertTopic(new Topic({ ...rest, summary: "", status: "unresolved" }))
   })
 
-  return { resolveChoice, check, undoAnswer, notQuite }
+  /**
+   * The user wrote something new instead of answering: the topic's open questions are closed as
+   * "moved on", so "needs you" only counts what still waits on them. Nothing is deleted.
+   */
+  const skipOpenChoices = Effect.fnUntraced(function* (
+    topicId: Message["topicId"],
+    keep: ReadonlyArray<MessageId>,
+  ) {
+    const now = yield* DateTime.now
+    for (const message of yield* store.topicMessages(topicId, 60)) {
+      const component = message.component
+      if (
+        keep.includes(message.id) ||
+        message.resolution !== undefined ||
+        (component?._tag !== "Choice" && component?._tag !== "Questions")
+      )
+        continue
+      const skipped = new Message({
+        ...message,
+        resolution: { value: "", label: "", freeText: false, skipped: true, at: now },
+      })
+      yield* store.updateMessage(skipped)
+      yield* bus.publish({ _tag: "MessageUpdated", message: skipped })
+      yield* telemetry.record({ _tag: "ChoiceSkipped", componentId: component.id })
+    }
+  })
+
+  return { resolveChoice, check, undoAnswer, notQuite, skipOpenChoices }
 }

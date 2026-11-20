@@ -120,6 +120,8 @@ export const ComponentResolution = Schema.Struct({
   value: Schema.String,
   label: Schema.String,
   freeText: Schema.Boolean,
+  /** The user moved on with a new message instead of answering. */
+  skipped: Schema.optionalKey(Schema.Boolean),
   at: Schema.DateTimeUtcFromString,
 })
 export type ComponentResolution = typeof ComponentResolution.Type

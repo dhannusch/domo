@@ -16,6 +16,13 @@ export function ChoiceView({ message, choice }: { message: Message; choice: Choi
   const [pending, setPending] = useState<string | undefined>(undefined)
   const [undoFailed, setUndoFailed] = useState(false)
 
+  if (message.resolution?.skipped === true)
+    return (
+      <p className="choice-receipt" data-testid="choice-receipt">
+        You moved on without choosing
+      </p>
+    )
+
   if (message.resolution !== undefined) {
     const { label, freeText } = message.resolution
     return (

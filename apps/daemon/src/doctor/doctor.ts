@@ -1,8 +1,11 @@
 import { join } from "node:path"
+import { ModelRef } from "@domo/domain"
 import { Effect, FileSystem, Option, Schema, String as Str } from "effect"
 import { ChildProcess, ChildProcessSpawner } from "effect/process"
 import { DomoConfig } from "../config/DomoConfig.ts"
+import { runModel } from "../mcp/orchestration.ts"
 import { subprocessEnv } from "../providers/auth.ts"
+import { Providers } from "../providers/Providers.ts"
 
 export interface CheckResult {
   readonly name: string
@@ -51,6 +54,40 @@ const claudeLogin = Effect.gen(function* () {
     : { name, ok: false, detail: "not logged in — run `claude auth login`" }
 })
 
+/** The cheapest model on each side; enough to prove the login actually works. */
+export const PROBES = [
+  {
+    name: "claude works",
+    model: new ModelRef({ provider: "claude", id: "claude-haiku-5-5" }),
+    fix: "run `claude auth login`",
+  },
+  {
+    name: "codex works",
+    model: new ModelRef({ provider: "codex", id: "default" }),
+    fix: "run `codex logout`, then `codex login`",
+  },
+] as const
+
+const firstLine = (text: string) => (Str.trim(text).split("\n")[0] ?? "").slice(0, 160)
+
+/**
+ * Sends one tiny request through the same path Domo uses. The CLIs' own status commands only
+ * read the saved login, so an expired or revoked one still looks signed in there.
+ */
+export const liveCheck = Effect.fn("doctor.liveCheck")(function* (probe: (typeof PROBES)[number]) {
+  const providers = yield* Providers
+  const result = yield* runModel(providers, probe.model, "Reply with OK.", {
+    mode: "utility",
+    systemPrompt: "Reply with exactly: OK",
+  }).pipe(
+    Effect.timeoutOption("90 seconds"),
+    Effect.map(Option.getOrElse(() => ({ ok: false, text: "no answer within 90 seconds" }))),
+  )
+  return result.ok
+    ? { name: probe.name, ok: true, detail: "answered a test request" }
+    : { name: probe.name, ok: false, detail: `${firstLine(result.text)} — ${probe.fix}` }
+})
+
 const TailscaleStatus = Schema.fromJsonString(Schema.Struct({ BackendState: Schema.String }))
 
 /** The phone reaches domo over the tailnet, so Tailscale must be running and signed in. */
@@ -95,7 +132,7 @@ const constitution = Effect.gen(function* () {
   return { name: "constitution", ok, detail: ok ? path : "missing — run `domo init`" }
 })
 
-/** Every precondition for running domo on this machine. */
+/** Every precondition for running domo on this machine, including a real request to each side. */
 export const runDoctor = Effect.fn("runDoctor")(function* () {
   return yield* Effect.all(
     [
@@ -104,6 +141,7 @@ export const runDoctor = Effect.fn("runDoctor")(function* () {
       claudeLogin,
       command("codex CLI", "codex", ["--version"]),
       command("codex login", "codex", ["login", "status"]),
+      ...PROBES.map(liveCheck),
       tailscale,
       homeWritable,
       constitution,

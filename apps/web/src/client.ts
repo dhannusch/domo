@@ -10,10 +10,14 @@ const rpcUrl = () =>
     accessToken === null ? "" : `?token=${encodeURIComponent(accessToken)}`
   }`
 
-/** Typed RPC client over one WebSocket; reconnects on its own. */
+/**
+ * Typed RPC client over one WebSocket. A dropped connection fails the live feed rather than
+ * quietly reopening it, so `chatAtom` reconnects through fresh history and nothing that happened
+ * while disconnected (a reply finishing, a restart interrupting one) is missed.
+ */
 export class DomoClient extends AtomRpc.Service<DomoClient>()("DomoClient", {
   group: DomoRpc,
-  protocol: RpcClient.layerProtocolSocket({ retryTransientErrors: true }).pipe(
+  protocol: RpcClient.layerProtocolSocket().pipe(
     Layer.provide(Socket.layerWebSocket(rpcUrl())),
     Layer.provide(Socket.layerWebSocketConstructorGlobal),
     Layer.provide(RpcSerialization.layerNdjson),

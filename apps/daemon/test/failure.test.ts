@@ -16,6 +16,14 @@ describe("failureText", () => {
     )
   })
 
+  it("says plainly when a sign-in has expired, and how to fix it", () => {
+    const codex = new ModelRef({ provider: "codex", id: "default" })
+    expect(failureText("unexpected status 401 Unauthorized: invalid_jwt", codex)).toBe(
+      "Codex's sign-in on the computer running Domo has expired. Sign in again there " +
+        "(`codex logout && codex login`), or start a message with @opus to carry on now.",
+    )
+  })
+
   it("leaves other errors as they are", () => {
     expect(failureText("network down", opus)).toBe("network down")
   })

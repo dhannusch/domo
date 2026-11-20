@@ -47,6 +47,8 @@ The compiler runs with `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndex
 - The client is `DomoClient` (`AtomRpc` over one WebSocket at `/rpc`). State lives in Effect Atom and is fed by the RPC stream: history once, then the live feed folded by `chat/view.ts`. Components are small and presentational.
 - Styling is plain CSS with variables in `apps/web/src/styles.css` (no Tailwind). Use tokens only, with no ad-hoc colors. The paper grain (the only texture, with no ruled lines) and the "night paper" dark theme come from tokens. `--line` is the prose line-height and the spacing unit. Palette is graphite ink with a sage accent (`--accent`), on cool laid paper; no navy or blue. Agent prose is Literata, the user's messages are Instrument Sans.
 - The composer says "Message Domo…". There is no per-message model picker: Domo routes, from the default model chosen in settings. Typing `@` at the start of a message suggests models (`chat/MentionMenu.tsx`). Picking one pins the current topic to that model; nothing else in the UI mentions aliases.
+- A dropped connection fails the feed instead of silently reopening it, so `chatAtom` reconnects through fresh history and never misses what happened meanwhile (a reply finishing, a restart interrupting one). Don't turn on the RPC protocol's `retryTransientErrors`.
+- Sending a new message closes the topic's open Choice and Questions cards as "moved on" (`skipOpenChoices`, `ChoiceSkipped`), so "needs you" only counts what still waits on the user. Cards in other topics stay open.
 - Feed events may only append or complete messages. Never reorder or remove anything already on the page (UX-02).
 - Phone width (375px) is the first layout target. Every action works without hover. Respect `prefers-reduced-motion`.
 - Every interactive element has a stable `data-testid`.
@@ -146,6 +148,11 @@ The Lab improves domo without a human watching, so every change must be testable
 - Requests from the host owner's Tailscale login (the `Tailscale-User-Login` header that `tailscale serve` sets) need no token, so your own devices never pair. `DOMO_TAILSCALE_USERS` changes the list or turns this `off`. The Tailscale CLI is looked up on PATH and then inside `Tailscale.app`, because the App Store install has no CLI on PATH.
 - An access token (`<home>/token`, created on first `serve`) guards `/rpc`, `/mcp` and `/auth` (`http/access.ts`). The app shell stays public. `domo pair` prints the unlocking links and code. The browser sends the token as `?token=` on the WebSocket, and agent runs send it as a bearer header to MCP. `DOMO_TOKEN=off` is for tests only.
 - Web Push (`notify/Notifier.ts`, VAPID keys in `<home>/vapid.json`) is sent only for `ask_user`, and only if no device was active in the last minute. The installed app offers notifications once (`PushOffer`), because iOS needs a tap to ask permission.
+
+## Doctor
+
+- `domo doctor` checks the CLIs and their saved logins, then sends one tiny request to Claude (Haiku) and to Codex through the same provider path Domo uses (`liveCheck`). The CLIs' own status commands only read the saved login, so an expired or revoked one looks signed in there; only a real request catches it.
+- A reply that fails because a login expired says so in plain words, with the command to sign in again (`conductor/failure.ts`).
 
 ## Updating a host
 

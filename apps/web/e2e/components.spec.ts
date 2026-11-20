@@ -61,17 +61,29 @@ test("a Choice renders through MCP, shows in the marker, and collapses to a rece
 test("UX-07: the marker lists a decision that scrolled away and jumps back to it", async ({
   page,
 }) => {
-  await newestReply(page, "[[choice]]")
-  // Push the decision out of view with a few long answers.
+  // The decision lives in its own topic; the conversation then carries on in another.
+  const anchor = await newestReply(page, "anchor")
+  const decision = await newestReply(page, `[[topic:Quotes ${Date.now()}]] [[choice]]`)
+  await expect(decision.getByTestId("refiled")).toBeVisible()
   const longAnswers = page.getByTestId("message-agent").filter({ hasText: "Short answer" })
   for (let i = 0; i < 3; i++) {
     const before = await longAnswers.count()
+    await anchor.getByTestId("reply").click()
     await send(page, `filler ${i} [[long]]`)
     await expect(longAnswers).toHaveCount(before + 1)
   }
+  await expect(decision.getByTestId("choice")).toBeVisible()
   await page.getByTestId("needs-you").click()
   await page.getByTestId("needs-you-list").getByRole("button").last().click()
   await expect(page.getByTestId("choice").last()).toBeInViewport()
+})
+
+test("writing something new instead of choosing closes the card as moved on", async ({ page }) => {
+  const reply = await newestReply(page, "[[choice]]")
+  await expect(page.getByTestId("needs-you")).toContainText("needs you")
+  await send(page, `something else entirely ${Date.now()}`)
+  await expect(reply.getByTestId("choice-receipt")).toHaveText("You moved on without choosing")
+  await expect(page.getByTestId("needs-you")).toHaveCount(0)
 })
 
 test("answering in your own words resolves the Choice as free text", async ({ page }) => {

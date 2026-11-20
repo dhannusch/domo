@@ -287,7 +287,7 @@ export class Conductor extends Context.Service<
         return parts.length === 0 ? undefined : parts.join("\n\n")
       })
 
-      const { resolveChoice, check, undoAnswer, notQuite } = makeChoices({
+      const { resolveChoice, check, undoAnswer, notQuite, skipOpenChoices } = makeChoices({
         store,
         bus,
         telemetry,
@@ -389,6 +389,8 @@ export class Conductor extends Context.Service<
         yield* store.insertMessage(agentMessage)
         yield* bus.publish({ _tag: "MessageAdded", message: userMessage })
         yield* bus.publish({ _tag: "MessageAdded", message: agentMessage })
+        // Writing something new instead of answering closes the topic's open questions.
+        yield* skipOpenChoices(topic.id, [userMessage.id, agentMessage.id])
 
         const quoted = yield* quoteFor(input.replyTo)
         const said =
