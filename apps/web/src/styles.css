@@ -814,34 +814,71 @@ body {
 
 .run-detail {
   flex-basis: 100%;
-  margin: 0.25rem 0 0;
-  padding-left: 0.75rem;
-  border-left: 1.5px solid var(--margin-rule);
+  margin: 0.4rem 0 0.1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--paper-deep);
 }
 
-.run-detail ul {
+.run-steps {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: grid;
+  gap: 0.45rem;
 }
 
-.run-detail li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 0.75rem;
+/* One step per line: what happened, then its specifics in small type underneath. */
+.run-step {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
 }
 
-.run-detail p {
-  margin: 0.25rem 0 0;
+.run-action {
+  color: var(--ink);
 }
 
-.run-summary {
+.run-step[data-ok="false"] .run-action {
   color: var(--pencil);
-  opacity: 0.85;
+  font-style: italic;
 }
 
-.run-failed {
-  text-decoration: underline wavy var(--margin-rule);
+.run-what {
+  font-size: 0.78rem;
+  color: var(--pencil);
+  background: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.run-output {
+  font-size: 0.8rem;
+  color: var(--pencil);
+  overflow-wrap: anywhere;
+}
+
+.run-files,
+.run-usage {
+  margin: 0.5rem 0 0;
+}
+
+.run-files {
+  overflow-wrap: anywhere;
+}
+
+.run-file {
+  color: var(--ink);
+}
+
+.run-label,
+.run-where,
+.run-usage {
+  color: var(--pencil);
+}
+
+.run-usage {
+  font-size: 0.8rem;
 }
 
 .needs-you {

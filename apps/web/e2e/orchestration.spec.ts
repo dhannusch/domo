@@ -23,7 +23,7 @@ test("a delegation shows as a hand-off in the receipt, and view shows the subage
   const receipt = reply.getByTestId("work-receipt")
   await expect(receipt).toContainText("Handed off to Codex")
   await receipt.getByTestId("work-view").click()
-  await expect(reply.getByTestId("run-delegations")).toContainText(
+  await expect(reply.getByTestId("run-delegation")).toContainText(
     "Echo: Summarize the plan in one line",
   )
 })
@@ -33,9 +33,9 @@ test("a council asks every model and view shows each member", async ({ page }) =
   const receipt = reply.getByTestId("work-receipt")
   await expect(receipt).toContainText("Asked 3 models")
   await receipt.getByTestId("work-view").click()
-  const members = reply.getByTestId("run-delegations").getByRole("listitem")
+  const members = reply.getByTestId("run-delegation")
   await expect(members).toHaveCount(3)
-  await expect(reply.getByTestId("run-delegations")).toContainText("Proposal A")
+  await expect(members.first()).toContainText("Proposal A")
 })
 
 const sendAsk = async (page: Page) => {

@@ -2,8 +2,9 @@ import type { AgentEvent, RunDetail, Usage } from "@domo/domain"
 import { Effect, Option, Stream } from "effect"
 import type { Delegation } from "../chat/ChatBus.ts"
 import type { ProviderError } from "../providers/Providers.ts"
+import { describeTool, type ToolAction } from "./describeTool.ts"
 
-export interface ToolCall {
+export interface ToolCall extends ToolAction {
   readonly name: string
   readonly ok: boolean
   readonly summary: string
@@ -18,8 +19,8 @@ export interface RunOutcome {
   readonly tools: ReadonlyArray<ToolCall>
   readonly files: ReadonlyArray<string>
   readonly usage: Usage | undefined
-  /** Tool names by call id, for calls that haven't finished yet. */
-  readonly pending: ReadonlyMap<string, string>
+  /** Tool calls by id that haven't finished yet. */
+  readonly pending: ReadonlyMap<string, { readonly name: string } & ToolAction>
   /** A tool ran since the last text, so the next text starts a new paragraph. */
   readonly afterTool: boolean
 }
@@ -93,20 +94,23 @@ export const collectRun = (
                     .pipe(Effect.as(next))
                 : Effect.succeed(next)
             }
-            const pending = new Map(next.pending).set(event.callId, event.name)
+            const pending = new Map(next.pending).set(event.callId, {
+              name: event.name,
+              ...describeTool(event.name, event.input),
+            })
             return hooks
               .onTool(event.name, next.tools.length + pending.size)
               .pipe(Effect.as({ ...next, pending }))
           }
           case "ToolFinished": {
-            const name = acc.pending.get(event.callId)
-            if (name === undefined) return Effect.succeed(acc)
+            const call = acc.pending.get(event.callId)
+            if (call === undefined) return Effect.succeed(acc)
             const pending = new Map(acc.pending)
             pending.delete(event.callId)
             return Effect.succeed({
               ...acc,
               pending,
-              tools: [...acc.tools, { name, ok: event.ok, summary: event.summary }],
+              tools: [...acc.tools, { ...call, ok: event.ok, summary: event.summary }],
             })
           }
           case "FileChanged":
@@ -165,8 +169,8 @@ export const runDetail = (
   ...(delegations.length === 0 ? {} : { delegations }),
   tools: [
     ...outcome.tools,
-    ...[...outcome.pending.values()].map((name) => ({
-      name,
+    ...[...outcome.pending.values()].map((call) => ({
+      ...call,
       ok: false,
       summary: "did not finish",
     })),

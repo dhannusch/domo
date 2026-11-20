@@ -86,6 +86,8 @@ const ECHO_COMPONENTS: ReadonlyArray<readonly [string, string, unknown]> = [
       recommended: "hale",
     },
   ],
+  ["[[start-topic]]", "start_topic", { title: "How Teams Ship" }],
+  ["[[rename-topic]]", "rename_topic", { title: "Renamed Plans" }],
   [
     "[[questions]]",
     "render_questions",

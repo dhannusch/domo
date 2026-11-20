@@ -138,8 +138,13 @@ test("work shows a receipt, and view reveals the tools behind it", async ({ page
   const receipt = reply.getByTestId("work-receipt")
   await expect(receipt).toContainText("Ran 2 tools, edited 1 file")
   await receipt.getByTestId("work-view").click()
-  await expect(reply.getByTestId("run-detail")).toContainText("12 tests passed")
-  await expect(reply.getByTestId("run-detail")).toContainText("/project/a.ts")
+  const detail = reply.getByTestId("run-detail")
+  // Each step in plain words, its specifics apart; output only when something failed.
+  await expect(detail).toContainText("Edited a.ts")
+  await expect(detail).toContainText("Ran a command")
+  await expect(detail.locator(".run-what")).toHaveText("bun test")
+  await expect(detail).not.toContainText("12 tests passed")
+  await expect(reply.getByTestId("run-files")).toHaveText("Changed a.ts in /project")
 })
 
 test("UX-03: at most one component per agent message", async ({ page }) => {

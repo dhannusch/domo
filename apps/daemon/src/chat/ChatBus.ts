@@ -35,6 +35,10 @@ export class ChatBus extends Context.Service<
     /** Work a run handed to other models, for its receipt and "view". */
     recordDelegation(runId: RunId, delegation: Delegation): Effect.Effect<void>
     takeDelegations(runId: RunId): Effect.Effect<ReadonlyArray<Delegation>>
+    /** The agent placed this reply's exchange itself (start_topic/rename_topic): skip filing. */
+    markPlaced(messageId: MessageId): Effect.Effect<void>
+    /** Whether the reply was placed by the agent; asking forgets it. */
+    takePlaced(messageId: MessageId): Effect.Effect<boolean>
     /** An agent is waiting on the user's answer to this message's question. */
     registerAsk(messageId: MessageId): Effect.Effect<Deferred.Deferred<AskAnswer>>
     /** Settles a waiting question; false if nothing was waiting. */
@@ -54,6 +58,7 @@ export class ChatBus extends Context.Service<
       const delegations = yield* Ref.make<ReadonlyMap<RunId, ReadonlyArray<Delegation>>>(new Map())
       const asks = yield* Ref.make<ReadonlyMap<MessageId, Deferred.Deferred<AskAnswer>>>(new Map())
       const approvals = yield* Ref.make<ReadonlyMap<RunId, ReadonlySet<string>>>(new Map())
+      const placed = yield* Ref.make<ReadonlySet<MessageId>>(new Set())
 
       const takeAsk = (messageId: MessageId) =>
         Ref.modify(asks, (m) => {
@@ -80,6 +85,13 @@ export class ChatBus extends Context.Service<
             const next = new Map(m)
             next.delete(runId)
             return [m.get(runId) ?? [], next] as const
+          }),
+        markPlaced: (messageId) => Ref.update(placed, (s) => new Set(s).add(messageId)),
+        takePlaced: (messageId) =>
+          Ref.modify(placed, (s) => {
+            const next = new Set(s)
+            next.delete(messageId)
+            return [s.has(messageId), next] as const
           }),
         registerAsk: (messageId) =>
           Deferred.make<AskAnswer>().pipe(

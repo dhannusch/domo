@@ -39,6 +39,7 @@ import { MemoryType } from "../memory/note.ts"
 import { labelFor, MODEL_ALIASES, resolveModel } from "../models/registry.ts"
 import { Notifier } from "../notify/Notifier.ts"
 import { Providers } from "../providers/Providers.ts"
+import { makePlacement } from "../topics/placement.ts"
 import { VisualCheck } from "../visual/VisualCheck.ts"
 import { runCouncil, runModel, SUBAGENT_PERSONA } from "./orchestration.ts"
 import { readSkill } from "./skills.ts"
@@ -308,6 +309,28 @@ const ReadSkill = Tool.make("read_skill", {
   success: Schema.String,
 })
 
+const TopicTitle = Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(60)))
+
+const StartTopic = Tool.make("start_topic", {
+  description:
+    "Begin a new topic from this exchange, when the user wants a subject to have its own topic. " +
+    "This exchange moves there, the user's next messages continue in it, and it gets its own " +
+    "folder for notes.md and files. Use rename_topic instead when this conversation already is " +
+    "that subject.",
+  parameters: Schema.Struct({ title: TopicTitle }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
+const RenameTopic = Tool.make("rename_topic", {
+  description:
+    "Rename the topic this conversation is in (and its folder), when the user names the subject " +
+    "it's really about. Everything in it stays; only the name and folder path change.",
+  parameters: Schema.Struct({ title: TopicTitle }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
 export const DomoTools = Toolkit.make(
   RenderChoice,
   RenderQuestions,
@@ -328,6 +351,8 @@ export const DomoTools = Toolkit.make(
   Recall,
   Forget,
   ReadSkill,
+  StartTopic,
+  RenameTopic,
 )
 
 const dayFormat = new Intl.DateTimeFormat("en-US", {
@@ -355,6 +380,7 @@ const DomoToolHandlers = DomoTools.toLayer(
     const tasks = yield* Tasks
     const goals = yield* GoalStore
     const memory = yield* Memory
+    const placement = makePlacement({ store, bus, fs, home: config.home })
 
     /**
      * Puts the component on the reply being written; a second call replaces it (one per message).
@@ -701,6 +727,16 @@ const DomoToolHandlers = DomoTools.toLayer(
 
       forget: ({ name, reason }) => memory.forget(name, reason),
 
+      start_topic: Effect.fnUntraced(function* ({ title }) {
+        const run = yield* bus.lookupRun((yield* CurrentRun).runId)
+        if (Option.isNone(run)) return "This conversation turn has already ended."
+        return yield* placement.startTopic(run.value, title)
+      }),
+      rename_topic: Effect.fnUntraced(function* ({ title }) {
+        const run = yield* bus.lookupRun((yield* CurrentRun).runId)
+        if (Option.isNone(run)) return "This conversation turn has already ended."
+        return yield* placement.renameTopic(run.value, title)
+      }),
       read_skill: ({ name }) =>
         readSkill(config.home, name).pipe(Effect.provideService(FileSystem.FileSystem, fs)),
     })

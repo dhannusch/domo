@@ -16,6 +16,18 @@ export const folderName = (title: string) =>
 
 export const folderPath = (home: string, folder: string) => join(home, "topics", folder)
 
+/** A folder name for this title that no other topic uses yet. */
+export const freeFolderName = Effect.fnUntraced(function* (
+  fs: FileSystem.FileSystem,
+  home: string,
+  title: string,
+) {
+  const base = folderName(title)
+  let name = base
+  for (let n = 2; yield* fs.exists(folderPath(home, name)); n++) name = `${base}-${n}`
+  return name
+}, Effect.orDie)
+
 /**
  * Gives a topic its own folder under `<home>/topics/` the first time it runs (named after its
  * title, never renamed after) with a starting notes.md. Returns the topic with `folder` set.
@@ -29,9 +41,7 @@ export const ensureFolder = Effect.fnUntraced(function* (
     yield* fs.makeDirectory(folderPath(home, topic.folder), { recursive: true })
     return topic
   }
-  const base = folderName(topic.title)
-  let name = base
-  for (let n = 2; yield* fs.exists(folderPath(home, name)); n++) name = `${base}-${n}`
+  const name = yield* freeFolderName(fs, home, topic.title)
   const path = folderPath(home, name)
   yield* fs.makeDirectory(path, { recursive: true })
   yield* fs.writeFileString(join(path, NOTES_FILE), `# ${topic.title}\n`)

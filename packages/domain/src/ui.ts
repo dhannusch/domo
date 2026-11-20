@@ -131,7 +131,16 @@ export const RunDetail = Schema.Struct({
   id: RunId,
   model: Schema.String,
   tools: Schema.Array(
-    Schema.Struct({ name: Schema.String, ok: Schema.Boolean, summary: Schema.String }),
+    Schema.Struct({
+      name: Schema.String,
+      ok: Schema.Boolean,
+      /** The tool's output, shortened. */
+      summary: Schema.String,
+      /** What the call did, in plain words ("Edited notes.md"). */
+      action: Schema.optionalKey(Schema.String),
+      /** Its specifics (the command, the search), shown smaller. */
+      detail: Schema.optionalKey(Schema.String),
+    }),
   ),
   files: Schema.Array(Schema.String),
   /** Work handed to other models (delegate) or a council's members. */

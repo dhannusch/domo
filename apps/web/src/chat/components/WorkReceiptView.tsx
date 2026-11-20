@@ -12,6 +12,33 @@ const plain = (text: string) =>
     .replace(/\s+/g, " ")
     .trim()
 
+/** "~/.domo/topics/x" rather than "/Users/name/.domo/topics/x". */
+const shortPath = (path: string) => path.replace(/^\/(Users|home)\/[^/]+/, "~")
+const fileName = (path: string) => path.split("/").at(-1) ?? path
+const folderOf = (path: string) => path.split("/").slice(0, -1).join("/")
+
+/** The changed files by name, with their folder once when they share one. */
+function FilesLine({ files }: { files: ReadonlyArray<string> }) {
+  const folders = new Set(files.map(folderOf))
+  const [only] = folders
+  return (
+    <p className="run-files" data-testid="run-files">
+      <span className="run-label">Changed </span>
+      {files.map((file, i) => (
+        <span key={file}>
+          {i > 0 ? ", " : ""}
+          <span className="run-file" title={shortPath(file)}>
+            {folders.size === 1 ? fileName(file) : shortPath(file)}
+          </span>
+        </span>
+      ))}
+      {folders.size === 1 && only !== undefined && only.length > 0 ? (
+        <span className="run-where"> in {shortPath(only)}</span>
+      ) : null}
+    </p>
+  )
+}
+
 function RunDetailView({ receipt }: { receipt: WorkReceipt }) {
   const result = useAtomValue(runAtom(receipt.runId))
   return AsyncResult.match(result, {
@@ -22,43 +49,49 @@ function RunDetailView({ receipt }: { receipt: WorkReceipt }) {
         <p className="run-detail">No details were kept for this work.</p>
       ) : (
         <div className="run-detail" data-testid="run-detail">
-          <ul>
+          <ol className="run-steps">
             {value.tools.map((tool, i) => (
               <li
                 // biome-ignore lint/suspicious/noArrayIndexKey: a run's tool calls are an immutable, ordered log
                 key={`${i}-${tool.name}`}
+                className="run-step"
+                data-ok={tool.ok}
               >
-                <span className={tool.ok ? undefined : "run-failed"}>
-                  {tool.ok ? tool.name : `${tool.name} (failed)`}
+                <span className="run-action">
+                  {tool.action ?? tool.name}
+                  {tool.ok ? "" : " (failed)"}
                 </span>
-                {tool.summary.length > 0 ? (
-                  <span className="run-summary">{plain(tool.summary)}</span>
+                {tool.detail !== undefined ? <code className="run-what">{tool.detail}</code> : null}
+                {/* Output is noise when it worked; it's the reason when it didn't. Older runs
+                    have no action, so their output is all there is to show. */}
+                {(!tool.ok || tool.action === undefined) && tool.summary.length > 0 ? (
+                  <span className="run-output">{plain(tool.summary)}</span>
                 ) : null}
               </li>
             ))}
-          </ul>
-          {value.delegations !== undefined && value.delegations.length > 0 ? (
-            <ul data-testid="run-delegations">
-              {value.delegations.map((d, i) => (
-                <li
-                  // biome-ignore lint/suspicious/noArrayIndexKey: a run's delegations are an immutable, ordered log
-                  key={`${i}-${d.model}`}
-                >
-                  <span className={d.ok ? undefined : "run-failed"}>
-                    {d.kind === "council"
-                      ? `${modelLabel(d.model)} (${d.task})`
-                      : `Handed to ${modelLabel(d.model)}`}
-                  </span>
-                  <span className="run-summary">{plain(d.summary)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {value.files.length > 0 ? <p>Files: {value.files.join(", ")}</p> : null}
-          <p>
+            {(value.delegations ?? []).map((d, i) => (
+              <li
+                // biome-ignore lint/suspicious/noArrayIndexKey: a run's delegations are an immutable, ordered log
+                key={`d${i}-${d.model}`}
+                className="run-step"
+                data-ok={d.ok}
+                data-testid="run-delegation"
+              >
+                <span className="run-action">
+                  {d.kind === "council"
+                    ? `Asked ${modelLabel(d.model)}: ${d.task}`
+                    : `Handed to ${modelLabel(d.model)}`}
+                  {d.ok ? "" : " (failed)"}
+                </span>
+                <span className="run-output">{plain(d.summary)}</span>
+              </li>
+            ))}
+          </ol>
+          {value.files.length > 0 ? <FilesLine files={value.files} /> : null}
+          <p className="run-usage">
             {modelLabel(value.model)}
             {value.usage !== undefined
-              ? `, ${value.usage.inputTokens.toLocaleString()} tokens in and ${value.usage.outputTokens.toLocaleString()} out`
+              ? `, ${value.usage.inputTokens.toLocaleString()} tokens in, ${value.usage.outputTokens.toLocaleString()} out`
               : ""}
           </p>
         </div>

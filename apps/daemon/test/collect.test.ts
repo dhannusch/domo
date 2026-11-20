@@ -2,6 +2,7 @@ import { type AgentEvent, RunId } from "@domo/domain"
 import { describe, expect, it } from "@effect/vitest"
 import { Effect, Option, Stream } from "effect"
 import { collectRun, isDomoUiTool, type RunOutcome, workSummary } from "../src/conductor/collect.ts"
+import { describeTool } from "../src/conductor/describeTool.ts"
 
 const outcome = (over: Partial<RunOutcome> = {}): RunOutcome => ({
   streamed: "",
@@ -23,7 +24,7 @@ describe("workSummary", () => {
 
   it("describes councils and hand-offs with model names", () => {
     const summary = workSummary(
-      outcome({ tools: [{ name: "Bash", ok: true, summary: "" }] }),
+      outcome({ tools: [{ name: "Bash", action: "Ran a command", ok: true, summary: "" }] }),
       [
         { kind: "council", model: "claude:claude-opus-5-5", task: "A", summary: "", ok: true },
         { kind: "council", model: "codex:default", task: "B", summary: "", ok: true },
@@ -76,4 +77,24 @@ describe("collectRun", () => {
       expect(deltas.join("")).toBe(outcome.streamed)
     }),
   )
+})
+
+describe("describeTool", () => {
+  it("says what a call did in plain words, with its specifics apart", () => {
+    expect(describeTool("Write", { file_path: "/h/topics/x/how-teams-ship-brief.md" })).toEqual({
+      action: "Wrote how-teams-ship-brief.md",
+    })
+    expect(describeTool("Bash", { command: "ls -la ~/.domo/topics" })).toEqual({
+      action: "Ran a command",
+      detail: "ls -la ~/.domo/topics",
+    })
+    expect(describeTool("shell", { command: ["bash", "-lc", "bun test"] }).detail).toBe(
+      "bash -lc bun test",
+    )
+    expect(describeTool("WebSearch", { query: "substack api" })).toEqual({
+      action: "Searched the web",
+      detail: "substack api",
+    })
+    expect(describeTool("mcp__github__list_issues", {}).action).toBe("Used list issues")
+  })
 })

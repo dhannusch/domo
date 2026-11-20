@@ -228,8 +228,10 @@ export class Conductor extends Context.Service<
           ...(topic.project === undefined ? {} : { project: topic.project }),
           context: folderContext(folder, notes, topic.project === undefined),
         })
-        // Whatever the run wrote to notes.md becomes searchable.
-        yield* store.indexNotes(topic.id, yield* readNotes(fs, config.home, topic.folder ?? ""))
+        // Whatever the run wrote to notes.md becomes searchable (re-read: the run may have renamed
+        // the topic and its folder).
+        const placed = Option.getOrElse(yield* store.getTopic(topic.id), () => topic)
+        yield* store.indexNotes(placed.id, yield* readNotes(fs, config.home, placed.folder ?? ""))
         const failed = Option.isSome(outcome.failure)
 
         if (failed || outcome.sessionId === undefined) return Option.none()
@@ -246,6 +248,8 @@ export class Conductor extends Context.Service<
         userMessage: Message,
         reply: Message,
       ) {
+        // The agent already put this exchange where it belongs (start_topic, rename_topic).
+        if (yield* bus.takePlaced(reply.id)) return
         const others = (yield* store.openTopics(8)).filter((t) => t.id !== topic.id)
         const filing = yield* filer.file(
           { user: userMessage.text, agent: reply.text },
