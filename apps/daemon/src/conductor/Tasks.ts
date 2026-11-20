@@ -19,6 +19,7 @@ import { DomoConfig } from "../config/DomoConfig.ts"
 import { GoalStore } from "../goals/GoalStore.ts"
 import { Memory } from "../memory/Memory.ts"
 import { Providers } from "../providers/Providers.ts"
+import { folderContext, folderPath, readNotes } from "../topics/folders.ts"
 import { makeSystemPrompt, mcpFor, nameOf } from "./prompt.ts"
 import { makeTurn } from "./turn.ts"
 
@@ -109,6 +110,18 @@ export class Tasks extends Context.Service<
           return yield* new TaskNotStarted({ message: "That topic no longer exists." })
         const model = input.model ?? topic.value.model
         const cwd = input.cwd ?? topic.value.project
+        // Without a project, a task works in its topic's folder, so what it writes lands there.
+        const folder =
+          topic.value.folder === undefined ? undefined : folderPath(config.home, topic.value.folder)
+        const runCwd = cwd ?? folder
+        const context =
+          topic.value.folder === undefined || folder === undefined
+            ? undefined
+            : folderContext(
+                folder,
+                yield* readNotes(fs, config.home, topic.value.folder),
+                cwd === undefined,
+              )
 
         const taskId = TaskId.make(randomUUID())
         const message = new Message({
@@ -147,7 +160,9 @@ export class Tasks extends Context.Service<
               model,
               prompt: taskPrompt(input.title, input.instructions),
               receiptFallback: `Finished: ${input.title}`,
-              ...(cwd === undefined ? {} : { cwd }),
+              ...(runCwd === undefined ? {} : { cwd: runCwd }),
+              ...(cwd === undefined ? {} : { project: cwd }),
+              ...(context === undefined ? {} : { context }),
             }),
           )
           .pipe(

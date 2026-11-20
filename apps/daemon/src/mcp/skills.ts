@@ -46,6 +46,6 @@ export const skillIndexText = (skills: ReadonlyArray<SkillSummary>) =>
   skills.length === 0
     ? ""
     : [
-        "Skills (call read_skill with the name when one applies, before you start):",
+        "Skills (when one applies, call read_skill with its name before your first word on it; the description alone isn't enough):",
         ...skills.map((s) => `- ${s.name}: ${s.description}`),
       ].join("\n")

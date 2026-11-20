@@ -2,7 +2,7 @@ import { Schema } from "effect"
 import { ComponentId, RunId } from "./ids.ts"
 
 /**
- * The fixed intelligent-UI vocabulary: five components. Choice, Comparison,
+ * The fixed intelligent-UI vocabulary: six components. Choice, Questions, Comparison,
  * Checklist and Visual are rendered by the agent (render_* tools); WorkReceipt
  * is produced by Domo from the run itself. Adding another requires a rubric
  * change and the user's approval (see AGENTS.md).
@@ -32,6 +32,27 @@ export const ChoiceInput = Schema.Struct(choiceFields)
 /** Also covers approvals. Always offers free text; preselects only reversible options. */
 export const Choice = Schema.TaggedStruct("Choice", { id: ComponentId, ...choiceFields })
 export type Choice = typeof Choice.Type
+
+const questionsFields = {
+  questions: Schema.Array(
+    Schema.Struct({ question: Label, placeholder: Schema.optionalKey(Label) }),
+  ).pipe(Schema.check(Schema.isMinLength(2), Schema.isMaxLength(4))),
+}
+
+export const QuestionsInput = Schema.Struct(questionsFields)
+
+/** A few short open questions answered inline, sent back together as one message. */
+export const Questions = Schema.TaggedStruct("Questions", { id: ComponentId, ...questionsFields })
+export type Questions = typeof Questions.Type
+
+/** The user's message for a Questions card: each question with its answer (blank = skipped). */
+export const formatAnswers = (questions: Questions, answers: ReadonlyArray<string>): string =>
+  questions.questions
+    .map(({ question }, i) => {
+      const answer = answers[i]?.trim() ?? ""
+      return `${question}\n${answer.length > 0 ? answer : "(skipped)"}`
+    })
+    .join("\n\n")
 
 const comparisonFields = {
   attributes: Schema.Array(Label).pipe(Schema.check(Schema.isMinLength(1), Schema.isMaxLength(4))),
@@ -91,10 +112,10 @@ export const WorkReceipt = Schema.TaggedStruct("WorkReceipt", {
 export type WorkReceipt = typeof WorkReceipt.Type
 
 /** The components an agent can put on its message (at most one per message). */
-export const UiComponent = Schema.Union([Choice, Comparison, Checklist, Visual])
+export const UiComponent = Schema.Union([Choice, Questions, Comparison, Checklist, Visual])
 export type UiComponent = typeof UiComponent.Type
 
-/** A resolved Choice collapses into an inert receipt ("Chose Hale & Co."). */
+/** A resolved Choice or Questions card collapses into an inert receipt ("Chose Hale & Co."). */
 export const ComponentResolution = Schema.Struct({
   value: Schema.String,
   label: Schema.String,

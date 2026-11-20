@@ -16,7 +16,7 @@ This file is **human-owned**. The agent, the Lab, and any autonomous session mus
 - One chat. Four learned concepts: messages, reply-to, needs you, view.
 - The page never moves while the user is present. Nothing is ever deleted.
 - Every restatement carries a source tag.
-- Prose first. Intelligent UI uses only five components: Choice, Comparison, Checklist, Visual, WorkReceipt. A Visual always runs sandboxed with no network access.
+- Prose first. Intelligent UI uses only six components: Choice, Questions, Comparison, Checklist, Visual, WorkReceipt. A Visual always runs sandboxed with no network access.
 
 ## Memory write gate
 

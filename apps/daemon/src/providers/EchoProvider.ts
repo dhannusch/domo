@@ -61,6 +61,8 @@ const echoReply = (request: RunRequest): string => {
   }
   const said = lastBlock(request.prompt)
   if (said.includes("[[long]]")) return LONG_ANSWER
+  if (said.includes("[[table]]"))
+    return "Here are the quotes:\n\n| Builder | Price |\n| --- | --- |\n| Hale & Co. | $4,200 |\n| Brightline | $5,100 |"
   const seeded = request.prompt.startsWith("Context from this conversation")
     ? " (with context)"
     : ""
@@ -80,6 +82,16 @@ const ECHO_COMPONENTS: ReadonlyArray<readonly [string, string, unknown]> = [
       ],
       reversible: true,
       recommended: "hale",
+    },
+  ],
+  [
+    "[[questions]]",
+    "render_questions",
+    {
+      questions: [
+        { question: "How much time do you have each week?", placeholder: "A few hours" },
+        { question: "What do you already have to build on?" },
+      ],
     },
   ],
   [

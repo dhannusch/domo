@@ -41,6 +41,8 @@ Reply with JSON only, no prose:
 - Choose T0 unless the exchange is clearly about another listed topic, or clearly a new subject.
 - Always give a short, plain title for the chosen topic (no quotes, no trailing punctuation).
 - resolved is true only if nothing is left open: no question pending, no next step waiting on anyone.
+- Write summary and decision to the user, in the second person ("you"), never "he", "she" or
+  "the user". Example decision: "You'll take management only if you stay hands-on".
 - stakes describes the decision: "costly" if getting it wrong costs real money or time,
   "irreversible" if it can't be undone; otherwise "low".`
 

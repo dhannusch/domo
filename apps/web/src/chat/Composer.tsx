@@ -5,7 +5,7 @@ import { modelsAtom, sendAtom } from "./atoms.ts"
 import { ConnectionStatus } from "./ConnectionStatus.tsx"
 import { MentionMenu, mentionMatches, mentionQuery } from "./MentionMenu.tsx"
 import { NeedsYou } from "./NeedsYou.tsx"
-import { replyAtom } from "./reply.ts"
+import { replyAtom, toReplyTo } from "./reply.ts"
 
 export function Composer() {
   const send = useAtomSet(sendAtom, { mode: "promise" })
@@ -28,19 +28,14 @@ export function Composer() {
     event?.preventDefault()
     const trimmed = text.trim()
     if (trimmed.length === 0) return
-    const replyTo =
-      reply === undefined
-        ? undefined
-        : reply.quote === undefined
-          ? { messageId: reply.messageId }
-          : { messageId: reply.messageId, quote: reply.quote }
+    const replyTo = toReplyTo(reply)
     setText("")
-    setReply(undefined)
+    setReply([])
     // If the send fails (e.g. offline), put the message (and its reply target) back rather than losing it.
     send({ payload: replyTo === undefined ? { text: trimmed } : { text: trimmed, replyTo } }).catch(
       () => {
         setText((current) => (current.length === 0 ? trimmed : current))
-        setReply((current) => current ?? reply)
+        setReply((current) => (current.length === 0 ? reply : current))
       },
     )
     if (area.current !== null) area.current.style.height = "auto"
@@ -62,30 +57,35 @@ export function Composer() {
       if (event.key === "Escape") return setDismissed(true)
     }
     if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) submit(event)
-    if (event.key === "Escape" && reply !== undefined) setReply(undefined)
+    if (event.key === "Escape" && reply.length > 0) setReply([])
   }
 
   return (
     <div className="composer">
       <ConnectionStatus />
       <NeedsYou />
-      {reply !== undefined ? (
-        <div className="reply-chip" data-testid="reply-chip">
+      {reply.map((draft, index) => (
+        <div
+          key={`${draft.messageId}-${draft.quote?.exact ?? ""}`}
+          className="reply-chip"
+          data-testid="reply-chip"
+        >
           <span>
-            Replying to {reply.quote === undefined ? "" : "“"}
-            {reply.preview}
-            {reply.quote === undefined ? "" : "”"}
+            {index === 0 ? "Replying to " : "and "}
+            {draft.quote === undefined ? "" : "“"}
+            {draft.preview}
+            {draft.quote === undefined ? "" : "”"}
           </span>
           <button
             type="button"
-            aria-label="Cancel reply"
+            aria-label="Remove this quote"
             data-testid="reply-cancel"
-            onClick={() => setReply(undefined)}
+            onClick={() => setReply((drafts) => drafts.filter((d) => d !== draft))}
           >
             ×
           </button>
         </div>
-      ) : null}
+      ))}
       {suggestions.length > 0 ? (
         <MentionMenu
           options={suggestions}

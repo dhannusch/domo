@@ -3,7 +3,7 @@ import { useAtomSet, useAtomValue } from "@effect/atom-react"
 import { AsyncResult } from "effect/reactivity"
 import { useState } from "react"
 import { notQuiteAtom, sourceMessagesAtom } from "./atoms.ts"
-import { previewOf, replyAtom } from "./reply.ts"
+import { addReply, previewOf, replyAtom } from "./reply.ts"
 
 function Sources({ source }: { source: SourceTag }) {
   const result = useAtomValue(sourceMessagesAtom(source.messageIds.join(",")))
@@ -50,7 +50,9 @@ export function SourceTagView({ message, source }: { message: Message; source: S
         data-testid="not-quite"
         onClick={() => {
           notQuite({ payload: { messageId: message.id } })
-          setReply({ messageId: message.id, preview: "what did I get wrong?" })
+          setReply((drafts) =>
+            addReply(drafts, { messageId: message.id, preview: "what did I get wrong?" }),
+          )
           document.querySelector<HTMLTextAreaElement>("[data-testid=composer-input]")?.focus()
         }}
       >

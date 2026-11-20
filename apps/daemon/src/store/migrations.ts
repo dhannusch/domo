@@ -130,4 +130,10 @@ export const migrations = {
     const sql = yield* SqlClient.SqlClient
     yield* sql`ALTER TABLE topics ADD COLUMN model_pinned INTEGER NOT NULL DEFAULT 0`
   }),
+  "0010_topic_folders": Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    yield* sql`ALTER TABLE topics ADD COLUMN folder TEXT`
+    // Each topic's notes.md, searchable by recall (the files are the source of truth).
+    yield* sql`CREATE VIRTUAL TABLE notes_fts USING fts5(topic_id UNINDEXED, body)`
+  }),
 }

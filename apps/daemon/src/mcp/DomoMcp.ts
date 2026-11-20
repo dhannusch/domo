@@ -9,6 +9,7 @@ import {
   GoalId,
   GoalStatus,
   Message,
+  QuestionsInput,
   RunId,
   TaskId,
   type UiComponent,
@@ -74,6 +75,18 @@ const RenderChoice = Tool.make("render_choice", {
     "After calling this, end your reply and wait for their answer. " +
     RULES,
   parameters: ChoiceInput,
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
+const RenderQuestions = Tool.make("render_questions", {
+  description:
+    "Ask 2–4 short open questions at once; the user answers each in its own box and sends them " +
+    "together, and any can be left blank. Use it only when the questions are quick and related; " +
+    "for one question, or one with likely answers, ask in prose or use render_choice. Don't also " +
+    "number the questions in your text. After calling this, end your reply and wait for the answers. " +
+    RULES,
+  parameters: QuestionsInput,
   success: Schema.String,
   dependencies: [CurrentRun],
 })
@@ -297,6 +310,7 @@ const ReadSkill = Tool.make("read_skill", {
 
 export const DomoTools = Toolkit.make(
   RenderChoice,
+  RenderQuestions,
   RenderComparison,
   RenderChecklist,
   RenderVisual,
@@ -342,7 +356,11 @@ const DomoToolHandlers = DomoTools.toLayer(
     const goals = yield* GoalStore
     const memory = yield* Memory
 
-    /** Puts the component on the reply being written; a second call replaces it (one per message). */
+    /**
+     * Puts the component on the reply being written; a second call replaces it (one per message).
+     * A component that was already answered is replaced by a fresh one, so its answer doesn't
+     * carry over to a different question.
+     */
     const attach = Effect.fnUntraced(function* (
       build: (id: ComponentId) => UiComponent,
       done: string,
@@ -352,9 +370,10 @@ const DomoToolHandlers = DomoTools.toLayer(
       if (Option.isNone(run)) return "This conversation turn has already ended; nothing was shown."
       const message = yield* store.getMessage(run.value.messageId)
       if (Option.isNone(message)) return "Nothing was shown."
-      const previous = message.value.component
+      const { resolution: answered, ...current } = message.value
+      const previous = answered === undefined ? current.component : undefined
       const id = previous?._tag !== undefined ? previous.id : ComponentId.make(randomUUID())
-      const updated = new Message({ ...message.value, component: build(id) })
+      const updated = new Message({ ...current, component: build(id) })
       yield* store.updateMessage(updated)
       yield* bus.publish({ _tag: "MessageUpdated", message: updated })
       return done
@@ -373,6 +392,11 @@ const DomoToolHandlers = DomoTools.toLayer(
               : {}),
           }),
           "Shown. End your reply now and wait for the user's answer.",
+        ),
+      render_questions: (input) =>
+        attach(
+          (id) => ({ _tag: "Questions", id, ...input }),
+          "Shown. End your reply now and wait for the user's answers.",
         ),
       render_comparison: (input) =>
         attach((id) => ({ _tag: "Comparison", id, ...input }), "Shown."),

@@ -1,7 +1,7 @@
 import { MessageId } from "@domo/domain"
 import { useAtomSet } from "@effect/atom-react"
 import { useEffect, useState } from "react"
-import { previewOf, quoteFromSelection, replyAtom } from "./reply.ts"
+import { addReply, previewOf, quoteFromSelection, replyAtom } from "./reply.ts"
 
 interface Pending {
   readonly messageId: MessageId
@@ -57,7 +57,13 @@ export function SelectionReply() {
       onClick={() => {
         const quote = quoteFromSelection(pending.container, pending.range)
         if (quote === undefined) return
-        setReply({ messageId: pending.messageId, quote, preview: previewOf(quote.exact) })
+        setReply((drafts) =>
+          addReply(drafts, {
+            messageId: pending.messageId,
+            quote,
+            preview: previewOf(quote.exact),
+          }),
+        )
         document.getSelection()?.removeAllRanges()
         setPending(undefined)
         document.querySelector<HTMLTextAreaElement>("[data-testid=composer-input]")?.focus()

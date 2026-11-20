@@ -84,7 +84,7 @@ export const needsYou = (view: ChatView) => {
     const message = view.messages.get(id)
     if (message === undefined) continue
     if (
-      message.component?._tag === "Choice" &&
+      (message.component?._tag === "Choice" || message.component?._tag === "Questions") &&
       message.resolution === undefined &&
       message.status === "done"
     ) {

@@ -1,17 +1,29 @@
-import type { Message } from "@domo/domain"
+import { type Message, replyTargets } from "@domo/domain"
 import { useAtomSet } from "@effect/atom-react"
 import { useState } from "react"
-import Markdown from "react-markdown"
+import Markdown, { type Components } from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { trackAtom } from "./atoms.ts"
 import { ChecklistView } from "./components/ChecklistView.tsx"
 import { ChoiceView } from "./components/ChoiceView.tsx"
 import { ComparisonView } from "./components/ComparisonView.tsx"
+import { QuestionsView } from "./components/QuestionsView.tsx"
 import { VisualView } from "./components/VisualView.tsx"
 import { WorkReceiptView } from "./components/WorkReceiptView.tsx"
 import { leadOf, shouldFold } from "./fold.ts"
 import { modelLabel } from "./modelLabel.ts"
-import { previewOf, replyAtom } from "./reply.ts"
+import { addReply, previewOf, replyAtom } from "./reply.ts"
 import { SourceTagView } from "./SourceTagView.tsx"
+
+/** Tables, strikethrough and task lists, as the models write them. */
+const GFM = [remarkGfm]
+const PROSE: Components = {
+  table: ({ node: _node, ...props }) => (
+    <div className="table-wrap">
+      <table {...props} />
+    </div>
+  ),
+}
 
 interface Props {
   readonly message: Message
@@ -27,6 +39,8 @@ function ComponentView({ message }: { message: Message }) {
   switch (component?._tag) {
     case "Choice":
       return <ChoiceView message={message} choice={component} />
+    case "Questions":
+      return <QuestionsView message={message} questions={component} />
     case "Comparison":
       return <ComparisonView comparison={component} />
     case "Checklist":
@@ -59,7 +73,9 @@ function ReplyButton({ message }: { message: Message }) {
       className="quiet-action"
       data-testid="reply"
       onClick={() => {
-        setReply({ messageId: message.id, preview: previewOf(message.text) })
+        setReply((drafts) =>
+          addReply(drafts, { messageId: message.id, preview: previewOf(message.text) }),
+        )
         document.querySelector<HTMLTextAreaElement>("[data-testid=composer-input]")?.focus()
       }}
     >
@@ -69,7 +85,10 @@ function ReplyButton({ message }: { message: Message }) {
 }
 
 function UserMessage({ message }: { message: Message }) {
-  const quote = message.replyTo?.quote?.exact
+  const quotes =
+    message.replyTo === undefined
+      ? []
+      : replyTargets(message.replyTo).flatMap((t) => (t.quote === undefined ? [] : [t.quote.exact]))
   return (
     <div
       className="user-message"
@@ -78,11 +97,11 @@ function UserMessage({ message }: { message: Message }) {
       data-row-id={message.id}
       data-concept="message"
     >
-      {quote !== undefined ? (
-        <p className="quote" data-testid="message-quote">
+      {quotes.map((quote) => (
+        <p key={quote} className="quote" data-testid="message-quote">
           “{previewOf(quote, 160)}”
         </p>
-      ) : null}
+      ))}
       <p className="user-text">{message.text}</p>
     </div>
   )
@@ -109,7 +128,11 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
         data-message-id={message.id}
         className={`prose${streaming ? " caret" : ""}${message.status === "failed" ? " failed" : ""}`}
       >
-        {text.length > 0 ? <Markdown>{text}</Markdown> : null}
+        {text.length > 0 ? (
+          <Markdown remarkPlugins={GFM} components={PROSE}>
+            {text}
+          </Markdown>
+        ) : null}
       </div>
       {streaming && message.work?.status === "running" ? (
         <p className="work-progress" data-testid="task-running">

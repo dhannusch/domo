@@ -46,6 +46,7 @@ const TopicRow = Schema.Struct({
   model_pinned: Schema.Number,
   provider_session_id: Schema.NullOr(Schema.String),
   project: Schema.NullOr(Schema.String),
+  folder: Schema.NullOr(Schema.String),
   last_activity_at: Schema.String,
 })
 
@@ -96,6 +97,7 @@ const rowToTopic = Effect.fnUntraced(function* (raw: unknown) {
     ...present("nextStep", row.next_step),
     ...present("providerSessionId", row.provider_session_id),
     ...present("project", row.project),
+    ...present("folder", row.folder),
   })
 })
 
@@ -135,6 +137,10 @@ export class ChatStore extends Context.Service<
     /** The topic the conversation is currently in, if any. */
     readonly currentTopic: Effect.Effect<Option.Option<Topic>>
     upsertTopic(topic: Topic): Effect.Effect<void>
+    /** Replaces the searchable copy of a topic's notes.md. */
+    indexNotes(topicId: TopicId, body: string): Effect.Effect<void>
+    /** Topics whose notes match an FTS query, best first. */
+    searchNotes(query: string, limit: number): Effect.Effect<ReadonlyArray<TopicId>>
     topicMessages(id: TopicId, limit: number): Effect.Effect<ReadonlyArray<Message>>
     getMessage(id: MessageId): Effect.Effect<Option.Option<Message>>
     getTopic(id: TopicId): Effect.Effect<Option.Option<Topic>>
@@ -250,7 +256,7 @@ export class ChatStore extends Context.Service<
       }>`
         SELECT t.id, t.status, t.last_activity_at,
           COALESCE(MAX(m.seq), 0) AS last_seq,
-          SUM(CASE WHEN m.component LIKE '%"_tag":"Choice"%' AND m.resolution IS NULL THEN 1 ELSE 0 END) AS open_choices
+          SUM(CASE WHEN (m.component LIKE '%"_tag":"Choice"%' OR m.component LIKE '%"_tag":"Questions"%') AND m.resolution IS NULL THEN 1 ELSE 0 END) AS open_choices
         FROM topics t LEFT JOIN messages m ON m.topic_id = t.id
         WHERE t.folded = 0
         GROUP BY t.id
@@ -268,7 +274,7 @@ export class ChatStore extends Context.Service<
       )
 
       const openChoiceCount = sql<{ n: number }>`
-        SELECT COUNT(*) AS n FROM messages WHERE component LIKE '%"_tag":"Choice"%' AND resolution IS NULL AND status = 'done'
+        SELECT COUNT(*) AS n FROM messages WHERE (component LIKE '%"_tag":"Choice"%' OR component LIKE '%"_tag":"Questions"%') AND resolution IS NULL AND status = 'done'
       `.pipe(
         Effect.map((rows) => rows[0]?.n ?? 0),
         Effect.orDie,
@@ -305,22 +311,39 @@ export class ChatStore extends Context.Service<
         const model = new ModelRef(topic.model).key
         yield* sql`
           INSERT INTO topics (id, title, status, stakes, decision, next_step, summary, source_message_ids,
-            folded, model, model_pinned, provider_session_id, project, last_activity_at)
+            folded, model, model_pinned, provider_session_id, project, folder, last_activity_at)
           VALUES (${e.id}, ${e.title}, ${e.status}, ${e.stakes}, ${e.decision ?? null}, ${e.nextStep ?? null},
             ${e.summary}, ${JSON.stringify(e.sourceMessageIds)}, ${topic.folded ? 1 : 0}, ${model}, ${topic.modelPinned === true ? 1 : 0},
-            ${e.providerSessionId ?? null}, ${e.project ?? null}, ${e.lastActivityAt})
+            ${e.providerSessionId ?? null}, ${e.project ?? null}, ${e.folder ?? null}, ${e.lastActivityAt})
           ON CONFLICT (id) DO UPDATE SET
             title = excluded.title, status = excluded.status, stakes = excluded.stakes,
             decision = excluded.decision, next_step = excluded.next_step, summary = excluded.summary,
             source_message_ids = excluded.source_message_ids, folded = excluded.folded,
             model = excluded.model, model_pinned = excluded.model_pinned, provider_session_id = excluded.provider_session_id,
-            project = excluded.project, last_activity_at = excluded.last_activity_at
+            project = excluded.project, folder = COALESCE(excluded.folder, topics.folder), last_activity_at = excluded.last_activity_at
         `
         // Keep episodic recall in step with the topic's latest summary.
         yield* sql`DELETE FROM topic_fts WHERE topic_id = ${e.id}`
         yield* sql`INSERT INTO topic_fts (topic_id, title, summary, decision)
           VALUES (${e.id}, ${e.title}, ${e.summary}, ${e.decision ?? ""})`
       }, Effect.orDie)
+
+      const indexNotes = Effect.fn("ChatStore.indexNotes")(function* (
+        topicId: TopicId,
+        body: string,
+      ) {
+        yield* sql`DELETE FROM notes_fts WHERE topic_id = ${topicId}`
+        if (body.trim().length > 0)
+          yield* sql`INSERT INTO notes_fts (topic_id, body) VALUES (${topicId}, ${body})`
+      }, Effect.orDie)
+
+      const searchNotes = (query: string, limit: number) =>
+        sql<{ topic_id: string }>`
+          SELECT topic_id FROM notes_fts WHERE notes_fts MATCH ${query} ORDER BY bm25(notes_fts) LIMIT ${limit}
+        `.pipe(
+          Effect.map((rows) => rows.map((row) => TopicId.make(row.topic_id))),
+          Effect.orElseSucceed(() => []),
+        )
 
       const firstOrNone =
         <A>(decode: (row: unknown) => Effect.Effect<A, unknown>) =>
@@ -444,6 +467,8 @@ export class ChatStore extends Context.Service<
         recentMessages,
         currentTopic,
         upsertTopic,
+        indexNotes,
+        searchNotes,
         topicMessages,
         getMessage,
         getTopic,

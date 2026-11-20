@@ -10,11 +10,26 @@ export const TextQuote = Schema.Struct({
 })
 export type TextQuote = typeof TextQuote.Type
 
-export const ReplyTo = Schema.Struct({
+/** One message, or one fragment of it, that a reply points at. */
+export const ReplyTarget = Schema.Struct({
   messageId: MessageId,
   quote: Schema.optionalKey(TextQuote),
 })
+export type ReplyTarget = typeof ReplyTarget.Type
+
+/** The first target places the reply (its topic); `also` holds any further quotes. */
+export const ReplyTo = Schema.Struct({
+  messageId: MessageId,
+  quote: Schema.optionalKey(TextQuote),
+  also: Schema.optionalKey(Schema.Array(ReplyTarget)),
+})
 export type ReplyTo = typeof ReplyTo.Type
+
+/** Every target of a reply, in the order they were picked. */
+export const replyTargets = (replyTo: ReplyTo): ReadonlyArray<ReplyTarget> => [
+  replyTo,
+  ...(replyTo.also ?? []),
+]
 
 /** A source tag ("Nov 4 · view") pointing back at the original messages. */
 export const SourceTag = Schema.Struct({

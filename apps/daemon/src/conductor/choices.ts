@@ -23,9 +23,13 @@ export const makeChoices = ({ store, bus, telemetry, tidier }: Deps) => {
     freeText: boolean,
   ) {
     const choice = message.component
-    if (choice?._tag !== "Choice" || message.resolution !== undefined) return false
+    const answerable = choice?._tag === "Choice" || (choice?._tag === "Questions" && freeText)
+    if (choice === undefined || !answerable || message.resolution !== undefined) return false
     const now = yield* DateTime.now
-    const label = freeText ? value : (choice.options.find((o) => o.value === value)?.label ?? value)
+    const label =
+      freeText || choice._tag !== "Choice"
+        ? value
+        : (choice.options.find((o) => o.value === value)?.label ?? value)
     const updated = new Message({ ...message, resolution: { value, label, freeText, at: now } })
     yield* store.updateMessage(updated)
     yield* bus.publish({ _tag: "MessageUpdated", message: updated })

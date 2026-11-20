@@ -74,7 +74,8 @@ export function ChoiceView({ message, choice }: { message: Message; choice: Choi
         className="quiet-action"
         data-testid="choice-other"
         onClick={() => {
-          setReply({ messageId: message.id, preview: choice.question })
+          // An answer to this question, so it replaces any quotes picked so far.
+          setReply([{ messageId: message.id, preview: choice.question }])
           document.querySelector<HTMLTextAreaElement>("[data-testid=composer-input]")?.focus()
         }}
       >

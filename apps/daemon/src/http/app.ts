@@ -44,7 +44,7 @@ const SeedHome = Layer.effectDiscard(
   Effect.gen(function* () {
     const created = yield* initHome()
     if (created.length === 0) return
-    yield* (yield* HomeGit).commit(`chore: add ${created.join(", ")}`)
+    yield* (yield* HomeGit).commit(`chore: seed ${created.join(", ")}`)
     yield* Effect.logInfo(`added to the agent home: ${created.join(", ")}`)
   }).pipe(Effect.catch((error) => Effect.logWarning("couldn't seed the agent home", error))),
 )

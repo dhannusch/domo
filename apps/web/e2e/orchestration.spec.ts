@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./fixtures.ts"
 
 const newestReply = async (page: Page, directive: string) => {
   const replies = page.getByTestId("message-agent").filter({ hasText: directive })

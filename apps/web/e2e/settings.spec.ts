@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./fixtures.ts"
 
 test("the date opens settings, a change sticks, and Done closes it", async ({ page }) => {
   await page.goto("/")
@@ -46,7 +46,7 @@ test("the default model can be changed from settings", async ({ page }) => {
   await expect(page.getByTestId("setting-model-opus")).toHaveAttribute("aria-pressed", "true")
   await page.getByTestId("setting-model-sonnet").click()
   await expect(page.getByTestId("setting-model-sonnet")).toHaveAttribute("aria-pressed", "true")
-  // Put it back: the desktop and phone runs share one daemon.
+  // Put it back: later tests on this worker share its daemon.
   await page.getByTestId("setting-model-opus").click()
   await expect(page.getByTestId("setting-model-opus")).toHaveAttribute("aria-pressed", "true")
   await expect(page.getByTestId("setting-background-haiku")).toHaveAttribute("aria-pressed", "true")

@@ -49,28 +49,32 @@ const options = (repo: string, steps: ReadonlyArray<Step>, checkOnly = false) =>
 })
 
 describe("domo update", () => {
-  it.live("reports, applies, and rolls back a failed build", () =>
-    Effect.gen(function* () {
-      const { host, ship } = setup()
-      expect((yield* update(options(host, [ok])))._tag).toBe("UpToDate")
+  it.live(
+    "reports, applies, and rolls back a failed build",
+    () =>
+      Effect.gen(function* () {
+        const { host, ship } = setup()
+        expect((yield* update(options(host, [ok])))._tag).toBe("UpToDate")
 
-      ship("b.txt", "feat: settings sheet")
-      const waiting = yield* update(options(host, [ok], true))
-      expect(waiting).toEqual({ _tag: "Available", changes: ["feat: settings sheet"] })
-      expect(existsSync(join(host, "b.txt"))).toBe(false)
+        ship("b.txt", "feat: settings sheet")
+        const waiting = yield* update(options(host, [ok], true))
+        expect(waiting).toEqual({ _tag: "Available", changes: ["feat: settings sheet"] })
+        expect(existsSync(join(host, "b.txt"))).toBe(false)
 
-      const done = yield* update(options(host, [ok]))
-      expect(done._tag).toBe("Updated")
-      expect(existsSync(join(host, "b.txt"))).toBe(true)
+        const done = yield* update(options(host, [ok]))
+        expect(done._tag).toBe("Updated")
+        expect(existsSync(join(host, "b.txt"))).toBe(true)
 
-      ship("c.txt", "feat: broken build")
-      const before = git(host, "rev-parse", "HEAD")
-      const failed = yield* Effect.flip(update(options(host, [broken])))
-      expect(failed.step).toBe("build")
-      expect(failed.detail).toContain("Rolled back")
-      expect(git(host, "rev-parse", "HEAD")).toBe(before)
-      expect(existsSync(join(host, "c.txt"))).toBe(false)
-    }).pipe(Effect.provide(NodeServices.layer)),
+        ship("c.txt", "feat: broken build")
+        const before = git(host, "rev-parse", "HEAD")
+        const failed = yield* Effect.flip(update(options(host, [broken])))
+        expect(failed.step).toBe("build")
+        expect(failed.detail).toContain("Rolled back")
+        expect(git(host, "rev-parse", "HEAD")).toBe(before)
+        expect(existsSync(join(host, "c.txt"))).toBe(false)
+      }).pipe(Effect.provide(NodeServices.layer)),
+    // Real git clones and several builds: slow when the whole suite runs at once.
+    15_000,
   )
 
   it.live("refuses to touch local edits", () =>

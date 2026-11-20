@@ -4,6 +4,7 @@ import { Clock, Context, DateTime, Effect, FileSystem, Layer, Option } from "eff
 import { SqlClient } from "effect/sql"
 import { ChatStore } from "../chat/ChatStore.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
+import { folderPath, readNotes } from "../topics/folders.ts"
 import { HomeGit } from "./HomeGit.ts"
 import {
   ftsQuery,
@@ -193,6 +194,21 @@ export class Memory extends Context.Service<
             ]
               .filter((part) => part.length > 0)
               .join(" "),
+            when: DateTime.formatIso(topic.value.lastActivityAt).slice(0, 10),
+            sourceMessageIds: topic.value.sourceMessageIds,
+          })
+        }
+        // A topic's own notes.md: the plan and decisions kept for that subject.
+        for (const topicId of yield* store.searchNotes(query, limit)) {
+          if (topicHits.some((hit) => hit.ref === topicId)) continue
+          const topic = yield* store.getTopic(topicId)
+          if (Option.isNone(topic) || topic.value.folder === undefined) continue
+          const notes = yield* readNotes(fs, home, topic.value.folder)
+          topicHits.push({
+            kind: "topic",
+            ref: topic.value.id,
+            title: `${topic.value.title} (notes)`,
+            text: `${folderPath(home, topic.value.folder)}/notes.md:\n${notes.slice(0, 1500)}`,
             when: DateTime.formatIso(topic.value.lastActivityAt).slice(0, 10),
             sourceMessageIds: topic.value.sourceMessageIds,
           })

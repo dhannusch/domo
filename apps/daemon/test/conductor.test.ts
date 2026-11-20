@@ -17,7 +17,7 @@ import { Presence } from "../src/presence/Presence.ts"
 import { Tidier } from "../src/presence/Tidier.ts"
 import { layerEcho } from "../src/providers/EchoProvider.ts"
 import { layerScripted } from "../src/providers/FakeProvider.ts"
-import type { Providers } from "../src/providers/Providers.ts"
+import { Providers, type RunRequest } from "../src/providers/Providers.ts"
 import { Settings } from "../src/settings/Settings.ts"
 import { DatabaseTest } from "../src/store/Database.ts"
 import { Telemetry } from "../src/telemetry/Telemetry.ts"
@@ -63,7 +63,35 @@ const sendAndWait = (text: string, replyTo?: MessageId) =>
     return { userId: messageId, reply }
   })
 
+/** The echo provider, keeping every request it was sent. */
+const recordingEcho = (requests: Array<RunRequest>) =>
+  Layer.effect(
+    Providers,
+    Effect.gen(function* () {
+      const echo = yield* Providers
+      return Providers.of({
+        ...echo,
+        run: (request) => {
+          requests.push(request)
+          return echo.run(request)
+        },
+      })
+    }),
+  ).pipe(Layer.provide(layerEcho))
+
 describe("Conductor", () => {
+  it.live("a topic runs in its own folder, with its notes in context", () => {
+    const requests: Array<RunRequest> = []
+    return Effect.gen(function* () {
+      const { reply } = yield* sendAndWait("let's plan the newsletter")
+      const topic = Option.getOrThrow(yield* (yield* ChatStore).getTopic(reply.topicId))
+      const user = requests.find((r) => r.mode !== "utility")
+      expect(topic.folder).toBeDefined()
+      expect(user?.cwd).toMatch(new RegExp(`/topics/${topic.folder}$`))
+      expect(user?.systemPrompt).toContain("notes.md now:")
+    }).pipe(Effect.provide(makeLayer(recordingEcho(requests))))
+  })
+
   it.live("unpinned topics follow the default model; @alias pins a topic to its model", () =>
     Effect.gen(function* () {
       const settings = yield* Settings

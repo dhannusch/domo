@@ -3,7 +3,9 @@ import {
   Message,
   MessageId,
   type ModelRef,
+  type ReplyTarget,
   type ReplyTo,
+  replyTargets,
   SendFailed,
   Topic,
   TopicId,
@@ -19,6 +21,7 @@ import { Tidier } from "../presence/Tidier.ts"
 import { Providers } from "../providers/Providers.ts"
 import { Settings } from "../settings/Settings.ts"
 import { Telemetry } from "../telemetry/Telemetry.ts"
+import { ensureFolder, folderContext, folderPath, readNotes } from "../topics/folders.ts"
 import { makeChoices } from "./choices.ts"
 import { Filer } from "./Filer.ts"
 import { isConfirmation, makeFiling } from "./filing.ts"
@@ -170,6 +173,19 @@ export class Conductor extends Context.Service<
 
       const { applyFiling, settleConfirmation } = makeFiling({ store, bus, newId, newTopic })
 
+      /**
+       * Gives the topic its folder the first time it runs. A provider session started elsewhere
+       * can't resume in the new working directory, so it starts afresh, seeded with recent messages.
+       */
+      const withFolder = Effect.fnUntraced(function* (topic: Topic) {
+        if (topic.folder !== undefined) return yield* ensureFolder(fs, config.home, topic)
+        const placed = yield* ensureFolder(fs, config.home, topic)
+        const { providerSessionId: _elsewhere, ...rest } = placed
+        const moved = topic.project === undefined ? new Topic(rest) : placed
+        yield* store.upsertTopic(moved)
+        return moved
+      })
+
       const runAgent = Effect.fnUntraced(function* (
         resolved: Topic,
         userMessage: Message,
@@ -178,10 +194,13 @@ export class Conductor extends Context.Service<
       ) {
         // Re-read inside the permit: an earlier run may have saved the provider session since.
         const stored = yield* store.getTopic(resolved.id)
-        const topic =
+        const current =
           Option.isSome(stored) && stored.value.model.key === resolved.model.key
             ? stored.value
             : resolved
+        const topic = yield* withFolder(current)
+        const folder = folderPath(config.home, topic.folder ?? "")
+        const notes = yield* readNotes(fs, config.home, topic.folder ?? "")
         const unseen = yield* store.unseenMessages(
           topic.id,
           topic.providerSessionId,
@@ -200,8 +219,12 @@ export class Conductor extends Context.Service<
           onSession: (sessionId) =>
             store.upsertTopic(new Topic({ ...topic, providerSessionId: sessionId })),
           ...(topic.providerSessionId === undefined ? {} : { sessionId: topic.providerSessionId }),
-          ...(topic.project === undefined ? {} : { cwd: topic.project }),
+          cwd: topic.project ?? folder,
+          ...(topic.project === undefined ? {} : { project: topic.project }),
+          context: folderContext(folder, notes, topic.project === undefined),
         })
+        // Whatever the run wrote to notes.md becomes searchable.
+        yield* store.indexNotes(topic.id, yield* readNotes(fs, config.home, topic.folder ?? ""))
         const failed = Option.isSome(outcome.failure)
 
         if (failed || outcome.sessionId === undefined) return Option.none()
@@ -233,13 +256,21 @@ export class Conductor extends Context.Service<
       })
 
       /** The highlighted fragment, or the start of the replied-to message. */
-      const quoteFor = Effect.fnUntraced(function* (replyTo: ReplyTo | undefined) {
-        if (replyTo === undefined) return undefined
-        if (replyTo.quote !== undefined) return replyTo.quote.exact
-        const replied = yield* store.getMessage(replyTo.messageId)
+      const quoteOf = Effect.fnUntraced(function* (target: ReplyTarget) {
+        if (target.quote !== undefined) return target.quote.exact
+        const replied = yield* store.getMessage(target.messageId)
         if (Option.isNone(replied)) return undefined
         const text = replied.value.text
         return text.length <= 400 ? text : `${text.slice(0, 400)}…`
+      })
+
+      /** Every quote the user picked, as markdown blockquotes in the order they were picked. */
+      const quoteFor = Effect.fnUntraced(function* (replyTo: ReplyTo | undefined) {
+        if (replyTo === undefined) return undefined
+        const quotes = yield* Effect.forEach(replyTargets(replyTo), quoteOf)
+        const found = quotes.filter((q) => q !== undefined)
+        if (found.length === 0) return undefined
+        return found.map((q) => q.replace(/^/gm, "> ")).join("\n\n")
       })
 
       const { resolveChoice, check, undoAnswer, notQuite } = makeChoices({
@@ -330,7 +361,7 @@ export class Conductor extends Context.Service<
         yield* bus.publish({ _tag: "MessageAdded", message: agentMessage })
 
         const quoted = yield* quoteFor(input.replyTo)
-        const asked = quoted === undefined ? mention.text : `> ${quoted}\n\n${mention.text}`
+        const asked = quoted === undefined ? mention.text : `${quoted}\n\n${mention.text}`
         const prompt = Option.isSome(pickUp) ? `${pickUpNote(pickUp.value)}\n\n${asked}` : asked
         yield* FiberSet.run(
           background,

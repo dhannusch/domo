@@ -8,9 +8,9 @@ Each item can be checked by a machine through Playwright DOM assertions, telemet
 | UX-02 | No layout shift while the user is active | Playwright: CLS = 0 during scripted active session; no fold events while `active` |
 | UX-03 | At most one component per agent message | DOM |
 | UX-04 | The answer leads: the first sentence answers the question | Vision/text judge, pairwise |
-| UX-05 | Density caps hold: Choice ≤ 4 options, Comparison ≤ 4×4, no nested scroll or tabs | Schema + DOM |
+| UX-05 | Density caps hold: Choice ≤ 4 options, Questions ≤ 4 questions, Comparison ≤ 4×4, no nested scroll or tabs | Schema + DOM |
 | UX-06 | Every restatement or recall carries a source tag that opens its sources | DOM: `[data-testid=source-tag]` present and resolvable |
-| UX-07 | The needs-you marker is shown only when its count is above zero, and lists every unanswered Choice | DOM + store |
+| UX-07 | The needs-you marker is shown only when its count is above zero, and lists every unanswered Choice and Questions card | DOM + store |
 | UX-08 | Folding happens only for topics that are resolved, read past, and not the last one touched | Store invariant test |
 | UX-09 | Every action works without hover at 375px width | Playwright mobile project |
 | UX-10 | Every component degrades to readable plain text | Render with components disabled, then judge |

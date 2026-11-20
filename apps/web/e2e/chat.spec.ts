@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./fixtures.ts"
 
 const send = async (page: Page, text: string) => {
   await page.getByTestId("composer-input").fill(text)
@@ -26,6 +26,32 @@ test("sends a message and streams the reply into place", async ({ page }, info) 
   expect(userBox?.y ?? 0).toBeLessThan(replyBox?.y ?? 0)
 })
 
+test("renders markdown tables as tables", async ({ page }, info) => {
+  await send(page, `[[table]] quotes ${info.project.name}`)
+  const reply = agentReply(page, "Here are the quotes").last()
+  await expect(reply.locator("table th").first()).toHaveText("Builder")
+  await expect(reply.locator("table td").first()).toHaveText("Hale & Co.")
+  // The table scrolls inside the message; the page itself never scrolls sideways.
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true,
+  )
+})
+
+test("opens at the newest message", async ({ page }, info) => {
+  for (const n of [1, 2, 3]) await send(page, `[[long]] filler ${n} ${info.project.name}`)
+  await expect(page.getByTestId("message-agent").last()).toHaveAttribute("data-status", "done")
+  await page.reload()
+  const last = page.getByTestId("message-agent").last()
+  await expect(last).toBeInViewport()
+  await expect
+    .poll(() =>
+      page.evaluate(
+        () => window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4,
+      ),
+    )
+    .toBe(true)
+})
+
 test("shows a quiet hint when the filer moves an exchange to another topic", async ({
   page,
 }, info) => {
@@ -44,7 +70,7 @@ test("reply-to: the Reply action shows a chip and the sent message keeps it", as
   await expect(reply).toHaveAttribute("data-status", "done")
   await reply.getByTestId("reply").click()
   await expect(page.getByTestId("reply-chip")).toContainText("Replying to")
-  // Unique per project: the desktop and phone runs share one daemon.
+  // Unique text: later tests on this worker share its daemon.
   await send(page, `following up ${info.project.name}`)
   await expect(page.getByTestId("reply-chip")).toHaveCount(0)
   await expect(agentReply(page, `Echo: following up ${info.project.name}`)).toBeVisible()
@@ -65,8 +91,46 @@ test("reply with quote: selecting text anchors the reply to the fragment", async
   await expect(page.getByTestId("message-quote").last()).toContainText("quotable")
 })
 
+test("reply with several quotes: each highlight adds one, and all are sent", async ({
+  page,
+}, info) => {
+  test.skip(info.project.name === "phone", "Text selection is driven by mouse in this test")
+  const first = `alpha fragment ${info.project.name}`
+  const second = `beta fragment ${info.project.name}`
+  await send(page, first)
+  await expect(agentReply(page, `Echo: ${first}`)).toHaveAttribute("data-status", "done")
+  await send(page, second)
+  await expect(agentReply(page, `Echo: ${second}`)).toHaveAttribute("data-status", "done")
+  for (const words of ["alpha fragment", "beta fragment"]) {
+    await agentReply(page, words)
+      .last()
+      .locator("[data-message-id]")
+      .getByText(words, { exact: false })
+      .selectText()
+    await page.getByTestId("reply-with-quote").click()
+  }
+  const chips = page.getByTestId("reply-chip")
+  await expect(chips).toHaveCount(2)
+  await expect(chips.nth(1)).toContainText("and “")
+  // Each quote can be dropped on its own.
+  await chips.nth(0).getByTestId("reply-cancel").click()
+  await expect(chips).toHaveCount(1)
+  await agentReply(page, "alpha fragment")
+    .last()
+    .locator("[data-message-id]")
+    .getByText("alpha fragment", { exact: false })
+    .selectText()
+  await page.getByTestId("reply-with-quote").click()
+  await send(page, `both of these ${info.project.name}`)
+  const sent = page
+    .getByTestId("message-user")
+    .filter({ hasText: `both of these ${info.project.name}` })
+  await expect(sent.getByTestId("message-quote")).toHaveCount(2)
+  await expect(chips).toHaveCount(0)
+})
+
 test("long unrequested answers lead with the answer and fold the rest", async ({ page }) => {
-  // Both projects share one daemon: wait for this test's answer, not an earlier one from history.
+  // A worker's tests share its daemon: wait for this test's answer, not an earlier one from history.
   const answers = agentReply(page, "Short answer: yes")
   const before = await answers.count()
   await send(page, "should we hire them? [[long]]")

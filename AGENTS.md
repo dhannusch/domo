@@ -7,7 +7,7 @@
 - **One chat.** No thread lists, tabs, sidebars or panels. The user learns four things: messages, reply-to, "needs you", "view". Anything else is the agent's job.
 - **The page never moves while the user is present.** Tidying happens only while they are away. Nothing is ever deleted.
 - **Checkable memory.** Every agent restatement carries a source tag that opens the original messages.
-- **Prose first.** Intelligent UI uses exactly five components: Choice, Comparison, Checklist, Visual, WorkReceipt. Don't add another without changing `evals/rubric/` and asking the user.
+- **Prose first.** Intelligent UI uses exactly six components: Choice, Questions, Comparison, Checklist, Visual, WorkReceipt. Don't add another without changing `evals/rubric/` and asking the user.
 - **High autonomy, hard guardrails.** The guarded actions in `constitution.md` always go through `ask_user`.
 
 ## Repository layout
@@ -56,6 +56,7 @@ The compiler runs with `strict`, `exactOptionalPropertyTypes`, `noUncheckedIndex
 The Lab improves domo without a human watching, so every change must be testable by a machine.
 
 - **Coverage:** every feature ships with a test. Daemon logic gets a `@effect/vitest` test. UI behavior gets a Playwright flow plus at least one check that maps to a UX rubric item.
+- **Browser tests run in parallel:** each Playwright worker starts its own daemon (echo provider, fresh temporary home, free port) in `apps/web/e2e/fixtures.ts`. Specs import `test` and `expect` from there, and a project sets extra daemon environment with `daemonEnv`. Tests on one worker still share its daemon, so use unique text.
 - **No live models in tests.** Use `FakeProvider`, which replays fixture JSONL, and record new fixtures with the provider recorder.
 - **Telemetry:** every user-facing behavior emits a typed `TelemetryEvent` from `packages/domain`. If friction can't be measured, the Lab can't improve it.
 - **Injectable environment:** home directory, port, clock and providers all come from `DomoConfig` or layers. Nothing may assume it is the only running instance, because shadow instances run side by side.
@@ -68,15 +69,22 @@ The Lab improves domo without a human watching, so every change must be testable
 ## DomoMcp (the agent's own tools)
 
 - `apps/daemon/src/mcp/DomoMcp.ts` is one Streamable-HTTP MCP server at `/mcp`, given to every agent run of both providers. Each run sends an `x-domo-run` header so a tool call attaches to the right reply (registered on `ChatBus`).
-- The UI tools are `render_choice`, `render_comparison`, `render_checklist` and `render_visual`. A Visual is agent-written HTML. It runs in an `<iframe sandbox="allow-scripts">` (opaque origin, so no cookies, token or storage) under a CSP with no network, sizes itself to its content, and gets Domo's theme as CSS variables. Their schemas enforce the density caps, so a call that breaks a cap fails back to the model. Work receipts are built by the Conductor from tool activity, never by the agent. Before it is shown, `visual/VisualCheck.ts` renders it in headless Chrome at 360px (light) and 640px (dark), runs layout checks (overlap, overflow, text under 11px, script errors), and has Sonnet review the screenshots. Problems go back to the model up to twice; a visual that still has layout faults is never shown, and the model explains in prose instead. The check is best effort: without Chrome, or with `DOMO_VISUAL_CHECK=off`, visuals show unchecked.
+- The UI tools are `render_choice`, `render_questions`, `render_comparison`, `render_checklist` and `render_visual`. A Questions card (2–4 short open questions) is answered through the same `Answer` RPC as a Choice: the answers go back as one free-text message from the user. A Visual is agent-written HTML. It runs in an `<iframe sandbox="allow-scripts">` (opaque origin, so no cookies, token or storage) under a CSP with no network, sizes itself to its content, and gets Domo's theme as CSS variables. Their schemas enforce the density caps, so a call that breaks a cap fails back to the model. Work receipts are built by the Conductor from tool activity, never by the agent. Before it is shown, `visual/VisualCheck.ts` renders it in headless Chrome at 360px (light) and 640px (dark), runs layout checks (overlap, overflow, text under 11px, script errors), and has Sonnet review the screenshots. Problems go back to the model up to twice; a visual that still has layout faults is never shown, and the model explains in prose instead. The check is best effort: without Chrome, or with `DOMO_VISUAL_CHECK=off`, visuals show unchecked.
 - Codex blocks MCP calls under approval policy "never" unless the server sets `default_tools_approval_mode = "approve"`. Set it only for Domo's own server. Guarded actions still go through `ask_user`.
-- The echo provider (`DOMO_PROVIDER=echo`) calls the real MCP endpoint for `[[choice]]`, `[[comparison]]`, `[[checklist]]` and `[[visual]]`, so end-to-end tests cover the whole path.
+- The echo provider (`DOMO_PROVIDER=echo`) calls the real MCP endpoint for `[[choice]]`, `[[questions]]`, `[[comparison]]`, `[[checklist]]` and `[[visual]]`, so end-to-end tests cover the whole path.
 
 ## Turns and background tasks
 
 - Every agent turn runs through `conductor/turn.ts` (`makeTurn`). It attaches Domo's MCP tools, streams the reply, checks approvals live and builds the receipt, so chat replies and background tasks behave the same. Don't add a second run path.
 - `Tasks` runs `start_task` work outside the chat's one-at-a-time queue (at most 3 at once). Each task writes into its own reply, whose receipt is "running" until it finishes. Cancelling or a crash always ends the reply.
 - At startup, replies still marked streaming (cut off by a restart) are marked as interrupted.
+
+## Topic folders
+
+- Every topic gets its own folder, `~/.domo/topics/<name>/` (`topics/folders.ts`), the first time it runs, named after its title and never renamed. It starts with `notes.md`. Without a project, the topic's runs and its background tasks work there, so files the agent writes land in the topic. A coding topic keeps its project as the working directory and is still told where its notes are.
+- Each run gets the folder path and the current `notes.md` (first 8k characters) as extra system context, and is asked to keep the notes current, quietly. Facts about the user still go to `remember`.
+- After each run `notes.md` is indexed (`notes_fts`), and `recall` searches it alongside memories and topic summaries.
+- There is no screen for topics or notes: the user asks ("show me the newsletter plan") and Domo shows the file. A topic's first run in its folder starts a fresh provider session (a session can't resume in a new directory), seeded with recent messages. Receipts name a project only for real projects, never the topic folder.
 
 ## Goals
 
@@ -112,7 +120,7 @@ The Lab improves domo without a human watching, so every change must be testable
 
 ## Seed skills
 
-- `skills/` in the repo are seeds. At every daemon start, `initHome` copies in any seed skill the home doesn't have yet and commits it, so new skills reach existing installs through `domo update`. Skills already in the home are never overwritten: they're the agent's to refine, so changes to an existing seed skill don't propagate.
+- `skills/` in the repo are seeds. At every daemon start, `initHome` copies in any seed skill the home doesn't have yet and commits it, so new skills reach existing installs through `domo update`. A skill already in the home is refreshed from its seed only while its `~/.domo` history is all `chore:` (seeding) commits; once the agent or the Lab has edited it, it's theirs and is never overwritten.
 
 ## Settings
 

@@ -1,4 +1,4 @@
-import type { MessageId, TextQuote } from "@domo/domain"
+import type { MessageId, ReplyTo, TextQuote } from "@domo/domain"
 import { Atom } from "effect/reactivity"
 
 /** What the composer is replying to; the one precision tool (UX: reply-to). */
@@ -9,7 +9,26 @@ export interface ReplyDraft {
   readonly preview: string
 }
 
-export const replyAtom = Atom.make<ReplyDraft | undefined>(undefined)
+/** Everything the next message replies to: one message, or several highlighted fragments. */
+export const replyAtom = Atom.make<ReadonlyArray<ReplyDraft>>([])
+
+const MAX_QUOTES = 6
+const sameTarget = (a: ReplyDraft, b: ReplyDraft) =>
+  a.messageId === b.messageId && a.quote?.exact === b.quote?.exact
+
+/** Adds a target to the reply (picking the same one again changes nothing). */
+export const addReply = (drafts: ReadonlyArray<ReplyDraft>, draft: ReplyDraft) =>
+  drafts.some((d) => sameTarget(d, draft)) ? drafts : [...drafts, draft].slice(-MAX_QUOTES)
+
+const target = (d: ReplyDraft) =>
+  d.quote === undefined ? { messageId: d.messageId } : { messageId: d.messageId, quote: d.quote }
+
+/** The wire shape: the first target places the reply, the rest ride along as `also`. */
+export const toReplyTo = (drafts: ReadonlyArray<ReplyDraft>): ReplyTo | undefined => {
+  const [first, ...rest] = drafts
+  if (first === undefined) return undefined
+  return rest.length === 0 ? target(first) : { ...target(first), also: rest.map(target) }
+}
 
 const CONTEXT = 32
 

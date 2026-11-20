@@ -23,6 +23,34 @@ const today = () => dayKey(new Date())
 const nearBottom = () =>
   window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 160
 
+/**
+ * Opens at the newest message, like any chat. Late layout (fonts, visuals sizing themselves)
+ * keeps it pinned to the end until the reader touches the page or it settles.
+ */
+function useOpenAtEnd(ready: boolean) {
+  const opened = useRef(false)
+  useLayoutEffect(() => {
+    if (!ready || opened.current) return
+    opened.current = true
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual"
+    const toEnd = () => window.scrollTo({ top: document.documentElement.scrollHeight })
+    toEnd()
+    const observer = new ResizeObserver(toEnd)
+    observer.observe(document.body)
+    const release = () => {
+      observer.disconnect()
+      for (const name of RELEASE_ON) window.removeEventListener(name, release)
+    }
+    for (const name of RELEASE_ON) window.addEventListener(name, release, { passive: true })
+    const timer = setTimeout(release, 4000)
+    return () => {
+      clearTimeout(timer)
+      release()
+    }
+  }, [ready])
+}
+const RELEASE_ON = ["wheel", "touchstart", "pointerdown", "keydown"] as const
+
 /** Tracks the furthest message row that has been on screen (the read cursor). */
 function useReadCursor(view: ChatView) {
   const setReadThrough = useAtomSet(readThroughAtom)
@@ -57,6 +85,7 @@ function Messages({ view }: { view: ChatView }) {
   const [anchor, setAnchor] = useAtom(anchorAtom)
   const returned = useAtomValue(returnAtom)
   useReadCursor(view)
+  useOpenAtEnd(view.order.length > 0)
 
   // After a rebuild (coming back, or undoing a tidy), put the reader back where they were.
   // biome-ignore lint/correctness/useExhaustiveDependencies: must re-run when a rebuilt view renders

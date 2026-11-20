@@ -1,11 +1,11 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./fixtures.ts"
 
 const send = async (page: Page, text: string) => {
   await page.getByTestId("composer-input").fill(text)
   await page.getByTestId("composer-send").click()
 }
 
-/** The reply to the message we just sent (both projects share one daemon). */
+/** The reply to the message we just sent (a worker's tests share its daemon). */
 const newestReply = async (page: Page, directive: string) => {
   const replies = page.getByTestId("message-agent").filter({ hasText: directive })
   const before = await replies.count()
@@ -19,6 +19,25 @@ const newestReply = async (page: Page, directive: string) => {
 test.beforeEach(async ({ page }) => {
   await page.goto("/")
   await expect(page.getByTestId("composer-input")).toBeVisible()
+})
+
+test("Questions: answer inline, blanks are skipped, and the answers send as one message", async ({
+  page,
+}) => {
+  const reply = await newestReply(page, "[[questions]]")
+  const card = reply.getByTestId("questions")
+  await expect(card.getByTestId("questions-answer")).toHaveCount(2)
+  await expect(page.getByTestId("needs-you")).toContainText("needs you")
+  // Nothing typed yet: it asks for at least one answer instead of sending.
+  await card.getByTestId("questions-send").click()
+  await expect(card).toContainText("Answer at least one first.")
+  const said = `Scattered hours ${Date.now()}`
+  await card.getByTestId("questions-answer").first().fill(said)
+  await card.getByTestId("questions-send").click()
+  await expect(reply.getByTestId("questions-receipt")).toHaveText("Answered 1 of 2")
+  const sent = page.getByTestId("message-user").filter({ hasText: said })
+  await expect(sent).toContainText("How much time do you have each week?")
+  await expect(sent).toContainText("(skipped)")
 })
 
 test("a Choice renders through MCP, shows in the marker, and collapses to a receipt", async ({

@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test } from "./fixtures.ts"
 
 test("a background task runs on its own while the chat stays free, then posts its result", async ({
   page,
@@ -28,4 +28,6 @@ test("a background task runs on its own while the chat stays free, then posts it
     .filter({ hasText: "Finished: Gather contractor quotes" })
     .last()
   await expect(finished).toHaveAttribute("data-status", "done", { timeout: 10_000 })
+  // It worked in the topic's own folder, which is never shown as if it were a project.
+  await expect(finished.getByTestId("work-receipt")).not.toContainText("/topics/")
 })

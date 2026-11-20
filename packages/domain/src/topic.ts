@@ -24,6 +24,8 @@ export class Topic extends Schema.Class<Topic>("domo/domain/Topic")({
   modelPinned: Schema.optionalKey(Schema.Boolean),
   providerSessionId: Schema.optionalKey(Schema.String),
   project: Schema.optionalKey(Schema.String),
+  /** The topic's own folder under `<home>/topics/` (notes.md plus any files), once it has one. */
+  folder: Schema.optionalKey(Schema.String),
   lastActivityAt: Schema.DateTimeUtcFromString,
 }) {}
 

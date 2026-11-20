@@ -6,6 +6,7 @@ import type { ChatStore } from "../chat/ChatStore.ts"
 import { RUN_HEADER } from "../mcp/DomoMcp.ts"
 import type { Providers } from "../providers/Providers.ts"
 import { collectRun, type RunOutcome, runDetail, workSummary } from "./collect.ts"
+import { failureText } from "./failure.ts"
 
 export interface TurnDeps {
   readonly store: ChatStore["Service"]
@@ -23,6 +24,10 @@ export interface TurnInput {
   readonly prompt: string
   readonly sessionId?: string
   readonly cwd?: string
+  /** The project folder the receipt names; unset when the run works in its topic's own folder. */
+  readonly project?: string
+  /** Extra system context for this run only (e.g. the topic's folder and notes). */
+  readonly context?: string
   readonly onSession?: (sessionId: string) => Effect.Effect<void>
   /** Always show a receipt, with this summary when the run did no tool work (background tasks). */
   readonly receiptFallback?: string
@@ -48,7 +53,10 @@ export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: T
         runId,
         model: input.model,
         prompt: input.prompt,
-        systemPrompt: yield* systemPrompt,
+        systemPrompt:
+          input.context === undefined
+            ? yield* systemPrompt
+            : `${yield* systemPrompt}\n\n${input.context}`,
         mcp: { url: mcp.url, headers: { ...mcp.headers, [RUN_HEADER]: runId } },
         // Live: an approval given through ask_user mid-run unlocks that action right away.
         isApproved: (action) => Effect.runSync(bus.isApproved(runId, action)),
@@ -75,7 +83,13 @@ export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: T
     const latest = Option.getOrElse(yield* store.getMessage(message.id), () => message)
     const finished = new Message({
       ...latest,
-      text: body.length > 0 ? body : Option.getOrElse(outcome.failure, () => ""),
+      text:
+        body.length > 0
+          ? body
+          : Option.match(outcome.failure, {
+              onNone: () => "",
+              onSome: (raw) => failureText(raw, input.model),
+            }),
       status: failed ? "failed" : "done",
       ...(summary === undefined
         ? {}
@@ -87,7 +101,7 @@ export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: T
               status: failed ? "failed" : "done",
               summary,
               models: [...new Set([input.model.key, ...delegations.map((d) => d.model)])],
-              ...(input.cwd === undefined ? {} : { project: input.cwd }),
+              ...(input.project === undefined ? {} : { project: input.project }),
             },
           }),
     })

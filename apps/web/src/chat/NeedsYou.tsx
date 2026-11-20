@@ -58,7 +58,9 @@ export function NeedsYou() {
               >
                 {message.component?._tag === "Choice"
                   ? previewOf(message.component.question, 70)
-                  : (message.work?.summary ?? "Work in progress")}
+                  : message.component?._tag === "Questions"
+                    ? previewOf(message.component.questions[0]?.question ?? "Questions", 70)
+                    : (message.work?.summary ?? "Work in progress")}
               </button>
             </li>
           ))}

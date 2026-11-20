@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test"
+import { expect, type Page, test } from "./fixtures.ts"
 
 const send = async (page: Page, text: string) => {
   await page.getByTestId("composer-input").fill(text)

@@ -1,5 +1,5 @@
-import { expect, test } from "@playwright/test"
 import { E2E_TOKEN } from "../playwright.config.ts"
+import { expect, test } from "./fixtures.ts"
 
 test("a device without the token sees only the unlock screen", async ({ page, request }) => {
   await page.goto("/")
