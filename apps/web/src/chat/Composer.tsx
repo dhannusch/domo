@@ -1,6 +1,7 @@
 import { useAtom, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { AsyncResult } from "effect/reactivity"
 import { type FormEvent, type KeyboardEvent, useRef, useState } from "react"
+import { AttachmentTray, ImageIcon, useAttachments } from "./Attachments.tsx"
 import { modelsAtom, sendAtom } from "./atoms.ts"
 import { ConnectionStatus } from "./ConnectionStatus.tsx"
 import { MentionMenu, mentionMatches, mentionQuery } from "./MentionMenu.tsx"
@@ -15,6 +16,8 @@ export function Composer() {
   const models = useAtomValue(modelsAtom)
   const [active, setActive] = useState(0)
   const [dismissed, setDismissed] = useState(false)
+  const attachments = useAttachments()
+  const picker = useRef<HTMLInputElement>(null)
   const query = dismissed ? undefined : mentionQuery(text)
   const suggestions =
     query === undefined || !AsyncResult.isSuccess(models) ? [] : mentionMatches(models.value, query)
@@ -27,17 +30,25 @@ export function Composer() {
   const submit = (event?: FormEvent) => {
     event?.preventDefault()
     const trimmed = text.trim()
-    if (trimmed.length === 0) return
+    const images = attachments.refs
+    if ((trimmed.length === 0 && images.length === 0) || attachments.busy) return
     const replyTo = toReplyTo(reply)
+    const attached = attachments.items
     setText("")
     setReply([])
-    // If the send fails (e.g. offline), put the message (and its reply target) back rather than losing it.
-    send({ payload: replyTo === undefined ? { text: trimmed } : { text: trimmed, replyTo } }).catch(
-      () => {
-        setText((current) => (current.length === 0 ? trimmed : current))
-        setReply((current) => (current.length === 0 ? reply : current))
+    attachments.clear()
+    // If the send fails (e.g. offline), put the message, its reply target and its images back.
+    send({
+      payload: {
+        text: trimmed,
+        ...(replyTo === undefined ? {} : { replyTo }),
+        ...(images.length === 0 ? {} : { images }),
       },
-    )
+    }).catch(() => {
+      setText((current) => (current.length === 0 ? trimmed : current))
+      setReply((current) => (current.length === 0 ? reply : current))
+      attachments.restore((current) => (current.length === 0 ? attached : current))
+    })
     if (area.current !== null) area.current.style.height = "auto"
   }
 
@@ -93,7 +104,37 @@ export function Composer() {
           onPick={pick}
         />
       ) : null}
-      <form onSubmit={submit}>
+      <AttachmentTray items={attachments.items} onRemove={attachments.remove} />
+      <form
+        onSubmit={submit}
+        onDragOver={(event) => event.preventDefault()}
+        onDrop={(event) => {
+          if (event.dataTransfer.files.length === 0) return
+          event.preventDefault()
+          attachments.add(event.dataTransfer.files, "drop")
+        }}
+      >
+        <button
+          type="button"
+          className="composer-attach"
+          aria-label="Attach an image"
+          data-testid="composer-attach"
+          onClick={() => picker.current?.click()}
+        >
+          <ImageIcon />
+        </button>
+        <input
+          ref={picker}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          data-testid="composer-file"
+          onChange={(event) => {
+            if (event.target.files !== null) attachments.add(event.target.files, "button")
+            event.target.value = ""
+          }}
+        />
         <textarea
           ref={area}
           data-testid="composer-input"
@@ -109,8 +150,16 @@ export function Composer() {
             event.target.style.height = `${event.target.scrollHeight}px`
           }}
           onKeyDown={onKeyDown}
+          onPaste={(event) => {
+            // A pasted screenshot attaches; pasted text behaves as usual.
+            if (attachments.add(event.clipboardData.files, "paste") > 0) event.preventDefault()
+          }}
         />
-        <button type="submit" data-testid="composer-send" disabled={text.trim().length === 0}>
+        <button
+          type="submit"
+          data-testid="composer-send"
+          disabled={(text.trim().length === 0 && attachments.refs.length === 0) || attachments.busy}
+        >
           Send
         </button>
       </form>

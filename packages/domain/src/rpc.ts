@@ -1,7 +1,7 @@
 import { Schema } from "effect"
 import { Rpc, RpcGroup } from "effect/rpc"
 import { DeviceId, MessageId, RunId, TidyId, TopicId } from "./ids.ts"
-import { Message, ReplyTo } from "./message.ts"
+import { ImageRef, MAX_IMAGES, Message, ReplyTo } from "./message.ts"
 import { DomoSettings, SettingsPatch, SettingsView } from "./settings.ts"
 import { TelemetryEvent } from "./telemetry.ts"
 import { RunDetail } from "./ui.ts"
@@ -63,8 +63,12 @@ export type PushSubscriptionJson = typeof PushSubscriptionJson.Type
 export class DomoRpc extends RpcGroup.make(
   Rpc.make("Send", {
     payload: {
-      text: Schema.NonEmptyString,
+      /** May be empty when the message is only images. */
+      text: Schema.String,
       replyTo: Schema.optionalKey(ReplyTo),
+      images: Schema.optionalKey(
+        Schema.Array(ImageRef).pipe(Schema.check(Schema.isMaxLength(MAX_IMAGES))),
+      ),
     },
     success: Schema.Struct({ messageId: MessageId }),
     error: SendFailed,

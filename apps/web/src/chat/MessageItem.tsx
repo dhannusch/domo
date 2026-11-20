@@ -11,6 +11,7 @@ import { QuestionsView } from "./components/QuestionsView.tsx"
 import { VisualView } from "./components/VisualView.tsx"
 import { WorkReceiptView } from "./components/WorkReceiptView.tsx"
 import { leadOf, shouldFold } from "./fold.ts"
+import { imageUrl } from "./images.ts"
 import { modelLabel } from "./modelLabel.ts"
 import { addReply, previewOf, replyAtom } from "./reply.ts"
 import { SourceTagView } from "./SourceTagView.tsx"
@@ -102,7 +103,16 @@ function UserMessage({ message }: { message: Message }) {
           “{previewOf(quote, 160)}”
         </p>
       ))}
-      <p className="user-text">{message.text}</p>
+      {message.images !== undefined && message.images.length > 0 ? (
+        <div className="message-images" data-testid="message-images">
+          {message.images.map((image) => (
+            <a key={image.id} href={imageUrl(image)} target="_blank" rel="noreferrer">
+              <img src={imageUrl(image)} alt="Attached by you" loading="lazy" />
+            </a>
+          ))}
+        </div>
+      ) : null}
+      {message.text.length > 0 ? <p className="user-text">{message.text}</p> : null}
     </div>
   )
 }

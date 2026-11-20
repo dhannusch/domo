@@ -1,4 +1,4 @@
-import type { AgentEvent, ModelRef, RunId } from "@domo/domain"
+import type { AgentEvent, ImageMediaType, ModelRef, RunId } from "@domo/domain"
 import { Context, Schema, type Stream } from "effect"
 
 export interface RunRequest {
@@ -16,8 +16,15 @@ export interface RunRequest {
    * filing and summaries.
    */
   readonly mode?: "agent" | "utility"
-  /** Images shown with the prompt (Claude only; Codex runs ignore them). */
-  readonly images?: ReadonlyArray<{ readonly mediaType: "image/png"; readonly data: string }>
+  /**
+   * Images shown with the prompt. Claude reads `data` (base64); Codex reads the file at `path`,
+   * so images without one are Claude-only.
+   */
+  readonly images?: ReadonlyArray<{
+    readonly mediaType: ImageMediaType
+    readonly data: string
+    readonly path?: string
+  }>
   /** Domo's MCP server for this run (UI components, later delegation). Agent mode only. */
   readonly mcp?: { readonly url: string; readonly headers: Readonly<Record<string, string>> }
   /**

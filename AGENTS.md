@@ -79,6 +79,13 @@ The Lab improves domo without a human watching, so every change must be testable
 - `Tasks` runs `start_task` work outside the chat's one-at-a-time queue (at most 3 at once). Each task writes into its own reply, whose receipt is "running" until it finishes. Cancelling or a crash always ends the reply.
 - At startup, replies still marked streaming (cut off by a restart) are marked as interrupted.
 
+## Images
+
+- The composer attaches up to 4 images (button, paste or drop). The browser shrinks each to 2000px on its longest side (JPEG, or PNG for small screenshots) and uploads it to `POST /images` before sending. The message then carries `ImageRef`s (id plus media type).
+- `images/Images.ts` keeps them in `<home>/images/<id>.<ext>`, served at `GET /images/:id`. Both paths are protected like `/rpc`, and the web app adds `?token=` to image URLs. Nothing is deleted.
+- A run gets the images of the message it answers: Claude as base64 image blocks, Codex as `local_image` file paths. Only that message's images are sent; older ones stay in the chat for the user.
+- A message may be images alone. The echo provider reports "(saw N images)" so end-to-end tests cover the whole path.
+
 ## Topic folders
 
 - Every topic gets its own folder, `~/.domo/topics/<name>/` (`topics/folders.ts`), the first time it runs, named after its title and never renamed. It starts with `notes.md`. Without a project, the topic's runs and its background tasks work there, so files the agent writes land in the topic. A coding topic keeps its project as the working directory and is still told where its notes are.

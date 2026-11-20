@@ -25,5 +25,6 @@ export const TelemetryEvent = Schema.Union([
   Schema.TaggedStruct("ToolErrored", { tool: Schema.String }),
   Schema.TaggedStruct("ViewOpened", { componentId: ComponentId }),
   Schema.TaggedStruct("SettingChanged", { key: Schema.String }),
+  Schema.TaggedStruct("ImageAttached", { via: Schema.Literals(["button", "paste", "drop"]) }),
 ])
 export type TelemetryEvent = typeof TelemetryEvent.Type

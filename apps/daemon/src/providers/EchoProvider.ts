@@ -66,7 +66,9 @@ const echoReply = (request: RunRequest): string => {
   const seeded = request.prompt.startsWith("Context from this conversation")
     ? " (with context)"
     : ""
-  return `Echo: ${said}${seeded}`
+  const images = request.images?.length ?? 0
+  const seen = images === 0 ? "" : ` (saw ${images} image${images === 1 ? "" : "s"})`
+  return `Echo: ${said}${seeded}${seen}`
 }
 
 /** UI components the echo provider renders through Domo's real MCP endpoint, by directive. */

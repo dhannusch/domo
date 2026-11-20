@@ -15,6 +15,7 @@ Domo is one calm chat. Behind it, a small daemon on your Mac routes each message
 
 - **One conversation.** No thread lists, tabs or sidebars. Domo files each message into a topic behind the scenes and resumes the right session. While you're away, it tidies finished topics into an "Earlier" fold. Every tidy can be undone.
 - **Both providers, one team.** Opus 5.5 leads by default. Any Claude or Codex model can take over or be handed work (`delegate`), several can debate and converge (`council`), and long jobs run in the background.
+- **Send images.** Attach, paste or drop screenshots and photos; Claude and Codex both see them.
 - **Intelligent UI instead of walls of text.** Six components: Choice, Questions (a few short questions answered inline), Comparison, Checklist, Work receipt, and Visual. A Visual is agent-drawn HTML (diagrams, explainers, small calculators) that runs in a sandbox. Domo renders and reviews each one before you see it.
 - **Memory that stays useful.** It keeps a short always-loaded profile and one fact per note, with full-text recall. A nightly consolidation merges duplicates, retires stale notes, and commits everything to a git repo in `~/.domo`. Restatements carry a source tag that opens the original messages.
 - **High autonomy, hard guardrails.** It edits files and runs commands without asking. Pushing, publishing, deleting outside a project, sending on your behalf and spending money always go through an approval in the chat.

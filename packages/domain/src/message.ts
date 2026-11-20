@@ -1,5 +1,5 @@
 import { Schema } from "effect"
-import { MessageId, TopicId } from "./ids.ts"
+import { ImageId, MessageId, TopicId } from "./ids.ts"
 import { ComponentResolution, UiComponent, WorkReceipt } from "./ui.ts"
 
 /** W3C-style text-quote selector anchoring a reply to a fragment of a message. */
@@ -31,6 +31,22 @@ export const replyTargets = (replyTo: ReplyTo): ReadonlyArray<ReplyTarget> => [
   ...(replyTo.also ?? []),
 ]
 
+/** The image types the models read. */
+export const ImageMediaType = Schema.Literals([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+])
+export type ImageMediaType = typeof ImageMediaType.Type
+
+/** An image the user attached; the file lives in the agent home (`images/`). */
+export const ImageRef = Schema.Struct({ id: ImageId, mediaType: ImageMediaType })
+export type ImageRef = typeof ImageRef.Type
+
+/** At most this many images go with one message. */
+export const MAX_IMAGES = 4
+
 /** A source tag ("Nov 4 · view") pointing back at the original messages. */
 export const SourceTag = Schema.Struct({
   label: Schema.NonEmptyString,
@@ -54,6 +70,8 @@ export class Message extends Schema.Class<Message>("domo/domain/Message")({
   /** Which model produced an agent message (`provider:id`). */
   model: Schema.optionalKey(Schema.String),
   replyTo: Schema.optionalKey(ReplyTo),
+  /** Images the user attached to this message. */
+  images: Schema.optionalKey(Schema.Array(ImageRef)),
   component: Schema.optionalKey(UiComponent),
   /** How the user answered this message's Choice. */
   resolution: Schema.optionalKey(ComponentResolution),

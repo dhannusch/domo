@@ -3,13 +3,14 @@ import { join } from "node:path"
 import { DomoRpc } from "@domo/domain"
 import { NodeHttpServer } from "@effect/platform-node"
 import { DateTime, Effect, Layer, Option } from "effect"
-import { HttpRouter, HttpServerResponse, HttpStaticServer } from "effect/http"
+import { HttpRouter, HttpServerRequest, HttpServerResponse, HttpStaticServer } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import { ChatBus } from "../chat/ChatBus.ts"
 import { ChatStore } from "../chat/ChatStore.ts"
 import { Conductor } from "../conductor/Conductor.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { CheckIns } from "../goals/CheckIns.ts"
+import { Images } from "../images/Images.ts"
 import { Instructions } from "../instructions/Instructions.ts"
 import { Lab } from "../lab/Lab.ts"
 import { DomoMcpLive } from "../mcp/DomoMcp.ts"
@@ -94,6 +95,40 @@ const HealthRoute = Layer.unwrap(
   }),
 )
 
+/** Attached images: uploaded before the message is sent, then shown in the chat. Protected. */
+const ImageRoutes = Layer.mergeAll(
+  HttpRouter.add(
+    "POST",
+    "/images",
+    Effect.gen(function* () {
+      const request = yield* HttpServerRequest.HttpServerRequest
+      const body = new Uint8Array(yield* request.arrayBuffer)
+      const saved = yield* (yield* Images).save(body, request.headers["content-type"] ?? "")
+      return yield* HttpServerResponse.json(saved)
+    }).pipe(
+      Effect.catchTag("ImageRejected", (error) =>
+        Effect.succeed(HttpServerResponse.text(error.message, { status: 400 })),
+      ),
+      Effect.catch(() =>
+        Effect.succeed(HttpServerResponse.text("Couldn't read that upload.", { status: 400 })),
+      ),
+    ),
+  ),
+  HttpRouter.add(
+    "GET",
+    "/images/:id",
+    Effect.gen(function* () {
+      const { id } = yield* HttpRouter.params
+      const found = yield* (yield* Images).find(id ?? "")
+      if (Option.isNone(found)) return HttpServerResponse.empty({ status: 404 })
+      return yield* HttpServerResponse.file(found.value.path, {
+        contentType: found.value.mediaType,
+        headers: { "cache-control": "private, max-age=31536000, immutable" },
+      })
+    }).pipe(Effect.catch(() => Effect.succeed(HttpServerResponse.empty({ status: 404 })))),
+  ),
+)
+
 /** The built PWA. In development Vite serves the UI and proxies /rpc here. */
 const StaticRoute = HttpStaticServer.layer({ root: WEB_DIST, spa: true })
 
@@ -105,7 +140,7 @@ export const ServerLive = Layer.unwrap(
   Effect.gen(function* () {
     const config = yield* DomoConfig
     return HttpRouter.serve(
-      Layer.mergeAll(AccessLive, HealthRoute, RpcRoute, DomoMcpLive, StaticRoute),
+      Layer.mergeAll(AccessLive, HealthRoute, RpcRoute, DomoMcpLive, ImageRoutes, StaticRoute),
     ).pipe(
       Layer.provide(NodeHttpServer.layer(createServer, { port: config.port, host: "127.0.0.1" })),
     )

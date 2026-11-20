@@ -136,4 +136,8 @@ export const migrations = {
     // Each topic's notes.md, searchable by recall (the files are the source of truth).
     yield* sql`CREATE VIRTUAL TABLE notes_fts USING fts5(topic_id UNINDEXED, body)`
   }),
+  "0011_message_images": Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    yield* sql`ALTER TABLE messages ADD COLUMN images TEXT`
+  }),
 }

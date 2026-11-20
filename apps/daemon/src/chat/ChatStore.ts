@@ -25,6 +25,7 @@ const MessageRow = Schema.Struct({
   text: Schema.String,
   model: Schema.NullOr(Schema.String),
   reply_to: JsonColumn,
+  images: JsonColumn,
   component: JsonColumn,
   sources: JsonColumn,
   resolution: JsonColumn,
@@ -72,6 +73,7 @@ const rowToMessage = Effect.fnUntraced(function* (raw: unknown) {
     createdAt: row.created_at,
     ...present("model", row.model),
     ...present("replyTo", row.reply_to),
+    ...present("images", row.images),
     ...present("component", row.component),
     ...present("sources", row.sources),
     ...present("resolution", row.resolution),
@@ -174,10 +176,11 @@ export class ChatStore extends Context.Service<
       const insertMessage = Effect.fn("ChatStore.insertMessage")(function* (message: Message) {
         const e = yield* encodeMessage(message)
         yield* sql`
-          INSERT INTO messages (id, topic_id, role, status, text, model, reply_to, component, sources,
-            resolution, work, created_at)
+          INSERT INTO messages (id, topic_id, role, status, text, model, reply_to, images, component,
+            sources, resolution, work, created_at)
           VALUES (${e.id}, ${e.topicId}, ${e.role}, ${e.status}, ${e.text}, ${e.model ?? null},
             ${e.replyTo === undefined ? null : JSON.stringify(e.replyTo)},
+            ${e.images === undefined ? null : JSON.stringify(e.images)},
             ${e.component === undefined ? null : JSON.stringify(e.component)},
             ${e.sources === undefined ? null : JSON.stringify(e.sources)},
             ${e.resolution === undefined ? null : JSON.stringify(e.resolution)},

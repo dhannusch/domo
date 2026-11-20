@@ -5,7 +5,7 @@ import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http"
 import { DomoConfig } from "../config/DomoConfig.ts"
 
 /** Paths that reach the user's data or the agent's tools; the app shell itself is public. */
-const PROTECTED = ["/rpc", "/mcp", "/auth"]
+const PROTECTED = ["/rpc", "/mcp", "/auth", "/images"]
 
 const digest = (value: string) => createHash("sha256").update(value).digest()
 const sameToken = (given: string, token: string) => timingSafeEqual(digest(given), digest(token))

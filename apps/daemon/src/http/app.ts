@@ -8,6 +8,7 @@ import { Tasks } from "../conductor/Tasks.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { CheckIns } from "../goals/CheckIns.ts"
 import { GoalStore } from "../goals/GoalStore.ts"
+import { Images } from "../images/Images.ts"
 import { initHome } from "../init/init.ts"
 import { Instructions } from "../instructions/Instructions.ts"
 import { Lab } from "../lab/Lab.ts"
@@ -69,6 +70,7 @@ export const DaemonLive = Layer.mergeAll(
   Layer.provideMerge(HomeGit.layer),
   Layer.provideMerge(Tidier.layer),
   Layer.provideMerge(Notifier.layer),
+  Layer.provideMerge(Images.layer),
   Layer.provideMerge(Presence.layer),
   Layer.provideMerge(Settings.layer),
   Layer.provideMerge(VisualCheck.layer),

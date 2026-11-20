@@ -4,7 +4,7 @@ import { Effect, Option } from "effect"
 import type { ChatBus } from "../chat/ChatBus.ts"
 import type { ChatStore } from "../chat/ChatStore.ts"
 import { RUN_HEADER } from "../mcp/DomoMcp.ts"
-import type { Providers } from "../providers/Providers.ts"
+import type { Providers, RunRequest } from "../providers/Providers.ts"
 import { collectRun, type RunOutcome, runDetail, workSummary } from "./collect.ts"
 import { failureText } from "./failure.ts"
 
@@ -26,6 +26,8 @@ export interface TurnInput {
   readonly cwd?: string
   /** The project folder the receipt names; unset when the run works in its topic's own folder. */
   readonly project?: string
+  /** Images the user attached to the message this run answers. */
+  readonly images?: RunRequest["images"]
   /** Extra system context for this run only (e.g. the topic's folder and notes). */
   readonly context?: string
   readonly onSession?: (sessionId: string) => Effect.Effect<void>
@@ -61,6 +63,9 @@ export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: T
         // Live: an approval given through ask_user mid-run unlocks that action right away.
         isApproved: (action) => Effect.runSync(bus.isApproved(runId, action)),
         ...(input.sessionId === undefined ? {} : { sessionId: input.sessionId }),
+        ...(input.images === undefined || input.images.length === 0
+          ? {}
+          : { images: input.images }),
         ...(input.cwd === undefined ? {} : { cwd: input.cwd }),
       }),
       { sessionId: input.sessionId, wholeMessages: input.model.provider === "codex" },

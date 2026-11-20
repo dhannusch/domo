@@ -21,5 +21,8 @@ export type ComponentId = typeof ComponentId.Type
 export const DeviceId = Schema.String.pipe(Schema.brand("DeviceId"))
 export type DeviceId = typeof DeviceId.Type
 
+export const ImageId = Schema.String.pipe(Schema.brand("ImageId"))
+export type ImageId = typeof ImageId.Type
+
 export const TidyId = Schema.String.pipe(Schema.brand("TidyId"))
 export type TidyId = typeof TidyId.Type

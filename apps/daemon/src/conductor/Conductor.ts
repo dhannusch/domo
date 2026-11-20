@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import {
+  type ImageRef,
   Message,
   MessageId,
   type ModelRef,
@@ -15,6 +16,7 @@ import { ChatBus } from "../chat/ChatBus.ts"
 import { ChatStore } from "../chat/ChatStore.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { GoalStore } from "../goals/GoalStore.ts"
+import { Images } from "../images/Images.ts"
 import { Memory } from "../memory/Memory.ts"
 import { parseMention } from "../models/registry.ts"
 import { Tidier } from "../presence/Tidier.ts"
@@ -31,6 +33,7 @@ import { makeTurn } from "./turn.ts"
 export interface SendInput {
   readonly text: string
   readonly replyTo?: ReplyTo
+  readonly images?: ReadonlyArray<ImageRef>
 }
 
 export interface AnswerInput {
@@ -104,6 +107,7 @@ export class Conductor extends Context.Service<
       const tidier = yield* Tidier
       const config = yield* DomoConfig
       const fs = yield* FileSystem.FileSystem
+      const images = yield* Images
       const systemPrompt = makeSystemPrompt(config, fs, yield* GoalStore, yield* Memory)
       const background = yield* FiberSet.make()
       const oneAtATime = yield* Semaphore.make(1)
@@ -220,6 +224,7 @@ export class Conductor extends Context.Service<
             store.upsertTopic(new Topic({ ...topic, providerSessionId: sessionId })),
           ...(topic.providerSessionId === undefined ? {} : { sessionId: topic.providerSessionId }),
           cwd: topic.project ?? folder,
+          images: yield* images.forRun(userMessage.images ?? []),
           ...(topic.project === undefined ? {} : { project: topic.project }),
           context: folderContext(folder, notes, topic.project === undefined),
         })
@@ -290,6 +295,9 @@ export class Conductor extends Context.Service<
           text: input.text,
           createdAt: yield* DateTime.now,
           ...(input.replyTo === undefined ? {} : { replyTo: input.replyTo }),
+          ...(input.images === undefined || input.images.length === 0
+            ? {}
+            : { images: input.images }),
         })
         yield* store.insertMessage(userMessage)
         yield* bus.publish({ _tag: "MessageAdded", message: userMessage })
@@ -298,7 +306,12 @@ export class Conductor extends Context.Service<
 
       const send = Effect.fn("Conductor.send")(function* (input: SendInput) {
         const mention = parseMention(input.text)
-        if (mention.text.trim().length === 0)
+        const attached = input.images ?? []
+        for (const image of attached) {
+          if (Option.isNone(yield* images.find(image.id)))
+            return yield* fail("An attached image didn't upload. Attach it again.")
+        }
+        if (mention.text.trim().length === 0 && attached.length === 0)
           return yield* fail("Nothing to send after the model mention.")
 
         // Replying to an unanswered Choice in your own words answers it.
@@ -342,6 +355,7 @@ export class Conductor extends Context.Service<
           text: input.text,
           createdAt: now,
           ...(input.replyTo === undefined ? {} : { replyTo: input.replyTo }),
+          ...(attached.length === 0 ? {} : { images: attached }),
         })
         const agentMessage = new Message({
           id: MessageId.make(yield* newId),
@@ -361,7 +375,9 @@ export class Conductor extends Context.Service<
         yield* bus.publish({ _tag: "MessageAdded", message: agentMessage })
 
         const quoted = yield* quoteFor(input.replyTo)
-        const asked = quoted === undefined ? mention.text : `${quoted}\n\n${mention.text}`
+        const said =
+          mention.text.trim().length > 0 ? mention.text : "(The user sent only the attached image.)"
+        const asked = quoted === undefined ? said : `${quoted}\n\n${said}`
         const prompt = Option.isSome(pickUp) ? `${pickUpNote(pickUp.value)}\n\n${asked}` : asked
         yield* FiberSet.run(
           background,

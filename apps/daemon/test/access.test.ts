@@ -14,6 +14,10 @@ describe("access", () => {
     expect(isAuthorized(token, "/rpc", {})).toBe(false)
     expect(isAuthorized(token, "/mcp", { authorization: "Bearer wrong" })).toBe(false)
     expect(isAuthorized(token, "/auth?token=", {})).toBe(false)
+    // Attached images are private too.
+    expect(isAuthorized(token, "/images", {})).toBe(false)
+    expect(isAuthorized(token, "/images/abc", {})).toBe(false)
+    expect(isAuthorized(token, `/images/abc?token=${token}`, {})).toBe(true)
   })
 
   it("accepts the token as a bearer header or a query parameter", () => {

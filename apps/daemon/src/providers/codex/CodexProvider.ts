@@ -1,5 +1,5 @@
 import type { AgentEvent } from "@domo/domain"
-import { Codex, type ThreadOptions } from "@openai/codex-sdk"
+import { Codex, type Input, type ThreadOptions } from "@openai/codex-sdk"
 import { Effect, Stream } from "effect"
 import { type AuthMode, subprocessEnv } from "../auth.ts"
 import { ProviderError, type RunRequest } from "../Providers.ts"
@@ -43,10 +43,14 @@ export const makeCodexRunner =
         request.sessionId === undefined
           ? codex.startThread(threadOptions(request))
           : codex.resumeThread(request.sessionId, threadOptions(request))
-      const input =
+      const text =
         request.sessionId === undefined && request.systemPrompt !== undefined
           ? `${request.systemPrompt}\n\n---\n\n${request.prompt}`
           : request.prompt
+      const files = (request.images ?? []).flatMap((image) =>
+        image.path === undefined ? [] : [{ type: "local_image" as const, path: image.path }],
+      )
+      const input: Input = files.length === 0 ? text : [{ type: "text" as const, text }, ...files]
 
       return Stream.unwrap(
         Effect.tryPromise({

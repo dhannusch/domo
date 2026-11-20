@@ -11,6 +11,7 @@ import { Conductor } from "../src/conductor/Conductor.ts"
 import { Filer } from "../src/conductor/Filer.ts"
 import { DomoConfig } from "../src/config/DomoConfig.ts"
 import { GoalStore } from "../src/goals/GoalStore.ts"
+import { Images } from "../src/images/Images.ts"
 import { HomeGit } from "../src/memory/HomeGit.ts"
 import { Memory } from "../src/memory/Memory.ts"
 import { Presence } from "../src/presence/Presence.ts"
@@ -74,6 +75,7 @@ const TestLayer = Conductor.layer.pipe(
   Layer.provideMerge(Presence.layer),
   Layer.provideMerge(Settings.layer),
   Layer.provideMerge(Memory.layer),
+  Layer.provideMerge(Images.layer),
   Layer.provide(HomeGit.layerNoop),
   Layer.provideMerge(ChatStore.layer),
   Layer.provideMerge(ChatBus.layer),

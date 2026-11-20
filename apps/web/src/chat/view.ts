@@ -83,15 +83,17 @@ export const needsYou = (view: ChatView) => {
   for (const id of view.order) {
     const message = view.messages.get(id)
     if (message === undefined) continue
+    // A question waiting on the user, including one an agent is blocked on (ask_user) while its
+    // reply is still open.
     if (
       (message.component?._tag === "Choice" || message.component?._tag === "Questions") &&
       message.resolution === undefined &&
-      message.status === "done"
+      message.status !== "failed"
     ) {
       decisions.push(message)
     }
     // Running: a reply busy with tools, or a background task (its receipt says "running").
-    if (
+    else if (
       message.status === "streaming" &&
       (view.progress.has(id) || message.work?.status === "running")
     ) {
