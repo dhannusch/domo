@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
-import { ComponentId, Message, type ModelRef, RunId } from "@domo/domain"
-import { Effect, Option } from "effect"
+import { ComponentId, Message, type MessageId, type ModelRef, RunId } from "@domo/domain"
+import { Effect, Option, Ref } from "effect"
 import type { ChatBus } from "../chat/ChatBus.ts"
 import type { ChatStore } from "../chat/ChatStore.ts"
 import { RUN_HEADER } from "../mcp/DomoMcp.ts"
@@ -45,11 +45,37 @@ export interface TurnResult {
  * registered so tool calls land on this message), deltas streamed, guarded
  * actions checked live, and the work receipt built from what actually ran.
  */
+/**
+ * Ends a reply that was stopped (by the user, or a cancelled task): it keeps what was written and
+ * says it stopped. Does nothing to a reply that already finished.
+ */
+export const finishStopped = Effect.fnUntraced(function* (
+  store: ChatStore["Service"],
+  bus: ChatBus["Service"],
+  messageId: MessageId,
+  written: string,
+) {
+  const latest = yield* store.getMessage(messageId)
+  if (Option.isNone(latest) || latest.value.status !== "streaming") return
+  const { work, ...rest } = latest.value
+  const kept = written.trim()
+  const stopped = new Message({
+    ...rest,
+    text: kept.length > 0 ? `${kept}\n\n*Stopped.*` : "*Stopped before it got going.*",
+    status: "done",
+    ...(work === undefined ? {} : { work: { ...work, status: "failed" as const } }),
+  })
+  yield* store.updateMessage(stopped)
+  yield* bus.publish({ _tag: "AgentFinished", message: stopped })
+})
+
 export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: TurnDeps) =>
   Effect.fnUntraced(function* (input: TurnInput) {
     const { message } = input
     const runId = RunId.make(randomUUID())
     yield* bus.registerRun(runId, { messageId: message.id, topicId: message.topicId })
+    // What has streamed so far, so a stopped reply keeps it.
+    const written = yield* Ref.make("")
     const outcome = yield* collectRun(
       providers.run({
         runId,
@@ -71,11 +97,21 @@ export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: T
       { sessionId: input.sessionId, wholeMessages: input.model.provider === "codex" },
       {
         onSession: input.onSession ?? (() => Effect.void),
-        onDelta: (text) => bus.publish({ _tag: "AgentDelta", messageId: message.id, text }),
+        onDelta: (text) =>
+          Ref.update(written, (so) => so + text).pipe(
+            Effect.andThen(bus.publish({ _tag: "AgentDelta", messageId: message.id, text })),
+          ),
         onTool: (current, tools) =>
           bus.publish({ _tag: "WorkProgress", messageId: message.id, tools, current }),
       },
-    ).pipe(Effect.ensuring(bus.unregisterRun(runId)))
+    ).pipe(
+      Effect.ensuring(bus.unregisterRun(runId)),
+      Effect.onInterrupt(() =>
+        Ref.get(written).pipe(
+          Effect.flatMap((text) => finishStopped(store, bus, message.id, text)),
+        ),
+      ),
+    )
 
     // Everything the user watched stream in stays (UX-02). A provider's final "result" is only
     // its last message, which would drop text written before a card or tool call.

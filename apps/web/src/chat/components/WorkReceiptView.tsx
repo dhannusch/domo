@@ -4,6 +4,7 @@ import { AsyncResult } from "effect/reactivity"
 import { useState } from "react"
 import { runAtom, trackAtom } from "../atoms.ts"
 import { modelLabel } from "../modelLabel.ts"
+import { FileViewer, fileUrl } from "./FileViewer.tsx"
 
 /** Summaries are previews, so drop markdown syntax rather than render it. */
 const plain = (text: string) =>
@@ -18,24 +19,39 @@ const fileName = (path: string) => path.split("/").at(-1) ?? path
 const folderOf = (path: string) => path.split("/").slice(0, -1).join("/")
 
 /** The changed files by name, with their folder once when they share one. */
-function FilesLine({ files }: { files: ReadonlyArray<string> }) {
+function FilesLine({ runId, files }: { runId: string; files: ReadonlyArray<string> }) {
   const folders = new Set(files.map(folderOf))
   const [only] = folders
+  const [open, setOpen] = useState<number | undefined>(undefined)
+  const opened = open === undefined ? undefined : files[open]
   return (
-    <p className="run-files" data-testid="run-files">
+    <div className="run-files" data-testid="run-files">
       <span className="run-label">Changed </span>
       {files.map((file, i) => (
         <span key={file}>
           {i > 0 ? ", " : ""}
-          <span className="run-file" title={shortPath(file)}>
+          <button
+            type="button"
+            className="run-file"
+            title={`Open ${shortPath(file)}`}
+            data-testid="run-file"
+            onClick={() => setOpen(i)}
+          >
             {folders.size === 1 ? fileName(file) : shortPath(file)}
-          </span>
+          </button>
         </span>
       ))}
+      {open !== undefined && opened !== undefined ? (
+        <FileViewer
+          name={fileName(opened)}
+          url={fileUrl(runId, open)}
+          onClose={() => setOpen(undefined)}
+        />
+      ) : null}
       {folders.size === 1 && only !== undefined && only.length > 0 ? (
         <span className="run-where"> in {shortPath(only)}</span>
       ) : null}
-    </p>
+    </div>
   )
 }
 
@@ -87,7 +103,7 @@ function RunDetailView({ receipt }: { receipt: WorkReceipt }) {
               </li>
             ))}
           </ol>
-          {value.files.length > 0 ? <FilesLine files={value.files} /> : null}
+          {value.files.length > 0 ? <FilesLine runId={value.id} files={value.files} /> : null}
           <p className="run-usage">
             {modelLabel(value.model)}
             {value.usage !== undefined

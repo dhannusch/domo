@@ -81,11 +81,25 @@ The Lab improves domo without a human watching, so every change must be testable
 - `Tasks` runs `start_task` work outside the chat's one-at-a-time queue (at most 3 at once). Each task writes into its own reply, whose receipt is "running" until it finishes. Cancelling or a crash always ends the reply.
 - At startup, replies still marked streaming (cut off by a restart) are marked as interrupted.
 
+## Reminders
+
+- `reminders/Reminders.ts` keeps scheduled notes and follow-ups (`reminders` table). The agent adds them with `schedule` (ISO time with offset; `task` makes it run as a background task at that time), and manages them with `list_scheduled` and `cancel_scheduled`. A loop delivers due ones every few seconds: each is marked done first (never twice), posted into its topic (unfolding it if it was in Earlier) and sent as a push notification. One that fires more than 10 minutes late says it was missed while Domo wasn't running.
+- Every run's system prompt ends with the local date and time (`nowText`), last so the rest stays cacheable.
+
+## Stop, files and memory
+
+- Chat replies run in a `FiberMap` keyed by their message, so the `Stop` RPC interrupts one (or the background task writing it, via `Tasks.stopReply`). `finishStopped` keeps what streamed and adds "Stopped."
+- `GET /files/:runId/:index` serves a file a run recorded changing, by its position in that run's list, so nothing else on the machine can be read through it. Text is always `text/plain` under a no-script CSP; the app renders Markdown itself (`FileViewer`).
+- Settings › What Domo knows lists every memory note (`SettingsView.memories`), each removable with `ForgetMemory` (archived, never deleted).
+- The date-and-gear header is sticky, so settings stay one tap away at any scroll position.
+- The `using-domo` seed skill describes the app from the user's side. Update it whenever a user-visible feature changes.
+
 ## Images
 
 - The composer attaches up to 4 images (button, paste or drop). The browser shrinks each to 2000px on its longest side (JPEG, or PNG for small screenshots) and uploads it to `POST /images` before sending. The message then carries `ImageRef`s (id plus media type).
 - `images/Images.ts` keeps them in `<home>/images/<id>.<ext>`, served at `GET /images/:id`. Both paths are protected like `/rpc`, and the web app adds `?token=` to image URLs. Nothing is deleted.
 - A run gets the images of the message it answers: Claude as base64 image blocks, Codex as `local_image` file paths. Only that message's images are sent; older ones stay in the chat for the user.
+- Domo shows images in its own replies with `attach_image` (a file it made) or `snapshot_html` (HTML rendered to a 2x PNG in headless Chrome, `VisualCheck.snapshot`, where web fonts may load from Google Fonts and nothing else). They are saved like the user's images and listed on the message (up to 4).
 - A message may be images alone. The echo provider reports "(saw N images)" so end-to-end tests cover the whole path.
 
 ## Topic folders

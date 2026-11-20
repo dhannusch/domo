@@ -140,4 +140,9 @@ export const migrations = {
     const sql = yield* SqlClient.SqlClient
     yield* sql`ALTER TABLE messages ADD COLUMN images TEXT`
   }),
+  "0012_reminders": Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    yield* sql`CREATE TABLE reminders (id TEXT PRIMARY KEY, topic_id TEXT NOT NULL, due_at TEXT NOT NULL,
+      note TEXT NOT NULL, task TEXT, status TEXT NOT NULL, created_at TEXT NOT NULL)`
+  }),
 }

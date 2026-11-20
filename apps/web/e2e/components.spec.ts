@@ -159,3 +159,14 @@ test("UX-03: at most one component per agent message", async ({ page }) => {
     expect(components).toBeLessThanOrEqual(1)
   }
 })
+
+test("a file Domo wrote opens from view, rendered", async ({ page }) => {
+  const reply = await newestReply(page, "[[write]]")
+  await reply.getByTestId("work-view").click()
+  await reply.getByTestId("run-file").filter({ hasText: "plan.md" }).click()
+  const viewer = page.getByTestId("file-viewer")
+  await expect(viewer.getByRole("heading", { name: "Plan", exact: true })).toBeVisible()
+  await expect(viewer.getByTestId("file-text")).toContainText("Draft the About page")
+  await viewer.getByRole("button", { name: "Done" }).click()
+  await expect(viewer).toHaveCount(0)
+})

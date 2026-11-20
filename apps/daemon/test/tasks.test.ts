@@ -117,7 +117,9 @@ describe("background tasks", () => {
       expect(yield* tasks.cancel(task.taskId)).toBe(true)
       yield* Effect.sleep("50 millis")
       const stopped = Option.getOrThrow(yield* store.getMessage(task.messageId))
-      expect(stopped.status).toBe("failed")
+      // A stopped reply keeps what it wrote and says it stopped; its work line shows it didn't finish.
+      expect(stopped.status).toBe("done")
+      expect(stopped.text).toContain("Stopped")
       expect(stopped.work?.status).toBe("failed")
       expect(yield* tasks.cancel("nope" as TaskId)).toBe(false)
     }).pipe(Effect.provide(TestLayer)),

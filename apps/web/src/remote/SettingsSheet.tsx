@@ -14,6 +14,7 @@ import {
 } from "../chat/atoms.ts"
 import { deviceId } from "../chat/usePresence.ts"
 import { InstructionsEditor } from "./InstructionsEditor.tsx"
+import { MemoryList } from "./MemoryList.tsx"
 import { enablePush, pushSupported } from "./PushOffer.tsx"
 import { readTheme, saveTheme, type ThemeChoice } from "./theme.ts"
 
@@ -238,8 +239,11 @@ function SettingsBody({ view, onClose }: { view: SettingsView; onClose: () => vo
             Your profile and {view.notes} {view.notes === 1 ? "note" : "notes"}
           </summary>
           <p className="setting-profile">{view.profile.trim() || "Nothing yet."}</p>
+          <MemoryList memories={view.memories} />
         </details>
-        <p className="setting-note">To change or remove something, tell Domo.</p>
+        <p className="setting-note">
+          Removing a note archives it; Domo stops using it. To correct one, tell Domo.
+        </p>
         <button
           type="button"
           className="quiet-action"

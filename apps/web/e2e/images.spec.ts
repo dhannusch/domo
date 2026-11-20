@@ -45,3 +45,13 @@ test("an image can be sent on its own, and removed before sending", async ({ pag
     page.getByTestId("message-agent").filter({ hasText: "(saw 1 image)" }).last(),
   ).toHaveAttribute("data-status", "done")
 })
+
+test("Domo can show an image it made, in its reply", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("composer-input").fill(`[[attach]] show me ${Date.now()}`)
+  await page.getByTestId("composer-send").click()
+  const reply = page.getByTestId("message-agent").filter({ hasText: "[[attach]]" }).last()
+  const shown = reply.getByTestId("message-images").locator("img")
+  await expect(shown).toHaveCount(1)
+  await expect.poll(() => shown.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(2)
+})

@@ -162,7 +162,7 @@ export class ChatStore extends Context.Service<
     ): Effect.Effect<ReadonlyArray<Message>>
     /** Moves messages to another topic (the filer's correction). */
     refile(ids: ReadonlyArray<MessageId>, topicId: TopicId): Effect.Effect<void>
-    /** Rewrites a message's mutable parts: text, status, component, resolution, work. */
+    /** Rewrites a message's mutable parts: text, status, component, resolution, work, images. */
     updateMessage(message: Message): Effect.Effect<void>
     saveRun(messageId: MessageId, detail: RunDetail): Effect.Effect<void>
     getRun(id: RunId): Effect.Effect<Option.Option<RunDetail>>
@@ -417,7 +417,8 @@ export class ChatStore extends Context.Service<
         const e = yield* encodeMessage(message)
         yield* sql`
           UPDATE messages SET text = ${e.text}, status = ${e.status},
-            component = ${json(e.component)}, resolution = ${json(e.resolution)}, work = ${json(e.work)}
+            component = ${json(e.component)}, resolution = ${json(e.resolution)}, work = ${json(e.work)},
+            images = ${json(e.images)}
           WHERE id = ${e.id}
         `
       }, Effect.orDie)

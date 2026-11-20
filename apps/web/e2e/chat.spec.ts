@@ -165,3 +165,16 @@ test("UX-09: every action is reachable without hover", async ({ page }, info) =>
   const reply = agentReply(page, `Echo: ${said}`)
   await expect(reply.getByTestId("reply")).toBeVisible()
 })
+
+test("Stop ends a reply that's being written, and keeps what it wrote", async ({ page }, info) => {
+  await page.goto("/")
+  const said = `[[slow]] take your time ${info.project.name}`
+  await page.getByTestId("composer-input").fill(said)
+  await page.getByTestId("composer-send").click()
+  const reply = page.getByTestId("message-agent").filter({ hasText: said }).last()
+  await reply.getByTestId("stop").click()
+  await expect(reply).toHaveAttribute("data-status", "done")
+  await expect(reply).toContainText(`Echo: ${said}`)
+  await expect(reply).toContainText("Stopped.")
+  await expect(reply.getByTestId("stop")).toHaveCount(0)
+})

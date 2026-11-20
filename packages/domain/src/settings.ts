@@ -37,11 +37,22 @@ export const LabChange = Schema.Struct({
 })
 export type LabChange = typeof LabChange.Type
 
+/** One note Domo keeps about the user, as Settings lists it. */
+export const MemoryItem = Schema.Struct({
+  name: Schema.String,
+  type: Schema.String,
+  body: Schema.String,
+  lastUsed: Schema.String,
+})
+export type MemoryItem = typeof MemoryItem.Type
+
 /** Everything the settings sheet shows, in one read. */
 export const SettingsView = Schema.Struct({
   settings: DomoSettings,
   profile: Schema.String,
   notes: Schema.Int,
+  /** Every note, most recently used first. */
+  memories: Schema.Array(MemoryItem),
   labChanges: Schema.Array(LabChange),
   devices: Schema.Array(Schema.Struct({ id: DeviceId, lastSeen: Schema.String })),
 })

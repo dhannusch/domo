@@ -48,7 +48,14 @@ interface Shot {
  */
 export class VisualCheck extends Context.Service<
   VisualCheck,
-  { review(visual: typeof VisualInput.Type): Effect.Effect<VisualReview> }
+  {
+    review(visual: typeof VisualInput.Type): Effect.Effect<VisualReview>
+    /**
+     * A PNG of a whole HTML page at this size (2x for sharpness), for mockups the user should see
+     * as a picture. Web fonts may load from Google Fonts; nothing else. None without Chrome.
+     */
+    snapshot(html: string, width: number, height: number): Effect.Effect<Option.Option<Uint8Array>>
+  }
 >()("domo/visual/VisualCheck") {
   static readonly layer = Layer.effect(
     VisualCheck,
@@ -121,6 +128,38 @@ export class VisualCheck extends Context.Service<
           (context) => Effect.promise(() => context.close()).pipe(Effect.ignore),
         )
 
+      const snapshot = Effect.fn("VisualCheck.snapshot")(function* (
+        html: string,
+        width: number,
+        height: number,
+      ) {
+        const b = yield* browser
+        if (Option.isNone(b)) return Option.none<Uint8Array>()
+        return yield* Effect.acquireUseRelease(
+          Effect.tryPromise(() =>
+            b.value.newContext({ viewport: { width, height }, deviceScaleFactor: 2 }),
+          ),
+          (context) =>
+            Effect.tryPromise(async () => {
+              await context.route("**/*", (route) =>
+                /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(route.request().url())
+                  ? route.continue()
+                  : route.abort(),
+              )
+              const page = await context.newPage()
+              await page.setContent(html, { waitUntil: "networkidle", timeout: 10000 })
+              await page.evaluate(() => document.fonts.ready)
+              const png = await page.screenshot({ type: "png", timeout: 10000 })
+              return Option.some(new Uint8Array(png))
+            }),
+          (context) => Effect.promise(() => context.close()).pipe(Effect.ignore),
+        ).pipe(
+          Effect.catch((error) =>
+            Effect.logWarning("snapshot failed", error).pipe(Effect.as(Option.none<Uint8Array>())),
+          ),
+        )
+      })
+
       const review = Effect.fn("VisualCheck.review")(
         function* (visual: typeof VisualInput.Type) {
           if (!config.visualCheck) return CLEAN
@@ -156,12 +195,15 @@ export class VisualCheck extends Context.Service<
         ),
       )
 
-      return VisualCheck.of({ review })
+      return VisualCheck.of({ review, snapshot })
     }),
   )
 
   static readonly layerNoop = Layer.succeed(
     VisualCheck,
-    VisualCheck.of({ review: () => Effect.succeed(CLEAN) }),
+    VisualCheck.of({
+      review: () => Effect.succeed(CLEAN),
+      snapshot: () => Effect.succeed(Option.none()),
+    }),
   )
 }

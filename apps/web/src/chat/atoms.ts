@@ -48,6 +48,8 @@ export const trackAtom = DomoClient.mutation("Track")
 
 export const answerAtom = DomoClient.mutation("Answer")
 
+export const stopAtom = DomoClient.mutation("Stop")
+
 export const checkAtom = DomoClient.mutation("Check")
 
 export const pushKeyAtom = DomoClient.mutation("PushKey")
@@ -58,6 +60,8 @@ export const settingsAtom = DomoClient.query("Settings", undefined, {
 })
 
 export const updateSettingsAtom = DomoClient.mutation("UpdateSettings")
+
+export const forgetMemoryAtom = DomoClient.mutation("ForgetMemory")
 
 /** The user's instructions for Domo (domo.md), refreshed after a save. */
 export const instructionsAtom = DomoClient.query("Instructions", undefined, {

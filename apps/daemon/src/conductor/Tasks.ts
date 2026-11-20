@@ -1,5 +1,13 @@
 import { randomUUID } from "node:crypto"
-import { ComponentId, Message, MessageId, type ModelRef, RunId, TaskId } from "@domo/domain"
+import {
+  ComponentId,
+  Message,
+  MessageId,
+  type ModelRef,
+  RunId,
+  TaskId,
+  type TopicId,
+} from "@domo/domain"
 import {
   Clock,
   Context,
@@ -32,7 +40,9 @@ export class TaskNotStarted extends Schema.TaggedError<TaskNotStarted>()("TaskNo
 
 export interface StartTask {
   /** The run that asked for it; the task's reply goes into the same topic. */
-  readonly parentRunId: RunId
+  readonly parentRunId?: RunId
+  /** Or the topic itself, for work nothing is running for (a scheduled follow-up). */
+  readonly topicId?: TopicId
   readonly title: string
   readonly instructions: string
   readonly model?: ModelRef
@@ -61,6 +71,8 @@ export class Tasks extends Context.Service<
     start(input: StartTask): Effect.Effect<RunningTask, TaskNotStarted>
     readonly running: Effect.Effect<ReadonlyArray<RunningTask>>
     cancel(taskId: TaskId): Effect.Effect<boolean>
+    /** Cancels the task writing this reply, if any. */
+    stopReply(messageId: MessageId): Effect.Effect<boolean>
   }
 >()("domo/conductor/Tasks") {
   static readonly layer = Layer.effect(
@@ -99,13 +111,15 @@ export class Tasks extends Context.Service<
       })
 
       const start = Effect.fn("Tasks.start")(function* (input: StartTask) {
-        const parent = yield* bus.lookupRun(input.parentRunId)
-        if (Option.isNone(parent)) {
+        const parent =
+          input.parentRunId === undefined ? Option.none() : yield* bus.lookupRun(input.parentRunId)
+        const topicId = input.topicId ?? Option.getOrUndefined(parent)?.topicId
+        if (topicId === undefined) {
           return yield* new TaskNotStarted({
             message: "Start tasks from inside a conversation turn.",
           })
         }
-        const topic = yield* store.getTopic(parent.value.topicId)
+        const topic = yield* store.getTopic(topicId)
         if (Option.isNone(topic))
           return yield* new TaskNotStarted({ message: "That topic no longer exists." })
         const model = input.model ?? topic.value.model
@@ -190,10 +204,16 @@ export class Tasks extends Context.Service<
         return known
       })
 
+      const stopReplyOf = Effect.fn("Tasks.stopReply")(function* (messageId: MessageId) {
+        const task = [...(yield* Ref.get(running)).values()].find((t) => t.messageId === messageId)
+        return task === undefined ? false : yield* cancel(task.taskId)
+      })
+
       return Tasks.of({
         start,
         running: Ref.get(running).pipe(Effect.map((m) => [...m.values()])),
         cancel,
+        stopReply: stopReplyOf,
       })
     }),
   )

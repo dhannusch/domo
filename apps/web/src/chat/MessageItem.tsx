@@ -1,9 +1,9 @@
-import { type Message, replyTargets } from "@domo/domain"
+import { type Message, type MessageId, replyTargets } from "@domo/domain"
 import { useAtomSet } from "@effect/atom-react"
 import { useState } from "react"
 import Markdown, { type Components } from "react-markdown"
 import remarkGfm from "remark-gfm"
-import { trackAtom } from "./atoms.ts"
+import { stopAtom, trackAtom } from "./atoms.ts"
 import { ChecklistView } from "./components/ChecklistView.tsx"
 import { ChoiceView } from "./components/ChoiceView.tsx"
 import { ComparisonView } from "./components/ComparisonView.tsx"
@@ -66,6 +66,26 @@ const activity = (tool: string) => {
   return `using ${name}`
 }
 
+/** Ends a reply that's still being written; what it wrote so far stays. */
+function StopButton({ messageId }: { messageId: MessageId }) {
+  const stop = useAtomSet(stopAtom, { mode: "promise" })
+  const [stopping, setStopping] = useState(false)
+  return (
+    <button
+      type="button"
+      className="quiet-action stop-action"
+      data-testid="stop"
+      disabled={stopping}
+      onClick={() => {
+        setStopping(true)
+        stop({ payload: { messageId } }).catch(() => setStopping(false))
+      }}
+    >
+      {stopping ? "Stopping…" : "Stop"}
+    </button>
+  )
+}
+
 function ReplyButton({ message }: { message: Message }) {
   const setReply = useAtomSet(replyAtom)
   return (
@@ -82,6 +102,20 @@ function ReplyButton({ message }: { message: Message }) {
     >
       Reply
     </button>
+  )
+}
+
+/** A message's images; each opens full size. */
+function MessageImages({ message, alt }: { message: Message; alt: string }) {
+  if (message.images === undefined || message.images.length === 0) return null
+  return (
+    <div className="message-images" data-testid="message-images">
+      {message.images.map((image) => (
+        <a key={image.id} href={imageUrl(image)} target="_blank" rel="noreferrer">
+          <img src={imageUrl(image)} alt={alt} loading="lazy" />
+        </a>
+      ))}
+    </div>
   )
 }
 
@@ -110,15 +144,7 @@ function UserMessage({ message }: { message: Message }) {
           )}
         </div>
       ))}
-      {message.images !== undefined && message.images.length > 0 ? (
-        <div className="message-images" data-testid="message-images">
-          {message.images.map((image) => (
-            <a key={image.id} href={imageUrl(image)} target="_blank" rel="noreferrer">
-              <img src={imageUrl(image)} alt="Attached by you" loading="lazy" />
-            </a>
-          ))}
-        </div>
-      ) : null}
+      <MessageImages message={message} alt="Attached by you" />
       {message.text.length > 0 ? <p className="user-text">{message.text}</p> : null}
     </div>
   )
@@ -161,6 +187,8 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
           Working: {activity(progress.current)}
         </p>
       ) : null}
+      <MessageImages message={message} alt="Made by Domo" />
+      {streaming ? <StopButton messageId={message.id} /> : null}
       <ComponentView message={message} />
       {folded ? (
         <button

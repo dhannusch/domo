@@ -1,13 +1,14 @@
 import { createServer } from "node:http"
 import { join } from "node:path"
-import { DomoRpc } from "@domo/domain"
+import { DomoRpc, RunId } from "@domo/domain"
 import { NodeHttpServer } from "@effect/platform-node"
-import { DateTime, Effect, Layer, Option } from "effect"
+import { DateTime, Effect, FileSystem, Layer, Option } from "effect"
 import { HttpRouter, HttpServerRequest, HttpServerResponse, HttpStaticServer } from "effect/http"
 import { RpcSerialization, RpcServer } from "effect/rpc"
 import { ChatBus } from "../chat/ChatBus.ts"
 import { ChatStore } from "../chat/ChatStore.ts"
 import { Conductor } from "../conductor/Conductor.ts"
+import { Tasks } from "../conductor/Tasks.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { CheckIns } from "../goals/CheckIns.ts"
 import { Images } from "../images/Images.ts"
@@ -28,6 +29,7 @@ const WEB_DIST = join(import.meta.dirname, "../../../web/dist")
 const RpcHandlers = DomoRpc.toLayer(
   Effect.gen(function* () {
     const conductor = yield* Conductor
+    const tasks = yield* Tasks
     const store = yield* ChatStore
     const bus = yield* ChatBus
     const telemetry = yield* Telemetry
@@ -56,6 +58,11 @@ const RpcHandlers = DomoRpc.toLayer(
       UndoTidy: ({ id }) => tidier.undo(id),
       UndoAnswer: ({ messageId }) => conductor.undoAnswer(messageId),
       NotQuite: ({ messageId }) => conductor.notQuite(messageId),
+      Stop: ({ messageId }) =>
+        conductor.stop(messageId).pipe(
+          Effect.flatMap((stopped) => (stopped ? Effect.void : tasks.stopReply(messageId))),
+          Effect.asVoid,
+        ),
       Feed: () => bus.feed,
       Run: ({ runId }) => store.getRun(runId).pipe(Effect.map(Option.getOrNull)),
       Models: () => Effect.succeed(modelOptions),
@@ -64,10 +71,17 @@ const RpcHandlers = DomoRpc.toLayer(
           settings: settings.current,
           profile: memory.profile,
           notes: Effect.map(memory.notes, (notes) => notes.length),
+          memories: Effect.map(memory.notes, (notes) =>
+            [...notes]
+              .sort((a, b) => b.lastUsed.localeCompare(a.lastUsed))
+              .map((n) => ({ name: n.name, type: n.type, body: n.body, lastUsed: n.lastUsed })),
+          ),
           labChanges: Effect.map(lab.changes, (changes) => changes.slice(0, 10)),
           devices: presence.devices,
         }),
       UpdateSettings: ({ patch }) => settings.update(patch),
+      ForgetMemory: ({ name }) =>
+        memory.forget(name, "removed by the user in Settings").pipe(Effect.asVoid),
       UndoLabChange: ({ id }) => lab.undo(id),
       Instructions: () => instructions.read,
       SaveInstructions: ({ text }) => instructions.save(text, "you"),
@@ -129,6 +143,47 @@ const ImageRoutes = Layer.mergeAll(
   ),
 )
 
+/** The most of one file "view" will show. */
+const FILE_LIMIT = 2 * 1024 * 1024
+const IMAGE_TYPES: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+}
+
+/**
+ * A file a run changed, for "view". Only files recorded on that run are served, by position, so
+ * this can't be used to read anything else on the machine. Text is always served as plain text
+ * (never as a page that could run), images as themselves.
+ */
+const FileRoute = HttpRouter.add(
+  "GET",
+  "/files/:runId/:index",
+  Effect.gen(function* () {
+    const { runId, index } = yield* HttpRouter.params
+    const run = yield* (yield* ChatStore).getRun(RunId.make(runId ?? ""))
+    const path = Option.isSome(run) ? run.value.files[Number(index)] : undefined
+    if (path === undefined) return HttpServerResponse.empty({ status: 404 })
+    const fs = yield* FileSystem.FileSystem
+    const info = yield* fs.stat(path)
+    if (info.type !== "File" || Number(info.size) > FILE_LIMIT)
+      return HttpServerResponse.text("That file is gone or too large to show here.", {
+        status: 404,
+      })
+    const image = IMAGE_TYPES[path.split(".").at(-1)?.toLowerCase() ?? ""]
+    return HttpServerResponse.uint8Array(yield* fs.readFile(path), {
+      contentType: image ?? "text/plain; charset=utf-8",
+      headers: {
+        "content-security-policy": "default-src 'none'; img-src 'self'",
+        "x-content-type-options": "nosniff",
+        "cache-control": "no-store",
+      },
+    })
+  }).pipe(Effect.catch(() => Effect.succeed(HttpServerResponse.empty({ status: 404 })))),
+)
+
 /** The built PWA. In development Vite serves the UI and proxies /rpc here. */
 const StaticRoute = HttpStaticServer.layer({ root: WEB_DIST, spa: true })
 
@@ -140,7 +195,15 @@ export const ServerLive = Layer.unwrap(
   Effect.gen(function* () {
     const config = yield* DomoConfig
     return HttpRouter.serve(
-      Layer.mergeAll(AccessLive, HealthRoute, RpcRoute, DomoMcpLive, ImageRoutes, StaticRoute),
+      Layer.mergeAll(
+        AccessLive,
+        HealthRoute,
+        RpcRoute,
+        DomoMcpLive,
+        ImageRoutes,
+        FileRoute,
+        StaticRoute,
+      ),
     ).pipe(
       Layer.provide(NodeHttpServer.layer(createServer, { port: config.port, host: "127.0.0.1" })),
     )

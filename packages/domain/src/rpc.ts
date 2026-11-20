@@ -100,6 +100,8 @@ export class DomoRpc extends RpcGroup.make(
   Rpc.make("Models", { success: Schema.Array(ModelOption) }),
   /** Everything the settings sheet shows. */
   Rpc.make("Settings", { success: SettingsView }),
+  /** The user removes a note from Settings (it's archived, never deleted). */
+  Rpc.make("ForgetMemory", { payload: { name: Schema.NonEmptyString } }),
   Rpc.make("UpdateSettings", { payload: { patch: SettingsPatch }, success: DomoSettings }),
   /** The user's own instructions for Domo (~/.domo/domo.md). */
   Rpc.make("Instructions", { success: Schema.String }),
@@ -110,6 +112,8 @@ export class DomoRpc extends RpcGroup.make(
   Rpc.make("PushKey", { success: Schema.String }),
   /** This device wants a notification when a decision blocks on the user. */
   Rpc.make("Subscribe", { payload: { subscription: PushSubscriptionJson } }),
+  /** Stops a reply that's being written (a chat reply or a background task). */
+  Rpc.make("Stop", { payload: { messageId: MessageId } }),
   /** Answers a message's Choice (an option value, or free text). */
   Rpc.make("Answer", {
     payload: { messageId: MessageId, value: Schema.NonEmptyString, freeText: Schema.Boolean },

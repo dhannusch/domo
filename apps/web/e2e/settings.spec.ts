@@ -99,3 +99,29 @@ test("Let Domo interview you sends the request and closes settings", async ({ pa
     page.getByText("Interview me. I'd like you to get to know me better").last(),
   ).toBeVisible()
 })
+
+test("the gear stays on screen after scrolling down a long chat", async ({ page }) => {
+  await page.goto("/")
+  for (const n of [1, 2, 3]) {
+    await page.getByTestId("composer-input").fill(`[[long]] scroll ${n}`)
+    await page.getByTestId("composer-send").click()
+    await expect(page.getByTestId("message-agent").last()).toHaveAttribute("data-status", "done")
+  }
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight))
+  await expect(page.getByTestId("settings-open")).toBeInViewport()
+  await page.getByTestId("settings-open").click()
+  await expect(page.getByTestId("settings")).toBeVisible()
+})
+
+test("What Domo knows lists each note, and one can be removed", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("composer-input").fill("[[remember]] note this")
+  await page.getByTestId("composer-send").click()
+  await expect(page.getByTestId("message-agent").last()).toHaveAttribute("data-status", "done")
+  await page.getByTestId("settings-open").click()
+  await page.getByTestId("profile-open").click()
+  const note = page.getByTestId("memory-item").filter({ hasText: "Takes oat milk in coffee" })
+  await expect(note).toContainText("oat milk")
+  await note.getByTestId("memory-forget").click()
+  await expect(note).toHaveCount(0)
+})

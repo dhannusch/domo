@@ -73,11 +73,18 @@ body {
   min-height: 100dvh;
 }
 
+/* The date and the gear stay at the top while the chat scrolls, so settings are always one tap
+   away. The paper fades in behind them, like the composer at the bottom. */
 .masthead-row {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0 0 var(--line);
+  margin: 0 0 calc(var(--line) / 2);
+  padding: max(0.4rem, env(safe-area-inset-top)) 0 calc(var(--line) / 2);
+  background: linear-gradient(to top, transparent, var(--paper) calc(var(--line) * 0.6));
 }
 
 .masthead-row .masthead {
@@ -867,8 +874,62 @@ body {
   overflow-wrap: anywhere;
 }
 
+/* Each changed file opens in the reader below. */
 .run-file {
+  border: 0;
+  padding: 0;
+  background: none;
+  font: inherit;
   color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--margin-rule);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.file-viewer {
+  width: min(44rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 1rem 1.25rem 1.5rem;
+  border: 1px solid var(--margin-rule);
+  border-radius: 12px;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.file-viewer::backdrop {
+  background: color-mix(in srgb, var(--ink) 35%, transparent);
+}
+
+.file-viewer-head {
+  position: sticky;
+  top: -1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin: -1rem 0 0.75rem;
+  padding: 1rem 0 0.5rem;
+  background: var(--paper);
+  border-bottom: 1px solid var(--paper-deep);
+}
+
+.file-viewer h2 {
+  margin: 0;
+  font: 600 1rem var(--font-hand);
+  overflow-wrap: anywhere;
+}
+
+.file-viewer img {
+  max-width: 100%;
+  border-radius: 8px;
+}
+
+.file-plain {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
 }
 
 .run-label,
@@ -1188,4 +1249,44 @@ body {
 .mention-alias {
   font-size: 0.8rem;
   color: var(--pencil);
+}
+
+/* What Domo knows: each note as a quiet row, its name above what it says. */
+.memory-list {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.memory-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--paper-deep);
+}
+
+.memory-text {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.memory-name {
+  font-size: 0.85rem;
+  color: var(--pencil);
+}
+
+.memory-body {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* Stop sits quietly under a reply while it's being written. */
+.stop-action {
+  display: block;
+  margin: calc(var(--line) * -0.5) 0 var(--line);
 }

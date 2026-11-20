@@ -1,3 +1,6 @@
+import { writeFileSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import type { AgentEvent, RunId } from "@domo/domain"
 import { Effect, Layer, Option, Schema, Stream } from "effect"
 import { callDomoTool } from "./echoMcp.ts"
@@ -71,6 +74,9 @@ const echoReply = (request: RunRequest): string => {
   return `Echo: ${said}${seeded}${seen}`
 }
 
+/** Where `[[attach]]` writes the picture it then shows. */
+const ECHO_PNG = join(tmpdir(), "domo-echo-attach.png")
+
 /** UI components the echo provider renders through Domo's real MCP endpoint, by directive. */
 const ECHO_COMPONENTS: ReadonlyArray<readonly [string, string, unknown]> = [
   [
@@ -87,6 +93,17 @@ const ECHO_COMPONENTS: ReadonlyArray<readonly [string, string, unknown]> = [
     },
   ],
   ["[[start-topic]]", "start_topic", { title: "How Teams Ship" }],
+  ["[[attach]]", "attach_image", { path: ECHO_PNG }],
+  [
+    "[[remember]]",
+    "remember",
+    {
+      name: "oat-milk",
+      type: "user",
+      fact: "Takes oat milk in coffee",
+      why: "For ordering coffee",
+    },
+  ],
   ["[[rename-topic]]", "rename_topic", { title: "Renamed Plans" }],
   [
     "[[questions]]",
@@ -182,6 +199,24 @@ const toolText = (body: string): string => {
 }
 
 /** Fake tool activity for `[[work]]`, so receipts and "view" can be tested. */
+/** A tiny real PNG (2x2) for `[[attach]]`. */
+const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGM4keUFRAwQCgArlgXxKFd8GAAAAABJRU5ErkJggg==",
+  "base64",
+)
+
+/** `[[write]]`: really writes plan.md in the run's working directory (its topic folder). */
+const writeEvents = (runId: RunId, cwd: string | undefined): ReadonlyArray<AgentEvent> => {
+  if (cwd === undefined) return []
+  const path = join(cwd, "plan.md")
+  writeFileSync(path, "# Plan\n\n- Pick a name\n- Draft the About page\n")
+  return [
+    { _tag: "ToolStarted", runId, callId: "p1", name: "Write", input: { file_path: path } },
+    { _tag: "FileChanged", runId, path },
+    { _tag: "ToolFinished", runId, callId: "p1", ok: true, summary: `File created at ${path}` },
+  ]
+}
+
 const workEvents = (runId: RunId): ReadonlyArray<AgentEvent> => [
   { _tag: "ToolStarted", runId, callId: "w1", name: "Edit", input: { file_path: "/project/a.ts" } },
   { _tag: "FileChanged", runId, path: "/project/a.ts" },
@@ -223,6 +258,8 @@ export const layerEcho = Layer.succeed(
       const opening: ReadonlyArray<AgentEvent> = [
         { _tag: "RunStarted", runId, sessionId },
         ...(said.includes("[[work]]") ? workEvents(runId) : []),
+        ...(said.includes("[[write]]") ? writeEvents(runId, request.cwd) : []),
+        ...(said.includes("[[attach]]") ? (writeFileSync(ECHO_PNG, TINY_PNG), []) : []),
         // Claude streams token deltas; Codex delivers whole messages.
         ...(request.model.provider === "codex" ? [text] : text.split(/(?<= )/)).map(
           (part): AgentEvent => ({ _tag: "TextDelta", runId, text: part }),

@@ -11,7 +11,7 @@ import {
   Topic,
   TopicId,
 } from "@domo/domain"
-import { Context, DateTime, Effect, FiberSet, FileSystem, Layer, Option, Semaphore } from "effect"
+import { Context, DateTime, Effect, FiberMap, FileSystem, Layer, Option, Semaphore } from "effect"
 import { ChatBus } from "../chat/ChatBus.ts"
 import { ChatStore } from "../chat/ChatStore.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
@@ -28,7 +28,7 @@ import { makeChoices } from "./choices.ts"
 import { Filer } from "./Filer.ts"
 import { isConfirmation, makeFiling } from "./filing.ts"
 import { makeSystemPrompt, mcpFor, nameOf } from "./prompt.ts"
-import { makeTurn } from "./turn.ts"
+import { finishStopped, makeTurn } from "./turn.ts"
 
 export interface SendInput {
   readonly text: string
@@ -93,6 +93,7 @@ export class Conductor extends Context.Service<
     undoAnswer(messageId: MessageId): Effect.Effect<void, SendFailed>
     /** "Not quite": the restatement was wrong, so the topic's summary is re-derived. */
     notQuite(messageId: MessageId): Effect.Effect<void>
+    stop(messageId: MessageId): Effect.Effect<boolean>
   }
 >()("domo/conductor/Conductor") {
   static readonly layer = Layer.effect(
@@ -109,7 +110,8 @@ export class Conductor extends Context.Service<
       const fs = yield* FileSystem.FileSystem
       const images = yield* Images
       const systemPrompt = makeSystemPrompt(config, fs, yield* GoalStore, yield* Memory)
-      const background = yield* FiberSet.make()
+      /** Replies in progress (or queued), by their message, so Stop can end one. */
+      const replies = yield* FiberMap.make<MessageId>()
       const oneAtATime = yield* Semaphore.make(1)
       const interrupted = yield* store.interruptStreaming
       if (interrupted > 0)
@@ -405,11 +407,14 @@ export class Conductor extends Context.Service<
               : ""
         const asked = [quoted ?? "", said].filter((part) => part.length > 0).join("\n\n")
         const prompt = Option.isSome(pickUp) ? `${pickUpNote(pickUp.value)}\n\n${asked}` : asked
-        yield* FiberSet.run(
-          background,
+        yield* FiberMap.run(
+          replies,
+          agentMessage.id,
           oneAtATime
             .withPermits(1)(runAgent(topic, userMessage, agentMessage, prompt))
             .pipe(
+              // Stopped while still waiting its turn: end it too (a started run ends itself).
+              Effect.onInterrupt(() => finishStopped(store, bus, agentMessage.id, "")),
               Effect.flatMap((result) =>
                 // Replies were placed deliberately, so they skip filing.
                 Option.isSome(result) && input.replyTo === undefined
@@ -461,7 +466,15 @@ export class Conductor extends Context.Service<
         return DateTime.toEpochMillis(now) - DateTime.toEpochMillis(topic.lastActivityAt) > ms
       })
 
-      return Conductor.of({ send, answer, check, undoAnswer, notQuite })
+      /** Stops a reply being written (or still queued); false if it isn't one of the chat's. */
+      const stop = Effect.fn("Conductor.stop")(function* (messageId: MessageId) {
+        if (!(yield* FiberMap.has(replies, messageId))) return false
+        yield* FiberMap.remove(replies, messageId)
+        yield* telemetry.record({ _tag: "ReplyStopped", messageId })
+        return true
+      })
+
+      return Conductor.of({ send, answer, check, undoAnswer, notQuite, stop })
     }),
   )
 }

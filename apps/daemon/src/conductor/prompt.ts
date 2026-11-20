@@ -1,4 +1,4 @@
-import { Effect, FileSystem } from "effect"
+import { DateTime, Effect, FileSystem } from "effect"
 import type { DomoConfigShape } from "../config/DomoConfig.ts"
 import type { GoalStore } from "../goals/GoalStore.ts"
 import { instructionsForPrompt, readInstructions } from "../instructions/Instructions.ts"
@@ -34,6 +34,26 @@ const profileText = (memory: Memory["Service"]) =>
     ),
   )
 
+/**
+ * The user's local date and time (this computer's time zone), so "Tuesday at 9" can be worked
+ * out. Last in the prompt, since it changes every run and would otherwise break prompt caching.
+ */
+export const nowText = DateTime.now.pipe(
+  Effect.map((now) => {
+    const date = DateTime.toDateUtc(now)
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    const local = new Intl.DateTimeFormat("en-US", {
+      dateStyle: "full",
+      timeStyle: "short",
+      timeZone: zone,
+    }).format(date)
+    const minutes = -date.getTimezoneOffset()
+    const abs = Math.abs(minutes)
+    const offset = `${minutes >= 0 ? "+" : "-"}${String(Math.floor(abs / 60)).padStart(2, "0")}:${String(abs % 60).padStart(2, "0")}`
+    return `Now: ${local} (${zone}, UTC${offset}).`
+  }),
+)
+
 /** Persona, profile, skill index and active goals; all of them change between runs. */
 export const makeSystemPrompt = (
   config: DomoConfigShape,
@@ -49,9 +69,10 @@ export const makeSystemPrompt = (
       Effect.map(skillIndexText),
     ),
     goalsText(goals),
+    nowText,
   ]).pipe(
-    Effect.map(([instructions, profile, skills, active]) =>
-      [PERSONA, instructions, profile, skills, active]
+    Effect.map(([instructions, profile, skills, active, now]) =>
+      [PERSONA, instructions, profile, skills, active, now]
         .filter((part) => part.length > 0)
         .join("\n\n"),
     ),

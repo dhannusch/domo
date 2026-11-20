@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@effect/vitest"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Option } from "effect"
 import { chromium } from "playwright-core"
 import { DomoConfig } from "../src/config/DomoConfig.ts"
 import { layerEcho } from "../src/providers/EchoProvider.ts"
@@ -23,6 +23,24 @@ const chrome = await chromium.launch({ channel: "chrome", headless: true }).then
 
 /** Renders in the system Chrome, like the daemon does; slow-ish, so one browser for all cases. */
 describe.skipIf(!chrome)("VisualCheck", () => {
+  it.live(
+    "snapshot turns a page into a sharp PNG of the asked size",
+    () =>
+      Effect.gen(function* () {
+        const png = yield* (yield* VisualCheck).snapshot(
+          "<body style='margin:0;background:#2f5d50'><h1 style='color:white'>How Teams Ship</h1></body>",
+          400,
+          300,
+        )
+        const bytes = Option.getOrThrow(png)
+        // PNG signature, then width and height in the header (2x for sharpness).
+        expect([...bytes.slice(1, 4)]).toEqual([80, 78, 71])
+        const view = new DataView(bytes.buffer, bytes.byteOffset)
+        expect([view.getUint32(16), view.getUint32(20)]).toEqual([800, 600])
+      }).pipe(Effect.provide(TestLayer)),
+    30_000,
+  )
+
   it.live(
     "catches overlapping labels, overflow and tiny text, and passes a clean diagram",
     () =>

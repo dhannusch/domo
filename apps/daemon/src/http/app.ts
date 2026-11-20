@@ -19,6 +19,7 @@ import { Notifier } from "../notify/Notifier.ts"
 import { Presence } from "../presence/Presence.ts"
 import { Tidier } from "../presence/Tidier.ts"
 import { ProvidersLive } from "../providers/live.ts"
+import { Reminders } from "../reminders/Reminders.ts"
 import { Settings } from "../settings/Settings.ts"
 import { DatabaseLive } from "../store/Database.ts"
 import { Telemetry } from "../telemetry/Telemetry.ts"
@@ -58,7 +59,9 @@ export const DaemonLive = Layer.mergeAll(
   Tidier.loop,
   Sleep.loop,
   Lab.loop,
+  Reminders.loop,
 ).pipe(
+  Layer.provideMerge(Reminders.layer),
   Layer.provideMerge(Conductor.layer),
   Layer.provide(Filer.layer),
   Layer.provideMerge(Tasks.layer),

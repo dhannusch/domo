@@ -8,6 +8,7 @@ import {
   Goal,
   GoalId,
   GoalStatus,
+  MAX_IMAGES,
   Message,
   QuestionsInput,
   RunId,
@@ -33,12 +34,14 @@ import { ChatStore } from "../chat/ChatStore.ts"
 import { Tasks } from "../conductor/Tasks.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { GoalStore } from "../goals/GoalStore.ts"
+import { Images } from "../images/Images.ts"
 import { INSTRUCTIONS_MAX, Instructions } from "../instructions/Instructions.ts"
 import { Memory } from "../memory/Memory.ts"
 import { MemoryType } from "../memory/note.ts"
 import { labelFor, MODEL_ALIASES, resolveModel } from "../models/registry.ts"
 import { Notifier } from "../notify/Notifier.ts"
 import { Providers } from "../providers/Providers.ts"
+import { Reminders } from "../reminders/Reminders.ts"
 import { makePlacement } from "../topics/placement.ts"
 import { VisualCheck } from "../visual/VisualCheck.ts"
 import { runCouncil, runModel, SUBAGENT_PERSONA } from "./orchestration.ts"
@@ -331,6 +334,72 @@ const RenameTopic = Tool.make("rename_topic", {
   dependencies: [CurrentRun],
 })
 
+const IMAGE_TYPES: Record<string, string> = {
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+  gif: "image/gif",
+}
+
+const Schedule_ = Tool.make("schedule", {
+  description:
+    "Say or do something at a set time: a reminder, a follow-up, a check-in. At `at` you post " +
+    "`note` into this topic and the user gets a phone notification. With `task`, that work runs " +
+    "in the background at that time instead and its result is what you post. Use the current " +
+    "time in your instructions to work out `at`. Only tell the user you'll remind or follow up " +
+    "after this has confirmed it.",
+  parameters: Schema.Struct({
+    at: Schema.NonEmptyString.annotate({
+      description: "When, as ISO 8601 with the user's UTC offset, e.g. 2026-11-24T09:00:00-06:00",
+    }),
+    note: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(500))),
+    task: Schema.optionalKey(Schema.NonEmptyString),
+  }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
+const AttachImage = Tool.make("attach_image", {
+  description:
+    "Show the user an image file you made or found (PNG, JPEG, WebP or GIF, up to 10 MB), as a " +
+    "picture in your reply. Up to 4 per reply. Use it for logos, mockups, charts and photos; the " +
+    "user prefers real images to render_visual for design work.",
+  parameters: Schema.Struct({ path: Schema.NonEmptyString }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
+const SnapshotHtml = Tool.make("snapshot_html", {
+  description:
+    "Turn an HTML page you write into a PNG and show it in your reply: the way to show a design " +
+    "mockup, cover, logo or social card as a real picture. Write a complete page sized to " +
+    "width x height; web fonts may load from Google Fonts, nothing else from the network. " +
+    "Returns where the PNG was saved so you can keep or reuse it.",
+  parameters: Schema.Struct({
+    html: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(200_000))),
+    width: Schema.optionalKey(
+      Schema.Int.pipe(Schema.check(Schema.isBetween({ minimum: 200, maximum: 2400 }))),
+    ),
+    height: Schema.optionalKey(
+      Schema.Int.pipe(Schema.check(Schema.isBetween({ minimum: 200, maximum: 2400 }))),
+    ),
+  }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
+const ListScheduled = Tool.make("list_scheduled", {
+  description: "List the reminders and follow-ups still to come, with their ids.",
+  success: Schema.String,
+})
+
+const CancelScheduled = Tool.make("cancel_scheduled", {
+  description: "Cancel a reminder or follow-up by its id (from list_scheduled).",
+  parameters: Schema.Struct({ id: Schema.NonEmptyString }),
+  success: Schema.String,
+})
+
 export const DomoTools = Toolkit.make(
   RenderChoice,
   RenderQuestions,
@@ -353,6 +422,11 @@ export const DomoTools = Toolkit.make(
   ReadSkill,
   StartTopic,
   RenameTopic,
+  Schedule_,
+  AttachImage,
+  SnapshotHtml,
+  ListScheduled,
+  CancelScheduled,
 )
 
 const dayFormat = new Intl.DateTimeFormat("en-US", {
@@ -380,6 +454,30 @@ const DomoToolHandlers = DomoTools.toLayer(
     const tasks = yield* Tasks
     const goals = yield* GoalStore
     const memory = yield* Memory
+    const reminders = yield* Reminders
+    const images = yield* Images
+
+    /** Saves an image and adds it to the reply being written (up to MAX_IMAGES). */
+    const showImage = Effect.fnUntraced(function* (bytes: Uint8Array, type: string) {
+      const { runId } = yield* CurrentRun
+      const run = yield* bus.lookupRun(runId)
+      if (Option.isNone(run)) return "This conversation turn has already ended; nothing was shown."
+      const message = yield* store.getMessage(run.value.messageId)
+      if (Option.isNone(message)) return "Nothing was shown."
+      const shown = message.value.images ?? []
+      if (shown.length >= MAX_IMAGES) return `A reply can show at most ${MAX_IMAGES} images.`
+      const saved = yield* images.save(bytes, type).pipe(
+        Effect.map(Option.some),
+        Effect.catchTag("ImageRejected", () => Effect.succeed(Option.none())),
+      )
+      if (Option.isNone(saved))
+        return "That image couldn't be shown (wrong type, empty or over 10 MB)."
+      const updated = new Message({ ...message.value, images: [...shown, saved.value] })
+      yield* store.updateMessage(updated)
+      yield* bus.publish({ _tag: "MessageUpdated", message: updated })
+      const found = yield* images.find(saved.value.id)
+      return `Shown below your reply${Option.isSome(found) ? ` (saved at ${found.value.path})` : ""}.`
+    })
     const placement = makePlacement({ store, bus, fs, home: config.home })
 
     /**
@@ -727,6 +825,53 @@ const DomoToolHandlers = DomoTools.toLayer(
 
       forget: ({ name, reason }) => memory.forget(name, reason),
 
+      attach_image: Effect.fnUntraced(function* ({ path }) {
+        const type = IMAGE_TYPES[path.split(".").at(-1)?.toLowerCase() ?? ""]
+        if (type === undefined) return "Only PNG, JPEG, WebP or GIF files can be shown."
+        const bytes = yield* fs.readFile(path).pipe(Effect.option)
+        if (Option.isNone(bytes)) return `Couldn't read ${path}.`
+        return yield* showImage(bytes.value, type)
+      }),
+      snapshot_html: Effect.fnUntraced(function* ({ html, width, height }) {
+        const png = yield* visualCheck.snapshot(html, width ?? 1200, height ?? 630)
+        if (Option.isNone(png))
+          return "Chrome isn't available on this computer, so no picture could be made."
+        return yield* showImage(png.value, "image/png")
+      }),
+      schedule: Effect.fnUntraced(function* ({ at, note, task }) {
+        const run = yield* bus.lookupRun((yield* CurrentRun).runId)
+        if (Option.isNone(run)) return "This conversation turn has already ended."
+        const when = DateTime.make(at)
+        if (Option.isNone(when) || !/([+-]\d\d:?\d\d|Z)$/.test(at))
+          return `"${at}" isn't a time I can use. Give ISO 8601 with the UTC offset.`
+        const now = yield* DateTime.now
+        if (DateTime.toEpochMillis(when.value) <= DateTime.toEpochMillis(now))
+          return "That time has already passed. Pick a time in the future."
+        const reminder = yield* reminders.add({
+          topicId: run.value.topicId,
+          dueAt: DateTime.toUtc(when.value),
+          note,
+          ...(task === undefined ? {} : { task }),
+        })
+        return `Scheduled (id ${reminder.id}) for ${at}: "${note}"${task === undefined ? "" : " (runs as a task)"}. Confirm to the user in one short sentence, with the day and time in their words.`
+      }),
+      list_scheduled: () =>
+        reminders.pending.pipe(
+          Effect.map((all) =>
+            all.length === 0
+              ? "Nothing scheduled."
+              : all
+                  .map(
+                    (r) =>
+                      `- ${r.id}: ${DateTime.formatIso(r.dueAt)} (UTC): ${r.note}${r.task === undefined ? "" : " [task]"}`,
+                  )
+                  .join("\n"),
+          ),
+        ),
+      cancel_scheduled: ({ id }) =>
+        reminders
+          .cancel(id)
+          .pipe(Effect.map((ok) => (ok ? "Cancelled." : `Nothing scheduled with id ${id}.`))),
       start_topic: Effect.fnUntraced(function* ({ title }) {
         const run = yield* bus.lookupRun((yield* CurrentRun).runId)
         if (Option.isNone(run)) return "This conversation turn has already ended."
