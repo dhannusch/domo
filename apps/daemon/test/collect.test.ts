@@ -1,6 +1,7 @@
+import { type AgentEvent, RunId } from "@domo/domain"
 import { describe, expect, it } from "@effect/vitest"
-import { Option } from "effect"
-import { isDomoUiTool, type RunOutcome, workSummary } from "../src/conductor/collect.ts"
+import { Effect, Option, Stream } from "effect"
+import { collectRun, isDomoUiTool, type RunOutcome, workSummary } from "../src/conductor/collect.ts"
 
 const outcome = (over: Partial<RunOutcome> = {}): RunOutcome => ({
   streamed: "",
@@ -11,6 +12,7 @@ const outcome = (over: Partial<RunOutcome> = {}): RunOutcome => ({
   files: [],
   usage: undefined,
   pending: new Map(),
+  afterTool: false,
   ...over,
 })
 
@@ -40,4 +42,38 @@ describe("isDomoUiTool", () => {
     expect(isDomoUiTool("ToolSearch")).toBe(true)
     expect(isDomoUiTool("Bash")).toBe(false)
   })
+})
+
+describe("collectRun", () => {
+  it.effect("keeps text written before a card, with a paragraph break after it", () =>
+    Effect.gen(function* () {
+      const runId = RunId.make("r")
+      const events: ReadonlyArray<AgentEvent> = [
+        { _tag: "TextDelta", runId, text: "Here's my thinking. " },
+        { _tag: "TextDelta", runId, text: "Three ideas." },
+        { _tag: "ToolStarted", runId, callId: "c1", name: "mcp__domo__render_choice", input: {} },
+        { _tag: "ToolFinished", runId, callId: "c1", ok: true, summary: "Shown." },
+        { _tag: "TextDelta", runId, text: "Pick one below." },
+        {
+          _tag: "RunCompleted",
+          runId,
+          text: "Pick one below.",
+          usage: { inputTokens: 1, outputTokens: 1, cachedInputTokens: 0 },
+        },
+      ]
+      const deltas: Array<string> = []
+      const outcome = yield* collectRun(
+        Stream.fromIterable(events),
+        { sessionId: undefined, wholeMessages: false },
+        {
+          onSession: () => Effect.void,
+          onDelta: (text) => Effect.sync(() => deltas.push(text)),
+          onTool: () => Effect.void,
+        },
+      )
+      expect(outcome.streamed).toBe("Here's my thinking. Three ideas.\n\nPick one below.")
+      // The live view gets the same break as the saved reply.
+      expect(deltas.join("")).toBe(outcome.streamed)
+    }),
+  )
 })

@@ -94,6 +94,22 @@ describe("Conductor", () => {
     }).pipe(Effect.provide(makeLayer(recordingEcho(requests))))
   })
 
+  it.live("comments on highlights reach the model under their quotes, without other text", () => {
+    const requests: Array<RunRequest> = []
+    return Effect.gen(function* () {
+      const { reply } = yield* sendAndWait("first answer")
+      const conductor = yield* Conductor
+      const quote = { exact: "first", prefix: "Echo: ", suffix: " answer" }
+      yield* conductor.send({
+        text: "",
+        replyTo: { messageId: reply.id, quote, comment: "why first?" },
+      })
+      yield* Effect.sleep("50 millis")
+      const prompt = requests.filter((r) => r.mode !== "utility").at(-1)?.prompt ?? ""
+      expect(prompt).toContain("> first\nMy comment: why first?")
+    }).pipe(Effect.provide(makeLayer(recordingEcho(requests))))
+  })
+
   it.live("unpinned topics follow the default model; @alias pins a topic to its model", () =>
     Effect.gen(function* () {
       const settings = yield* Settings

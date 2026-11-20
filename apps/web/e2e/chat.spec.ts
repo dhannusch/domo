@@ -86,12 +86,14 @@ test("reply with quote: selecting text anchors the reply to the fragment", async
   await expect(prose).toContainText("quotable")
   await prose.getByText("quotable words", { exact: false }).selectText()
   await page.getByTestId("reply-with-quote").click()
+  // A quote with no comment is fine: add it as is.
+  await page.getByTestId("highlight-comment-add").click()
   await expect(page.getByTestId("reply-chip")).toContainText("“")
   await send(page, "what about this part?")
   await expect(page.getByTestId("message-quote").last()).toContainText("quotable")
 })
 
-test("reply with several quotes: each highlight adds one, and all are sent", async ({
+test("comments on highlights: each gets its own note, and they're sent together", async ({
   page,
 }, info) => {
   test.skip(info.project.name === "phone", "Text selection is driven by mouse in this test")
@@ -101,31 +103,46 @@ test("reply with several quotes: each highlight adds one, and all are sent", asy
   await expect(agentReply(page, `Echo: ${first}`)).toHaveAttribute("data-status", "done")
   await send(page, second)
   await expect(agentReply(page, `Echo: ${second}`)).toHaveAttribute("data-status", "done")
-  for (const words of ["alpha fragment", "beta fragment"]) {
+  const highlight = async (words: string) => {
     await agentReply(page, words)
       .last()
       .locator("[data-message-id]")
       .getByText(words, { exact: false })
       .selectText()
     await page.getByTestId("reply-with-quote").click()
+    await expect(page.getByTestId("highlight-comment-text")).toBeFocused()
+  }
+  for (const words of ["alpha fragment", "beta fragment"]) {
+    await highlight(words)
+    await page.getByTestId("highlight-comment-text").fill(`about ${words}`)
+    await page.getByTestId("highlight-comment-text").press("Enter")
   }
   const chips = page.getByTestId("reply-chip")
   await expect(chips).toHaveCount(2)
+  await expect(chips.nth(0)).toContainText("about alpha fragment")
   await expect(chips.nth(1)).toContainText("and “")
-  // Each quote can be dropped on its own.
+  // Each comment can be dropped on its own, and Cancel adds nothing.
   await chips.nth(0).getByTestId("reply-cancel").click()
   await expect(chips).toHaveCount(1)
-  await agentReply(page, "alpha fragment")
-    .last()
-    .locator("[data-message-id]")
-    .getByText("alpha fragment", { exact: false })
-    .selectText()
-  await page.getByTestId("reply-with-quote").click()
-  await send(page, `both of these ${info.project.name}`)
-  const sent = page
-    .getByTestId("message-user")
-    .filter({ hasText: `both of these ${info.project.name}` })
+  await highlight("alpha fragment")
+  await page.getByTestId("highlight-comment-text").fill("never mind")
+  await page.getByTestId("highlight-comment-text").press("Escape")
+  await expect(chips).toHaveCount(1)
+  await highlight("alpha fragment")
+  await page.getByTestId("highlight-comment-text").fill(`again ${info.project.name}`)
+  await page.getByTestId("highlight-comment-add").click()
+  // Comments say enough on their own: Send works with the message box empty.
+  await expect(page.getByTestId("composer-input")).toHaveAttribute(
+    "placeholder",
+    "Anything else? (optional)",
+  )
+  await page.getByTestId("composer-send").click()
+  const sent = page.getByTestId("message-user").filter({ hasText: `again ${info.project.name}` })
   await expect(sent.getByTestId("message-quote")).toHaveCount(2)
+  await expect(sent.getByTestId("message-comment")).toHaveText([
+    "about beta fragment",
+    `again ${info.project.name}`,
+  ])
   await expect(chips).toHaveCount(0)
 })
 

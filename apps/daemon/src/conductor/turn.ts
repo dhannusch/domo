@@ -77,7 +77,9 @@ export const makeTurn = ({ store, bus, providers, mcp, systemPrompt, nameOf }: T
       },
     ).pipe(Effect.ensuring(bus.unregisterRun(runId)))
 
-    const body = outcome.completed.length > 0 ? outcome.completed : outcome.streamed
+    // Everything the user watched stream in stays (UX-02). A provider's final "result" is only
+    // its last message, which would drop text written before a card or tool call.
+    const body = outcome.streamed.trim().length > 0 ? outcome.streamed : outcome.completed
     const failed = Option.isSome(outcome.failure)
     const delegations = yield* bus.takeDelegations(runId)
     const summary = workSummary(outcome, delegations, nameOf) ?? input.receiptFallback

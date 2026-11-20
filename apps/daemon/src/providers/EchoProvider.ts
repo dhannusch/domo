@@ -221,9 +221,10 @@ export const layerEcho = Layer.succeed(
       const opening: ReadonlyArray<AgentEvent> = [
         { _tag: "RunStarted", runId, sessionId },
         ...(said.includes("[[work]]") ? workEvents(runId) : []),
-        ...text
-          .split(/(?<= )/)
-          .map((word): AgentEvent => ({ _tag: "TextDelta", runId, text: word })),
+        // Claude streams token deltas; Codex delivers whole messages.
+        ...(request.model.provider === "codex" ? [text] : text.split(/(?<= )/)).map(
+          (part): AgentEvent => ({ _tag: "TextDelta", runId, text: part }),
+        ),
       ]
       const completed = (result: string): AgentEvent => ({
         _tag: "RunCompleted",

@@ -6,7 +6,7 @@ import { modelsAtom, sendAtom } from "./atoms.ts"
 import { ConnectionStatus } from "./ConnectionStatus.tsx"
 import { MentionMenu, mentionMatches, mentionQuery } from "./MentionMenu.tsx"
 import { NeedsYou } from "./NeedsYou.tsx"
-import { replyAtom, toReplyTo } from "./reply.ts"
+import { hasComments, replyAtom, toReplyTo } from "./reply.ts"
 
 export function Composer() {
   const send = useAtomSet(sendAtom, { mode: "promise" })
@@ -31,7 +31,8 @@ export function Composer() {
     event?.preventDefault()
     const trimmed = text.trim()
     const images = attachments.refs
-    if ((trimmed.length === 0 && images.length === 0) || attachments.busy) return
+    if ((trimmed.length === 0 && images.length === 0 && !hasComments(reply)) || attachments.busy)
+      return
     const replyTo = toReplyTo(reply)
     const attached = attachments.items
     setText("")
@@ -86,6 +87,9 @@ export function Composer() {
             {draft.quote === undefined ? "" : "“"}
             {draft.preview}
             {draft.quote === undefined ? "" : "”"}
+            {draft.comment === undefined ? null : (
+              <span className="reply-chip-comment"> · {draft.comment}</span>
+            )}
           </span>
           <button
             type="button"
@@ -139,7 +143,7 @@ export function Composer() {
           ref={area}
           data-testid="composer-input"
           aria-label="Message Domo"
-          placeholder="Message Domo…"
+          placeholder={hasComments(reply) ? "Anything else? (optional)" : "Message Domo…"}
           rows={1}
           value={text}
           onChange={(event) => {
@@ -158,7 +162,10 @@ export function Composer() {
         <button
           type="submit"
           data-testid="composer-send"
-          disabled={(text.trim().length === 0 && attachments.refs.length === 0) || attachments.busy}
+          disabled={
+            (text.trim().length === 0 && attachments.refs.length === 0 && !hasComments(reply)) ||
+            attachments.busy
+          }
         >
           Send
         </button>

@@ -89,7 +89,9 @@ function UserMessage({ message }: { message: Message }) {
   const quotes =
     message.replyTo === undefined
       ? []
-      : replyTargets(message.replyTo).flatMap((t) => (t.quote === undefined ? [] : [t.quote.exact]))
+      : replyTargets(message.replyTo).flatMap((t) =>
+          t.quote === undefined ? [] : [{ exact: t.quote.exact, comment: t.comment }],
+        )
   return (
     <div
       className="user-message"
@@ -99,9 +101,14 @@ function UserMessage({ message }: { message: Message }) {
       data-concept="message"
     >
       {quotes.map((quote) => (
-        <p key={quote} className="quote" data-testid="message-quote">
-          “{previewOf(quote, 160)}”
-        </p>
+        <div key={quote.exact} className="quoted" data-testid="message-quote">
+          <p className="quote">“{previewOf(quote.exact, 160)}”</p>
+          {quote.comment === undefined ? null : (
+            <p className="quote-comment" data-testid="message-comment">
+              {quote.comment}
+            </p>
+          )}
+        </div>
       ))}
       {message.images !== undefined && message.images.length > 0 ? (
         <div className="message-images" data-testid="message-images">

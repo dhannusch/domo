@@ -11,9 +11,13 @@ export const TextQuote = Schema.Struct({
 export type TextQuote = typeof TextQuote.Type
 
 /** One message, or one fragment of it, that a reply points at. */
+const Comment = Schema.String.pipe(Schema.check(Schema.isMaxLength(2000)))
+
 export const ReplyTarget = Schema.Struct({
   messageId: MessageId,
   quote: Schema.optionalKey(TextQuote),
+  /** The user's comment on the quoted fragment. */
+  comment: Schema.optionalKey(Comment),
 })
 export type ReplyTarget = typeof ReplyTarget.Type
 
@@ -21,6 +25,7 @@ export type ReplyTarget = typeof ReplyTarget.Type
 export const ReplyTo = Schema.Struct({
   messageId: MessageId,
   quote: Schema.optionalKey(TextQuote),
+  comment: Schema.optionalKey(Comment),
   also: Schema.optionalKey(Schema.Array(ReplyTarget)),
 })
 export type ReplyTo = typeof ReplyTo.Type

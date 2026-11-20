@@ -20,6 +20,8 @@ export interface RunOutcome {
   readonly usage: Usage | undefined
   /** Tool names by call id, for calls that haven't finished yet. */
   readonly pending: ReadonlyMap<string, string>
+  /** A tool ran since the last text, so the next text starts a new paragraph. */
+  readonly afterTool: boolean
 }
 
 export interface RunHooks {
@@ -46,6 +48,7 @@ const initial = (sessionId: string | undefined): RunOutcome => ({
   files: [],
   usage: undefined,
   pending: new Map(),
+  afterTool: false,
 })
 
 /** Codex delivers whole messages; Claude streams token deltas. */
@@ -66,24 +69,34 @@ export const collectRun = (
             return hooks
               .onSession(event.sessionId)
               .pipe(Effect.as({ ...acc, sessionId: event.sessionId }))
-          case "TextDelta":
-            return hooks.onDelta(event.text).pipe(
+          case "TextDelta": {
+            // Text written after a tool call (e.g. after showing a card) is a new paragraph.
+            const text =
+              acc.afterTool && !options.wholeMessages && acc.streamed.length > 0
+                ? `\n\n${event.text}`
+                : event.text
+            return hooks.onDelta(text).pipe(
               Effect.as({
                 ...acc,
-                streamed: appendText(acc.streamed, event.text, options.wholeMessages),
+                afterTool: false,
+                streamed: appendText(acc.streamed, text, options.wholeMessages),
               }),
             )
+          }
           case "ToolStarted": {
+            const next = { ...acc, afterTool: true }
             if (isDomoUiTool(event.name)) {
               // Long-running Domo tools still show progress; they just aren't counted as tools.
               return /(council|delegate)$/.test(event.name)
-                ? hooks.onTool(event.name, acc.tools.length + acc.pending.size).pipe(Effect.as(acc))
-                : Effect.succeed(acc)
+                ? hooks
+                    .onTool(event.name, next.tools.length + next.pending.size)
+                    .pipe(Effect.as(next))
+                : Effect.succeed(next)
             }
-            const pending = new Map(acc.pending).set(event.callId, event.name)
+            const pending = new Map(next.pending).set(event.callId, event.name)
             return hooks
-              .onTool(event.name, acc.tools.length + pending.size)
-              .pipe(Effect.as({ ...acc, pending }))
+              .onTool(event.name, next.tools.length + pending.size)
+              .pipe(Effect.as({ ...next, pending }))
           }
           case "ToolFinished": {
             const name = acc.pending.get(event.callId)

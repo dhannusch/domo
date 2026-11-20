@@ -7,6 +7,8 @@ export interface ReplyDraft {
   readonly quote?: TextQuote
   /** Short text shown in the composer chip. */
   readonly preview: string
+  /** What the user said about this fragment. */
+  readonly comment?: string
 }
 
 /** Everything the next message replies to: one message, or several highlighted fragments. */
@@ -16,12 +18,21 @@ const MAX_QUOTES = 6
 const sameTarget = (a: ReplyDraft, b: ReplyDraft) =>
   a.messageId === b.messageId && a.quote?.exact === b.quote?.exact
 
-/** Adds a target to the reply (picking the same one again changes nothing). */
+/** Adds a target to the reply; commenting on the same fragment again replaces that comment. */
 export const addReply = (drafts: ReadonlyArray<ReplyDraft>, draft: ReplyDraft) =>
-  drafts.some((d) => sameTarget(d, draft)) ? drafts : [...drafts, draft].slice(-MAX_QUOTES)
+  drafts.some((d) => sameTarget(d, draft))
+    ? drafts.map((d) => (sameTarget(d, draft) ? draft : d))
+    : [...drafts, draft].slice(-MAX_QUOTES)
 
-const target = (d: ReplyDraft) =>
-  d.quote === undefined ? { messageId: d.messageId } : { messageId: d.messageId, quote: d.quote }
+/** Whether the drafts say something on their own, so the message may be sent without text. */
+export const hasComments = (drafts: ReadonlyArray<ReplyDraft>) =>
+  drafts.some((d) => d.comment !== undefined)
+
+const target = (d: ReplyDraft) => ({
+  messageId: d.messageId,
+  ...(d.quote === undefined ? {} : { quote: d.quote }),
+  ...(d.comment === undefined ? {} : { comment: d.comment }),
+})
 
 /** The wire shape: the first target places the reply, the rest ride along as `also`. */
 export const toReplyTo = (drafts: ReadonlyArray<ReplyDraft>): ReplyTo | undefined => {

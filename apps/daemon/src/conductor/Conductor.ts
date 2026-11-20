@@ -269,13 +269,22 @@ export class Conductor extends Context.Service<
         return text.length <= 400 ? text : `${text.slice(0, 400)}…`
       })
 
-      /** Every quote the user picked, as markdown blockquotes in the order they were picked. */
+      /**
+       * Every quote the user picked, in order, as a markdown blockquote with the user's comment
+       * on it (if any) underneath.
+       */
       const quoteFor = Effect.fnUntraced(function* (replyTo: ReplyTo | undefined) {
         if (replyTo === undefined) return undefined
-        const quotes = yield* Effect.forEach(replyTargets(replyTo), quoteOf)
-        const found = quotes.filter((q) => q !== undefined)
-        if (found.length === 0) return undefined
-        return found.map((q) => q.replace(/^/gm, "> ")).join("\n\n")
+        const parts: Array<string> = []
+        for (const target of replyTargets(replyTo)) {
+          const quote = yield* quoteOf(target)
+          if (quote === undefined) continue
+          const quoted = quote.replace(/^/gm, "> ")
+          parts.push(
+            target.comment === undefined ? quoted : `${quoted}\nMy comment: ${target.comment}`,
+          )
+        }
+        return parts.length === 0 ? undefined : parts.join("\n\n")
       })
 
       const { resolveChoice, check, undoAnswer, notQuite } = makeChoices({
@@ -311,13 +320,20 @@ export class Conductor extends Context.Service<
           if (Option.isNone(yield* images.find(image.id)))
             return yield* fail("An attached image didn't upload. Attach it again.")
         }
-        if (mention.text.trim().length === 0 && attached.length === 0)
+        const commented =
+          input.replyTo !== undefined &&
+          replyTargets(input.replyTo).some((t) => t.comment !== undefined)
+        if (mention.text.trim().length === 0 && attached.length === 0 && !commented)
           return yield* fail("Nothing to send after the model mention.")
 
         // Replying to an unanswered Choice in your own words answers it.
         if (input.replyTo !== undefined) {
           const replied = yield* store.getMessage(input.replyTo.messageId)
-          if (Option.isSome(replied) && (yield* resolveChoice(replied.value, mention.text, true))) {
+          if (
+            mention.text.trim().length > 0 &&
+            Option.isSome(replied) &&
+            (yield* resolveChoice(replied.value, mention.text, true))
+          ) {
             if (isConfirmation(replied.value))
               yield* settleConfirmation(replied.value.topicId, mention.text, true)
             // An agent is waiting on this question (ask_user): hand it the reply; no new run.
@@ -376,8 +392,12 @@ export class Conductor extends Context.Service<
 
         const quoted = yield* quoteFor(input.replyTo)
         const said =
-          mention.text.trim().length > 0 ? mention.text : "(The user sent only the attached image.)"
-        const asked = quoted === undefined ? said : `${quoted}\n\n${said}`
+          mention.text.trim().length > 0
+            ? mention.text
+            : quoted === undefined
+              ? "(The user sent only the attached image.)"
+              : ""
+        const asked = [quoted ?? "", said].filter((part) => part.length > 0).join("\n\n")
         const prompt = Option.isSome(pickUp) ? `${pickUpNote(pickUp.value)}\n\n${asked}` : asked
         yield* FiberSet.run(
           background,
