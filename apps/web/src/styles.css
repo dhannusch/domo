@@ -563,6 +563,26 @@ body {
   border-radius: 10px;
 }
 
+/* Domo's own pictures: full measure, one per row, with room below so the work line (which tucks
+   up under prose) never rides over the last one. */
+.message-images.large {
+  /* A grid, not a wrapping column flexbox: that combination doesn't grow with its images. */
+  display: grid;
+  gap: 0.75rem;
+  margin: calc(var(--line) / 2) 0 calc(var(--line) * 1.25);
+}
+
+.message-images.large a {
+  display: block;
+}
+
+.message-images.large img {
+  width: 100%;
+  max-width: 100%;
+  max-height: none;
+  height: auto;
+}
+
 .composer textarea::placeholder {
   color: var(--pencil);
 }

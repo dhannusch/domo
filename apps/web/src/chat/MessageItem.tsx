@@ -106,10 +106,19 @@ function ReplyButton({ message }: { message: Message }) {
 }
 
 /** A message's images; each opens full size. */
-function MessageImages({ message, alt }: { message: Message; alt: string }) {
+function MessageImages({
+  message,
+  alt,
+  large = false,
+}: {
+  message: Message
+  alt: string
+  /** Domo's own pictures (mockups, logos) are the point of the reply, so they show large. */
+  large?: boolean
+}) {
   if (message.images === undefined || message.images.length === 0) return null
   return (
-    <div className="message-images" data-testid="message-images">
+    <div className={`message-images${large ? " large" : ""}`} data-testid="message-images">
       {message.images.map((image) => (
         <a key={image.id} href={imageUrl(image)} target="_blank" rel="noreferrer">
           <img src={imageUrl(image)} alt={alt} loading="lazy" />
@@ -187,7 +196,7 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
           Working: {activity(progress.current)}
         </p>
       ) : null}
-      <MessageImages message={message} alt="Made by Domo" />
+      <MessageImages message={message} alt="Made by Domo" large />
       {streaming ? <StopButton messageId={message.id} /> : null}
       <ComponentView message={message} />
       {folded ? (

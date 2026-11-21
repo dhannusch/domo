@@ -83,7 +83,9 @@ test("writing something new instead of choosing closes the card as moved on", as
   await expect(page.getByTestId("needs-you")).toContainText("needs you")
   await send(page, `something else entirely ${Date.now()}`)
   await expect(reply.getByTestId("choice-receipt")).toHaveText("You moved on without choosing")
-  await expect(page.getByTestId("needs-you")).toHaveCount(0)
+  // A closed card is no longer one of the open questions (other tests on this worker may leave
+  // their own cards open in other topics, so the marker itself can stay).
+  await expect(reply.getByTestId("choice")).toHaveCount(0)
 })
 
 test("answering in your own words resolves the Choice as free text", async ({ page }) => {

@@ -55,3 +55,22 @@ test("Domo can show an image it made, in its reply", async ({ page }) => {
   await expect(shown).toHaveCount(1)
   await expect.poll(() => shown.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(2)
 })
+
+test("Domo's images show large, and the work line sits below them", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("composer-input").fill(`[[work]] [[attach]] mockups ${Date.now()}`)
+  await page.getByTestId("composer-send").click()
+  const reply = page.getByTestId("message-agent").filter({ hasText: "mockups" }).last()
+  await expect(reply).toHaveAttribute("data-status", "done")
+  const image = reply.getByTestId("message-images").locator("img")
+  const receipt = reply.getByTestId("work-receipt")
+  const [imageBox, receiptBox, proseBox] = await Promise.all([
+    image.boundingBox(),
+    receipt.boundingBox(),
+    reply.locator("[data-message-id]").boundingBox(),
+  ])
+  // Full measure, not a thumbnail.
+  expect(imageBox?.width ?? 0).toBeGreaterThan((proseBox?.width ?? 0) * 0.9)
+  // Nothing overlaps: the image ends above the work line.
+  expect((imageBox?.y ?? 0) + (imageBox?.height ?? 0)).toBeLessThanOrEqual(receiptBox?.y ?? 0)
+})
