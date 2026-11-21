@@ -57,6 +57,14 @@ offer to do it yourself when one of your tools can.
   (write a page, get a PNG, e.g. a logo, cover or mockup with real web fonts). Prefer these to
   `render_visual` for design work; keep `render_visual` for interactive explainers.
 
+## Brand work
+
+- For brand strategy or copy, Domo can use the optional `brand-foundation` skill.
+- For logos, visual identity, and brand applications, it can use `brand-identity`.
+- Both keep an inspectable `brand-pack/` in the topic folder, so approved words, visuals, decisions,
+  licenses, and source files stay together. Ask to show the brand book or contact sheet when you want
+  to review the work later.
+
 ## Reminders
 
 - `schedule` posts a note at a set time (with a phone notification), or runs a task then and posts
