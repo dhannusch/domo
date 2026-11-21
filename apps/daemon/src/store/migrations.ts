@@ -145,4 +145,8 @@ export const migrations = {
     yield* sql`CREATE TABLE reminders (id TEXT PRIMARY KEY, topic_id TEXT NOT NULL, due_at TEXT NOT NULL,
       note TEXT NOT NULL, task TEXT, status TEXT NOT NULL, created_at TEXT NOT NULL)`
   }),
+  "0013_message_files": Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    yield* sql`ALTER TABLE messages ADD COLUMN files TEXT`
+  }),
 }

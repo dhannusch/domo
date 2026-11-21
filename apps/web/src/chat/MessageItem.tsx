@@ -1,4 +1,10 @@
-import { type Message, type MessageId, replyTargets } from "@domo/domain"
+import {
+  type FileRef,
+  type ImageRef,
+  type Message,
+  type MessageId,
+  replyTargets,
+} from "@domo/domain"
 import { useAtomSet } from "@effect/atom-react"
 import { useState } from "react"
 import Markdown, { type Components } from "react-markdown"
@@ -7,6 +13,7 @@ import { stopAtom, trackAtom } from "./atoms.ts"
 import { ChecklistView } from "./components/ChecklistView.tsx"
 import { ChoiceView } from "./components/ChoiceView.tsx"
 import { ComparisonView } from "./components/ComparisonView.tsx"
+import { attachmentUrl, FileViewer, kindLabel, kindOf } from "./components/FileViewer.tsx"
 import { QuestionsView } from "./components/QuestionsView.tsx"
 import { VisualView } from "./components/VisualView.tsx"
 import { WorkReceiptView } from "./components/WorkReceiptView.tsx"
@@ -105,7 +112,7 @@ function ReplyButton({ message }: { message: Message }) {
   )
 }
 
-/** A message's images; each opens full size. */
+/** A message's images; each opens in Domo's viewer (long-press still saves it). */
 function MessageImages({
   message,
   alt,
@@ -116,14 +123,63 @@ function MessageImages({
   /** Domo's own pictures (mockups, logos) are the point of the reply, so they show large. */
   large?: boolean
 }) {
+  const [open, setOpen] = useState<ImageRef | undefined>(undefined)
   if (message.images === undefined || message.images.length === 0) return null
   return (
     <div className={`message-images${large ? " large" : ""}`} data-testid="message-images">
       {message.images.map((image) => (
-        <a key={image.id} href={imageUrl(image)} target="_blank" rel="noreferrer">
+        <a
+          key={image.id}
+          href={imageUrl(image)}
+          onClick={(event) => {
+            event.preventDefault()
+            setOpen(image)
+          }}
+        >
           <img src={imageUrl(image)} alt={alt} loading="lazy" />
         </a>
       ))}
+      {open !== undefined ? (
+        <FileViewer
+          name={alt}
+          kind="image"
+          url={imageUrl(open)}
+          onClose={() => setOpen(undefined)}
+        />
+      ) : null}
+    </div>
+  )
+}
+
+/** Files Domo handed over (a deck, a PDF, an SVG), as cards that open in the viewer. */
+function MessageFiles({ message }: { message: Message }) {
+  const [open, setOpen] = useState<FileRef | undefined>(undefined)
+  if (message.files === undefined || message.files.length === 0) return null
+  return (
+    <div className="message-files" data-testid="message-files">
+      {message.files.map((file) => {
+        const kind = kindOf(file.name, file.mediaType)
+        return (
+          <button
+            key={file.id}
+            type="button"
+            className="file-card"
+            data-testid="file-card"
+            onClick={() => setOpen(file)}
+          >
+            <span className="file-card-name">{file.name}</span>
+            <span className="file-card-kind">{kindLabel(kind, file.name)}</span>
+          </button>
+        )
+      })}
+      {open !== undefined ? (
+        <FileViewer
+          name={open.name}
+          kind={kindOf(open.name, open.mediaType)}
+          url={attachmentUrl(open)}
+          onClose={() => setOpen(undefined)}
+        />
+      ) : null}
     </div>
   )
 }
@@ -197,6 +253,7 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
         </p>
       ) : null}
       <MessageImages message={message} alt="Made by Domo" large />
+      <MessageFiles message={message} />
       {streaming ? <StopButton messageId={message.id} /> : null}
       <ComponentView message={message} />
       {folded ? (

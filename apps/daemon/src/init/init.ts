@@ -1,5 +1,6 @@
 import { join } from "node:path"
-import { Effect, FileSystem } from "effect"
+import { Effect, FileSystem, Option } from "effect"
+import type { PlatformError } from "effect/PlatformError"
 import { ChildProcess, ChildProcessSpawner } from "effect/process"
 import { DomoConfig } from "../config/DomoConfig.ts"
 
@@ -12,6 +13,21 @@ const REPO_ROOT = join(import.meta.dirname, "../../../..")
  * only while nothing but seeding has ever touched it (its git history is all `chore:` commits),
  * so an improved seed reaches existing installs but never overwrites the agent's or Lab's edits.
  */
+/** Every file under a directory, as paths relative to it. */
+const listFiles = Effect.fnUntraced(function* (
+  fs: FileSystem.FileSystem,
+  dir: string,
+): Effect.fn.Return<ReadonlyArray<string>, PlatformError> {
+  const out: Array<string> = []
+  for (const entry of yield* fs.readDirectory(dir)) {
+    const path = join(dir, entry)
+    if ((yield* fs.stat(path)).type === "Directory")
+      for (const inner of yield* listFiles(fs, path)) out.push(join(entry, inner))
+    else out.push(entry)
+  }
+  return out
+})
+
 export const initHome = Effect.fn("initHome")(function* () {
   const config = yield* DomoConfig
   const fs = yield* FileSystem.FileSystem
@@ -39,11 +55,19 @@ export const initHome = Effect.fn("initHome")(function* () {
       created.push(`skills/${skill}`)
       continue
     }
-    const seedFile = join(REPO_ROOT, "skills", skill, "SKILL.md")
-    const homeFile = join(target, "SKILL.md")
-    if (!hasGit || !(yield* fs.exists(seedFile)) || !(yield* fs.exists(homeFile))) continue
-    const seed = yield* fs.readFileString(seedFile)
-    if (seed === (yield* fs.readFileString(homeFile))) continue
+    if (!hasGit) continue
+    // Refresh the whole skill (references, scripts, templates too) when anything in the seed
+    // changed, but only while nothing but seeding has touched it.
+    const seedDir = join(REPO_ROOT, "skills", skill)
+    const files = yield* listFiles(fs, seedDir)
+    let changed = false
+    for (const file of files) {
+      const seed = yield* fs.readFile(join(seedDir, file))
+      const home = yield* fs.readFile(join(target, file)).pipe(Effect.option)
+      if (Option.isNone(home) || Buffer.compare(Buffer.from(seed), Buffer.from(home.value)) !== 0)
+        changed = true
+    }
+    if (!changed) continue
     const history = yield* git(["log", "--format=%s", "--", `skills/${skill}`]).pipe(
       Effect.orElseSucceed(() => "edited"),
     )
@@ -52,7 +76,7 @@ export const initHome = Effect.fn("initHome")(function* () {
       .filter((line) => line.length > 0)
       .every((line) => line.startsWith("chore: "))
     if (onlySeeded) {
-      yield* fs.writeFileString(homeFile, seed)
+      yield* fs.copy(seedDir, target, { overwrite: true })
       created.push(`skills/${skill} (updated)`)
     }
   }

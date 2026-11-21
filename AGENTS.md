@@ -99,7 +99,8 @@ The Lab improves domo without a human watching, so every change must be testable
 - The composer attaches up to 4 images (button, paste or drop). The browser shrinks each to 2000px on its longest side (JPEG, or PNG for small screenshots) and uploads it to `POST /images` before sending. The message then carries `ImageRef`s (id plus media type).
 - `images/Images.ts` keeps them in `<home>/images/<id>.<ext>`, served at `GET /images/:id`. Both paths are protected like `/rpc`, and the web app adds `?token=` to image URLs. Nothing is deleted.
 - A run gets the images of the message it answers: Claude as base64 image blocks, Codex as `local_image` file paths. Only that message's images are sent; older ones stay in the chat for the user.
-- Domo shows images in its own replies with `attach_image` (a file it made) or `snapshot_html` (HTML rendered to a 2x PNG in headless Chrome, `VisualCheck.snapshot`, where web fonts may load from Google Fonts and nothing else). They are saved like the user's images and listed on the message (up to 4).
+- Domo hands over files with `attach_file`: images show as pictures on the message; HTML (decks, pages), PDF, SVG, Markdown, text and CSV go to `<home>/attachments/` and show as cards (`Message.files`, up to 6). `GET /attachments/:id` serves them protected and sandboxed (`CSP: sandbox allow-scripts`, no network but Google Fonts), and the app's `FileViewer` opens every kind in place (decks live in a sandboxed iframe); nothing opens a new window unless asked. `export_pdf` prints an HTML deck to PDF (`VisualCheck.pdf`, `@page` sized slides) and attaches it.
+- Domo also shows images it renders with `snapshot_html` (HTML rendered to a 2x PNG in headless Chrome, `VisualCheck.snapshot`, where web fonts may load from Google Fonts and nothing else). They are saved like the user's images and listed on the message (up to 4).
 - A message may be images alone. The echo provider reports "(saw N images)" so end-to-end tests cover the whole path.
 
 ## Topic folders
@@ -143,7 +144,7 @@ The Lab improves domo without a human watching, so every change must be testable
 
 ## Seed skills
 
-- `skills/` in the repo are seeds. At every daemon start, `initHome` copies in any seed skill the home doesn't have yet and commits it, so new skills reach existing installs through `domo update`. A skill already in the home is refreshed from its seed only while its `~/.domo` history is all `chore:` (seeding) commits; once the agent or the Lab has edited it, it's theirs and is never overwritten.
+- `skills/` in the repo are seeds. At every daemon start, `initHome` copies in any seed skill the home doesn't have yet and commits it, so new skills reach existing installs through `domo update`. A skill already in the home is refreshed from its seed (every file in it, so new references and templates arrive too) only while its `~/.domo` history is all `chore:` (seeding) commits; once the agent or the Lab has edited it, it's theirs and is never overwritten.
 
 ## Settings
 

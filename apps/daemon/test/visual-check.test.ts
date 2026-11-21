@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { join } from "node:path"
 import { describe, expect, it } from "@effect/vitest"
 import { Effect, Layer, Option } from "effect"
 import { chromium } from "playwright-core"
@@ -23,6 +25,39 @@ const chrome = await chromium.launch({ channel: "chrome", headless: true }).then
 
 /** Renders in the system Chrome, like the daemon does; slow-ish, so one browser for all cases. */
 describe.skipIf(!chrome)("VisualCheck", () => {
+  it.live(
+    "pdf makes one page per slide of a deck",
+    () =>
+      Effect.gen(function* () {
+        const deck =
+          "<style>@page { size: 1920px 1080px; margin: 0 } body { margin: 0 } " +
+          "section { height: 1080px; break-after: page }</style>" +
+          "<section>One</section><section>Two</section>"
+        const pdf = Option.getOrThrow(yield* (yield* VisualCheck).pdf(deck))
+        const text = new TextDecoder("latin1").decode(pdf)
+        expect(text.startsWith("%PDF")).toBe(true)
+        expect(text.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(2)
+      }).pipe(Effect.provide(TestLayer)),
+    30_000,
+  )
+
+  it.live(
+    "the brand deck template prints one full-size page per slide",
+    () =>
+      Effect.gen(function* () {
+        const template = readFileSync(
+          join(import.meta.dirname, "../../../skills/brand-foundation/templates/deck.html"),
+          "utf8",
+        )
+        const pdf = Option.getOrThrow(yield* (yield* VisualCheck).pdf(template))
+        const text = new TextDecoder("latin1").decode(pdf)
+        expect(text.match(/\/Type\s*\/Page[^s]/g)?.length).toBe(3)
+        // 1920x1080 CSS px is 1440x810 PDF points.
+        expect(text).toMatch(/MediaBox\s*\[\s*0 0 1440 810\s*\]/)
+      }).pipe(Effect.provide(TestLayer)),
+    30_000,
+  )
+
   it.live(
     "snapshot turns a page into a sharp PNG of the asked size",
     () =>

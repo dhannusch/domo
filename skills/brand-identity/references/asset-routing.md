@@ -10,6 +10,6 @@ Choose the least lossy and most inspectable format that matches the request.
 | Brand book | Self-contained HTML | PNG sections plus HTML |
 | Photo or texture | Licensed source or recorded image backend | PNG/JPEG/WebP |
 
-Static images belong in `attach_image`; `render_visual` is for interactive explainers, not final
+Static images belong in `attach_file`; `render_visual` is for interactive explainers, not final
 brand artwork. Keep external URLs out of canonical assets unless the user explicitly wants a hosted
 dependency.

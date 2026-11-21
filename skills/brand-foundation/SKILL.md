@@ -43,11 +43,22 @@ writer plus a reviewer for small copy refinements; do not spend a council on eve
 Do not make AIDA, StoryBrand, Golden Circle, or similar formulas mandatory. Use them only when they
 solve a specific problem better than direct writing.
 
-## Checkpoints and delivery
+## Checkpoints: stages end your turn
 
-Show the recommendation first, then a compact comparison or choice when the user must decide. Keep
-the decision behind the card, not buried in a long explanation. Do not mark a direction approved until
-the user chooses it.
+Strategy is the user's call, so it moves in stages, and **each stage ends your turn** with one
+decision for the user:
+
+1. **Interview.** Ask only what the conversation and files don't already answer, in one
+   `render_questions` card (audience situation, what they should feel, who they compare you to,
+   what's off-limits). Stop.
+2. **Positioning.** Show a one-screen draft: audience, problem, promise, proof, personality in three
+   words, and what it is not. Ask to approve or change it. Stop.
+3. **Voice and messages.** Only after approval: voice with do/don't examples and the message
+   hierarchy, with two or three real samples (a bio, a welcome email opening). Ask. Stop.
+
+Writing `foundation.md` from earlier chat is a draft, not an approval. Nothing is approved until the
+user says so; record each approval with the date in `decisions.md`. Show the recommendation first,
+then the choice; keep the decision on the card, not buried in a long explanation.
 
 When the foundation is stable, update `foundation.md`, `voice.md`, `messages.md`, `claims.json`, and
 `decisions.md`, then tell the user exactly which files changed. Hand the approved foundation to

@@ -5,6 +5,7 @@ import {
   ChoiceOption,
   ComparisonInput,
   ComponentId,
+  type FileMediaType,
   Goal,
   GoalId,
   GoalStatus,
@@ -342,6 +343,21 @@ const IMAGE_TYPES: Record<string, string> = {
   gif: "image/gif",
 }
 
+const FILE_TYPES: Record<string, FileMediaType> = {
+  pdf: "application/pdf",
+  html: "text/html",
+  htm: "text/html",
+  svg: "image/svg+xml",
+  md: "text/markdown",
+  txt: "text/plain",
+  csv: "text/csv",
+}
+
+const fileName = (path: string) => path.split("/").at(-1) ?? path
+
+/** At most this many files on one reply. */
+const MAX_FILES = 6
+
 const Schedule_ = Tool.make("schedule", {
   description:
     "Say or do something at a set time: a reminder, a follow-up, a check-in. At `at` you post " +
@@ -360,11 +376,25 @@ const Schedule_ = Tool.make("schedule", {
   dependencies: [CurrentRun],
 })
 
-const AttachImage = Tool.make("attach_image", {
+const AttachFile = Tool.make("attach_file", {
   description:
-    "Show the user an image file you made or found (PNG, JPEG, WebP or GIF, up to 10 MB), as a " +
-    "picture in your reply. Up to 4 per reply. Use it for logos, mockups, charts and photos; the " +
-    "user prefers real images to render_visual for design work.",
+    "Hand the user a file you made, shown in your reply: images (PNG, JPEG, WebP, GIF) appear as " +
+    "pictures; a deck or page (HTML), PDF, SVG, Markdown, text or CSV appears as a card that opens " +
+    "in Domo's viewer. Use it for logos, mockups, proposal decks, one-pagers and documents. Up to " +
+    "4 images and 6 files per reply.",
+  parameters: Schema.Struct({
+    path: Schema.NonEmptyString,
+    name: Schema.optionalKey(Schema.NonEmptyString.annotate({ description: "What the card says" })),
+  }),
+  success: Schema.String,
+  dependencies: [CurrentRun],
+})
+
+const ExportPdf = Tool.make("export_pdf", {
+  description:
+    "Turn an HTML file (a deck, a one-pager, a brand book) into a PDF beside it and attach the " +
+    "PDF. Size each slide with CSS: `@page { size: 1920px 1080px; margin: 0 }` and one " +
+    "`<section>` per page with `break-after: page`.",
   parameters: Schema.Struct({ path: Schema.NonEmptyString }),
   success: Schema.String,
   dependencies: [CurrentRun],
@@ -423,7 +453,8 @@ export const DomoTools = Toolkit.make(
   StartTopic,
   RenameTopic,
   Schedule_,
-  AttachImage,
+  AttachFile,
+  ExportPdf,
   SnapshotHtml,
   ListScheduled,
   CancelScheduled,
@@ -456,6 +487,30 @@ const DomoToolHandlers = DomoTools.toLayer(
     const memory = yield* Memory
     const reminders = yield* Reminders
     const images = yield* Images
+
+    /** Keeps a copy of a file and adds it to the reply being written (up to MAX_FILES). */
+    const showFile = Effect.fnUntraced(function* (
+      bytes: Uint8Array,
+      name: string,
+      mediaType: FileMediaType,
+    ) {
+      const { runId } = yield* CurrentRun
+      const run = yield* bus.lookupRun(runId)
+      if (Option.isNone(run)) return "This conversation turn has already ended; nothing was shown."
+      const message = yield* store.getMessage(run.value.messageId)
+      if (Option.isNone(message)) return "Nothing was shown."
+      const attached = message.value.files ?? []
+      if (attached.length >= MAX_FILES) return `A reply can carry at most ${MAX_FILES} files.`
+      const saved = yield* images.saveFile(bytes, name, mediaType).pipe(
+        Effect.map(Option.some),
+        Effect.catchTag("ImageRejected", () => Effect.succeed(Option.none())),
+      )
+      if (Option.isNone(saved)) return "That file couldn't be attached (empty or over 25 MB)."
+      const updated = new Message({ ...message.value, files: [...attached, saved.value] })
+      yield* store.updateMessage(updated)
+      yield* bus.publish({ _tag: "MessageUpdated", message: updated })
+      return `Attached "${name}" below your reply; the user can open it in Domo.`
+    })
 
     /** Saves an image and adds it to the reply being written (up to MAX_IMAGES). */
     const showImage = Effect.fnUntraced(function* (bytes: Uint8Array, type: string) {
@@ -825,12 +880,26 @@ const DomoToolHandlers = DomoTools.toLayer(
 
       forget: ({ name, reason }) => memory.forget(name, reason),
 
-      attach_image: Effect.fnUntraced(function* ({ path }) {
-        const type = IMAGE_TYPES[path.split(".").at(-1)?.toLowerCase() ?? ""]
-        if (type === undefined) return "Only PNG, JPEG, WebP or GIF files can be shown."
+      attach_file: Effect.fnUntraced(function* ({ path, name }) {
+        const extension = path.split(".").at(-1)?.toLowerCase() ?? ""
         const bytes = yield* fs.readFile(path).pipe(Effect.option)
         if (Option.isNone(bytes)) return `Couldn't read ${path}.`
-        return yield* showImage(bytes.value, type)
+        const image = IMAGE_TYPES[extension]
+        if (image !== undefined) return yield* showImage(bytes.value, image)
+        const file = FILE_TYPES[extension]
+        if (file === undefined) return "Attach images, HTML, PDF, SVG, Markdown, text or CSV files."
+        return yield* showFile(bytes.value, name ?? fileName(path), file)
+      }),
+      export_pdf: Effect.fnUntraced(function* ({ path }) {
+        const html = yield* fs.readFileString(path).pipe(Effect.option)
+        if (Option.isNone(html)) return `Couldn't read ${path}.`
+        const pdf = yield* visualCheck.pdf(html.value)
+        if (Option.isNone(pdf))
+          return "Chrome isn't available on this computer, so no PDF was made."
+        const out = path.replace(/\.html?$/i, "") + ".pdf"
+        yield* fs.writeFile(out, pdf.value).pipe(Effect.orDie)
+        const shown = yield* showFile(pdf.value, fileName(out), "application/pdf")
+        return `Saved ${out}. ${shown}`
       }),
       snapshot_html: Effect.fnUntraced(function* ({ html, width, height }) {
         const png = yield* visualCheck.snapshot(html, width ?? 1200, height ?? 630)

@@ -74,3 +74,27 @@ test("Domo's images show large, and the work line sits below them", async ({ pag
   // Nothing overlaps: the image ends above the work line.
   expect((imageBox?.y ?? 0) + (imageBox?.height ?? 0)).toBeLessThanOrEqual(receiptBox?.y ?? 0)
 })
+
+test("tapping one of Domo's images opens it in the viewer, not a new window", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("composer-input").fill(`[[attach]] look ${Date.now()}`)
+  await page.getByTestId("composer-send").click()
+  const reply = page.getByTestId("message-agent").filter({ hasText: "look" }).last()
+  const pages = page.context().pages().length
+  await reply.getByTestId("message-images").locator("img").click()
+  await expect(page.getByTestId("file-viewer").locator("img")).toBeVisible()
+  expect(page.context().pages().length).toBe(pages)
+})
+
+test("Domo can hand over a deck, which opens live in the viewer", async ({ page }) => {
+  await page.goto("/")
+  await page.getByTestId("composer-input").fill(`[[deck]] the proposal ${Date.now()}`)
+  await page.getByTestId("composer-send").click()
+  const reply = page.getByTestId("message-agent").filter({ hasText: "the proposal" }).last()
+  const card = reply.getByTestId("file-card")
+  await expect(card).toContainText("Brand proposal")
+  await expect(card).toContainText("Page")
+  await card.click()
+  const deck = page.getByTestId("file-viewer").frameLocator("[data-testid=file-frame]")
+  await expect(deck.getByRole("heading", { name: "Direction A" })).toBeVisible()
+})

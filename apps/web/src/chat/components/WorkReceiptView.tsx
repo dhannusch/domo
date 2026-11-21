@@ -4,7 +4,7 @@ import { AsyncResult } from "effect/reactivity"
 import { useState } from "react"
 import { runAtom, trackAtom } from "../atoms.ts"
 import { modelLabel } from "../modelLabel.ts"
-import { FileViewer, fileUrl } from "./FileViewer.tsx"
+import { FileViewer, fileUrl, kindOf } from "./FileViewer.tsx"
 
 /** Summaries are previews, so drop markdown syntax rather than render it. */
 const plain = (text: string) =>
@@ -45,6 +45,7 @@ function FilesLine({ runId, files }: { runId: string; files: ReadonlyArray<strin
         <FileViewer
           name={fileName(opened)}
           url={fileUrl(runId, open)}
+          kind={kindOf(opened)}
           onClose={() => setOpen(undefined)}
         />
       ) : null}

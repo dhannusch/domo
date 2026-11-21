@@ -49,6 +49,25 @@ export type ImageMediaType = typeof ImageMediaType.Type
 export const ImageRef = Schema.Struct({ id: ImageId, mediaType: ImageMediaType })
 export type ImageRef = typeof ImageRef.Type
 
+/** The file types Domo can hand over in a reply (decks, documents, vector art, data). */
+export const FileMediaType = Schema.Literals([
+  "application/pdf",
+  "text/html",
+  "image/svg+xml",
+  "text/markdown",
+  "text/plain",
+  "text/csv",
+])
+export type FileMediaType = typeof FileMediaType.Type
+
+/** A file Domo attached to a reply; the copy lives in the agent home (`attachments/`). */
+export const FileRef = Schema.Struct({
+  id: ImageId,
+  name: Schema.NonEmptyString,
+  mediaType: FileMediaType,
+})
+export type FileRef = typeof FileRef.Type
+
 /** At most this many images go with one message. */
 export const MAX_IMAGES = 4
 
@@ -77,6 +96,8 @@ export class Message extends Schema.Class<Message>("domo/domain/Message")({
   replyTo: Schema.optionalKey(ReplyTo),
   /** Images the user attached to this message. */
   images: Schema.optionalKey(Schema.Array(ImageRef)),
+  /** Files Domo attached to this reply (a deck, a PDF, an SVG). */
+  files: Schema.optionalKey(Schema.Array(FileRef)),
   component: Schema.optionalKey(UiComponent),
   /** How the user answered this message's Choice. */
   resolution: Schema.optionalKey(ComponentResolution),

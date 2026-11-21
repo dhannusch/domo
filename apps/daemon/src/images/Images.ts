@@ -1,8 +1,11 @@
 import { randomUUID } from "node:crypto"
 import { join } from "node:path"
-import { ImageId, ImageMediaType, type ImageRef } from "@domo/domain"
+import { FileMediaType, type FileRef, ImageId, ImageMediaType, type ImageRef } from "@domo/domain"
 import { Context, Effect, FileSystem, Layer, Option, Schema } from "effect"
 import { DomoConfig } from "../config/DomoConfig.ts"
+
+/** Decks with embedded pictures can be large; anything bigger is refused. */
+export const MAX_FILE_BYTES = 25 * 1024 * 1024
 
 /** Larger than any photo the app sends after shrinking it; anything bigger is refused. */
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024
@@ -39,6 +42,13 @@ export class Images extends Context.Service<
     /** The file behind an id, if it exists. */
     find(id: string): Effect.Effect<Option.Option<{ path: string; mediaType: ImageMediaType }>>
     forRun(refs: ReadonlyArray<ImageRef>): Effect.Effect<ReadonlyArray<RunImage>>
+    /** Keeps a copy of a file Domo hands over (a deck, a PDF, an SVG) in `<home>/attachments/`. */
+    saveFile(
+      bytes: Uint8Array,
+      name: string,
+      mediaType: FileMediaType,
+    ): Effect.Effect<FileRef, ImageRejected>
+    findFile(id: string): Effect.Effect<Option.Option<{ path: string; mediaType: FileMediaType }>>
   }
 >()("domo/images/Images") {
   static readonly layer = Layer.effect(
@@ -87,7 +97,42 @@ export class Images extends Context.Service<
         return out
       })
 
-      return Images.of({ save, find, forRun })
+      const filesDir = join(home, "attachments")
+      const fileExtensions: Record<FileMediaType, string> = {
+        "application/pdf": "pdf",
+        "text/html": "html",
+        "image/svg+xml": "svg",
+        "text/markdown": "md",
+        "text/plain": "txt",
+        "text/csv": "csv",
+      }
+      const filePath = (id: string, mediaType: FileMediaType) =>
+        join(filesDir, `${id}.${fileExtensions[mediaType]}`)
+
+      const saveFile = Effect.fn("Images.saveFile")(function* (
+        bytes: Uint8Array,
+        name: string,
+        mediaType: FileMediaType,
+      ) {
+        if (bytes.length === 0 || bytes.length > MAX_FILE_BYTES)
+          return yield* new ImageRejected({ message: "That file is empty or larger than 25 MB." })
+        const id = ImageId.make(randomUUID())
+        yield* fs.makeDirectory(filesDir, { recursive: true }).pipe(Effect.orDie)
+        yield* fs.writeFile(filePath(id, mediaType), bytes).pipe(Effect.orDie)
+        return { id, name, mediaType }
+      })
+
+      const findFile = Effect.fn("Images.findFile")(function* (id: string) {
+        if (!isImageId(id)) return Option.none()
+        for (const mediaType of FileMediaType.literals) {
+          const path = filePath(id, mediaType)
+          if (yield* fs.exists(path).pipe(Effect.orElseSucceed(() => false)))
+            return Option.some({ path, mediaType })
+        }
+        return Option.none()
+      })
+
+      return Images.of({ save, find, forRun, saveFile, findFile })
     }),
   )
 }

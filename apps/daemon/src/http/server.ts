@@ -143,6 +143,33 @@ const ImageRoutes = Layer.mergeAll(
   ),
 )
 
+/**
+ * Files Domo attached to a reply. Each is served sandboxed (an opaque origin with no access to
+ * the app, its token or the network); a deck's own scripts may run for navigation, and web fonts
+ * may load from Google Fonts.
+ */
+const AttachmentRoute = HttpRouter.add(
+  "GET",
+  "/attachments/:id",
+  Effect.gen(function* () {
+    const { id } = yield* HttpRouter.params
+    const found = yield* (yield* Images).findFile(id ?? "")
+    if (Option.isNone(found)) return HttpServerResponse.empty({ status: 404 })
+    const text = found.value.mediaType.startsWith("text/") && found.value.mediaType !== "text/html"
+    return yield* HttpServerResponse.file(found.value.path, {
+      contentType: text ? `${found.value.mediaType}; charset=utf-8` : found.value.mediaType,
+      headers: {
+        "content-security-policy":
+          "sandbox allow-scripts; default-src 'none'; script-src 'unsafe-inline'; " +
+          "style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com data:; " +
+          "img-src data: blob:",
+        "x-content-type-options": "nosniff",
+        "cache-control": "private, max-age=31536000, immutable",
+      },
+    })
+  }).pipe(Effect.catch(() => Effect.succeed(HttpServerResponse.empty({ status: 404 })))),
+)
+
 /** The most of one file "view" will show. */
 const FILE_LIMIT = 2 * 1024 * 1024
 const IMAGE_TYPES: Record<string, string> = {
@@ -202,6 +229,7 @@ export const ServerLive = Layer.unwrap(
         DomoMcpLive,
         ImageRoutes,
         FileRoute,
+        AttachmentRoute,
         StaticRoute,
       ),
     ).pipe(

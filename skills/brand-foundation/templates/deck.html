@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brand proposal</title>
+<!-- Load the brand's fonts from Google Fonts (the only network Domo's viewer and PDF export allow). -->
+<!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=...&display=swap"> -->
+<style>
+  /* One slide per <section>, 1920x1080. The viewer scales slides to fit; export_pdf prints one per page. */
+  @page { size: 1920px 1080px; margin: 0; }
+  :root {
+    --ground: #f6f5f1;
+    --ink: #1d1f1e;
+    --muted: #6b6f6c;
+    --accent: #2f5d50;
+    --display: Georgia, serif;
+    --text: system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #d9d8d3; }
+  body { font-family: var(--text); color: var(--ink); }
+  .slide {
+    width: 1920px;
+    height: 1080px;
+    margin: 0 auto 40px;
+    padding: 120px 144px;
+    background: var(--ground);
+    position: relative;
+    overflow: hidden;
+    break-after: page;
+    page-break-after: always;
+    transform-origin: top left;
+  }
+  @media print {
+    html, body { background: none; }
+    .slide { margin: 0 !important; transform: none !important; }
+  }
+  h1 { font: 400 112px/1.05 var(--display); margin: 0 0 32px; letter-spacing: -0.01em; }
+  h2 { font: 400 64px/1.1 var(--display); margin: 0 0 24px; }
+  p { font-size: 32px; line-height: 1.45; max-width: 1200px; margin: 0 0 24px; }
+  .muted { color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: start; }
+  .swatches { display: flex; gap: 24px; }
+  .swatch { width: 200px; }
+  .swatch div { height: 160px; border-radius: 8px; }
+  .swatch p { font-size: 22px; margin: 12px 0 0; }
+</style>
+</head>
+<body>
+
+<section class="slide">
+  <h1>Proposal title</h1>
+  <p class="muted">What this deck asks the reader to decide, in one sentence.</p>
+</section>
+
+<section class="slide">
+  <h2>Direction A: name</h2>
+  <div class="grid">
+    <div>
+      <p>The idea in one sentence.</p>
+      <p class="muted">The honest risk in one sentence.</p>
+    </div>
+    <div><!-- The name set large, a type specimen, or the mark. --></div>
+  </div>
+</section>
+
+<section class="slide">
+  <h2>Direction A in use</h2>
+  <!-- A real application at real proportions: newsletter cover, profile picture, social card. -->
+</section>
+
+<script>
+  // On screen, scale each slide to the window width so the deck reads well in Domo's viewer.
+  const scaleSlides = () => {
+    if (matchMedia("print").matches) return
+    const scale = Math.min(1, (innerWidth - 32) / 1920)
+    for (const slide of document.querySelectorAll(".slide")) {
+      slide.style.transform = `scale(${scale})`
+      slide.style.marginBottom = `${40 - 1080 * (1 - scale)}px`
+    }
+  }
+  addEventListener("resize", scaleSlides)
+  scaleSlides()
+</script>
+</body>
+</html>

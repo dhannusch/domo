@@ -55,6 +55,11 @@ export class VisualCheck extends Context.Service<
      * as a picture. Web fonts may load from Google Fonts; nothing else. None without Chrome.
      */
     snapshot(html: string, width: number, height: number): Effect.Effect<Option.Option<Uint8Array>>
+    /**
+     * A PDF of a whole HTML page, one page per `@page` (a deck's slides). Fonts as for snapshot.
+     * None without Chrome.
+     */
+    pdf(html: string): Effect.Effect<Option.Option<Uint8Array>>
   }
 >()("domo/visual/VisualCheck") {
   static readonly layer = Layer.effect(
@@ -160,6 +165,32 @@ export class VisualCheck extends Context.Service<
         )
       })
 
+      const pdf = Effect.fn("VisualCheck.pdf")(function* (html: string) {
+        const b = yield* browser
+        if (Option.isNone(b)) return Option.none<Uint8Array>()
+        return yield* Effect.acquireUseRelease(
+          Effect.tryPromise(() => b.value.newContext()),
+          (context) =>
+            Effect.tryPromise(async () => {
+              await context.route("**/*", (route) =>
+                /^https:\/\/fonts\.(googleapis|gstatic)\.com\//.test(route.request().url())
+                  ? route.continue()
+                  : route.abort(),
+              )
+              const page = await context.newPage()
+              await page.setContent(html, { waitUntil: "networkidle", timeout: 15000 })
+              await page.evaluate(() => document.fonts.ready)
+              const bytes = await page.pdf({ preferCSSPageSize: true, printBackground: true })
+              return Option.some(new Uint8Array(bytes))
+            }),
+          (context) => Effect.promise(() => context.close()).pipe(Effect.ignore),
+        ).pipe(
+          Effect.catch((error) =>
+            Effect.logWarning("pdf failed", error).pipe(Effect.as(Option.none<Uint8Array>())),
+          ),
+        )
+      })
+
       const review = Effect.fn("VisualCheck.review")(
         function* (visual: typeof VisualInput.Type) {
           if (!config.visualCheck) return CLEAN
@@ -195,7 +226,7 @@ export class VisualCheck extends Context.Service<
         ),
       )
 
-      return VisualCheck.of({ review, snapshot })
+      return VisualCheck.of({ review, snapshot, pdf })
     }),
   )
 
@@ -204,6 +235,7 @@ export class VisualCheck extends Context.Service<
     VisualCheck.of({
       review: () => Effect.succeed(CLEAN),
       snapshot: () => Effect.succeed(Option.none()),
+      pdf: () => Effect.succeed(Option.none()),
     }),
   )
 }

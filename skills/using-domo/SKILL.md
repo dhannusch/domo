@@ -53,7 +53,9 @@ offer to do it yourself when one of your tools can.
 
 ## Showing images
 
-- Show real pictures with `attach_image` (a PNG/JPEG/WebP/GIF file you made) or `snapshot_html`
+- Hand over files with `attach_file`: images show as pictures; decks and pages (HTML), PDFs, SVGs,
+  Markdown, text and CSV show as cards that open in Domo's viewer (images open there too).
+  `export_pdf` turns an HTML deck into a PDF. Show pictures you render with `snapshot_html`
   (write a page, get a PNG, e.g. a logo, cover or mockup with real web fonts). Prefer these to
   `render_visual` for design work; keep `render_visual` for interactive explainers.
 

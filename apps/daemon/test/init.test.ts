@@ -45,8 +45,17 @@ describe("initHome", () => {
       yield* fs.writeFileString(edited, "lab version")
       yield* git("commit", "-qam", "lab: orchestration: shorter")
 
+      // A seed file added to an untouched skill (a new reference) arrives too.
+      const craft = join(home, "skills", "brand-identity", "references", "craft.md")
+      yield* fs.remove(craft)
+      yield* git("commit", "-qam", "chore: seed skills/brand-identity")
+
       const updated = yield* initHome().pipe(Effect.provide(config))
-      expect(updated).toEqual(["skills/getting-to-know-you (updated)"])
+      expect([...updated].sort()).toEqual([
+        "skills/brand-identity (updated)",
+        "skills/getting-to-know-you (updated)",
+      ])
+      expect(yield* fs.exists(craft)).toBe(true)
       expect(yield* fs.readFileString(stale)).toContain("# Getting to know you")
       expect(yield* fs.readFileString(edited)).toBe("lab version")
     }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),

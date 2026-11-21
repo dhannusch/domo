@@ -77,6 +77,14 @@ const echoReply = (request: RunRequest): string => {
 /** Where `[[attach]]` writes the picture it then shows. */
 const ECHO_PNG = join(tmpdir(), "domo-echo-attach.png")
 
+/** Where `[[deck]]` writes the two-slide deck it then attaches. */
+const ECHO_DECK = join(tmpdir(), "domo-echo-deck.html")
+const DECK = `<!doctype html><html><head><style>
+@page { size: 1920px 1080px; margin: 0 }
+body { margin: 0; font: 64px Georgia, serif }
+section { width: 1920px; height: 1080px; display: grid; place-items: center; break-after: page }
+</style></head><body><section><h1>Direction A</h1></section><section><h1>Direction B</h1></section></body></html>`
+
 /** UI components the echo provider renders through Domo's real MCP endpoint, by directive. */
 const ECHO_COMPONENTS: ReadonlyArray<readonly [string, string, unknown]> = [
   [
@@ -93,7 +101,8 @@ const ECHO_COMPONENTS: ReadonlyArray<readonly [string, string, unknown]> = [
     },
   ],
   ["[[start-topic]]", "start_topic", { title: "How Teams Ship" }],
-  ["[[attach]]", "attach_image", { path: ECHO_PNG }],
+  ["[[attach]]", "attach_file", { path: ECHO_PNG }],
+  ["[[deck]]", "attach_file", { path: ECHO_DECK, name: "Brand proposal" }],
   [
     "[[remember]]",
     "remember",
@@ -260,6 +269,7 @@ export const layerEcho = Layer.succeed(
         ...(said.includes("[[work]]") ? workEvents(runId) : []),
         ...(said.includes("[[write]]") ? writeEvents(runId, request.cwd) : []),
         ...(said.includes("[[attach]]") ? (writeFileSync(ECHO_PNG, TINY_PNG), []) : []),
+        ...(said.includes("[[deck]]") ? (writeFileSync(ECHO_DECK, DECK), []) : []),
         // Claude streams token deltas; Codex delivers whole messages.
         ...(request.model.provider === "codex" ? [text] : text.split(/(?<= )/)).map(
           (part): AgentEvent => ({ _tag: "TextDelta", runId, text: part }),

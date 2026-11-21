@@ -26,6 +26,7 @@ const MessageRow = Schema.Struct({
   model: Schema.NullOr(Schema.String),
   reply_to: JsonColumn,
   images: JsonColumn,
+  files: JsonColumn,
   component: JsonColumn,
   sources: JsonColumn,
   resolution: JsonColumn,
@@ -74,6 +75,7 @@ const rowToMessage = Effect.fnUntraced(function* (raw: unknown) {
     ...present("model", row.model),
     ...present("replyTo", row.reply_to),
     ...present("images", row.images),
+    ...present("files", row.files),
     ...present("component", row.component),
     ...present("sources", row.sources),
     ...present("resolution", row.resolution),
@@ -418,7 +420,7 @@ export class ChatStore extends Context.Service<
         yield* sql`
           UPDATE messages SET text = ${e.text}, status = ${e.status},
             component = ${json(e.component)}, resolution = ${json(e.resolution)}, work = ${json(e.work)},
-            images = ${json(e.images)}
+            images = ${json(e.images)}, files = ${json(e.files)}
           WHERE id = ${e.id}
         `
       }, Effect.orDie)

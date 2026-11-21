@@ -1,65 +1,88 @@
 ---
 name: brand-identity
-description: Create or refine a visual brand system, logo, wordmark, typography, color, graphic language, applications, and editable asset kit from an approved foundation. Use for branding and visual identity work; do not use for ordinary UI styling or a one-off image unrelated to a brand system.
+description: Create or refine a visual identity in code (wordmark, mark, type, color, layouts, templates, kit) through staged, user-approved steps. Use for logos, visual identity and brand applications; not for ordinary UI styling or a one-off image unrelated to a brand.
 ---
 
 # Brand identity
 
-Read the approved topic-local `brand-pack/foundation.md`, `voice.md`, and `graphic-language.md`
-before drawing. If they do not exist, ask the user whether to establish the foundation first and use
-`brand-foundation` rather than inventing strategic assumptions silently.
+Good identity work is mostly taste and editing, and the user owns the taste. Your job is to explore
+widely, edit hard, show only work that has passed your own checks, and stop for the user at every
+decision. Everything is made in code: SVG for marks, HTML/CSS for layouts, specimens and decks.
 
-Read [references/visual-system.md](references/visual-system.md), then read only the asset-routing or
-provenance reference needed for the current request. Use the shared pack templates under
-`../brand-foundation/templates/brand-pack/` when initializing a new pack.
+## The one rule: stages end your turn
 
-## Route the asset before choosing a tool
+Work in the stages below. **Each stage ends your turn** with what you made and one decision for the
+user (a `render_choice`, `render_questions` or `render_comparison`). Never start the next stage in
+the same turn, never skip a stage because you think you know the answer, and never treat something
+as approved because you wrote it down. Approval is the user saying so in chat; record it with the
+date in `brand-pack/decisions.md`.
 
-- Logo, symbol, wordmark, favicon, or icon: SVG source first.
-- Social card, cover, one-pager, or composed layout: HTML/CSS or SVG source.
-- Photography, texture, or illustration: optional connected image backend, only when available and
-  appropriate; record its model and license.
+If the user asks to go faster, you may merge stages 2 and 3, but still stop before drawing marks.
 
-Do not use diffusion output as the canonical logo or wordmark. Preserve editable source and attach a
-PNG preview when Domo's chat cannot display SVG directly.
+## Stages
 
-## Direction workflow
+**0. Brief.** If there's no approved foundation (`brand-pack/foundation.md` plus an approval in
+`decisions.md`), use `brand-foundation` first. Then ask, in one `render_questions` card, only what
+the foundation doesn't answer: how readers should feel, two or three brands or publications they
+admire (and why), anything they dislike, and fixed constraints (name, colors, existing assets).
 
-1. Extract one visual mechanism from the approved foundation.
-2. Generate 3 genuinely different directions, not recolors of one idea.
-3. For each direction record the mechanism, mark idea, type, palette roles, application, distinction,
-   and one honest risk.
-4. Build a static board or contact sheet with `snapshot_html`, and show it with `attach_image`.
-5. Present a compact `Comparison` and wait for the user's choice or revision.
-6. Refine only the chosen direction, at most two rounds unless a measurable gate fails.
-7. Export source SVG/HTML, colorways, monochrome/reversed versions, small-size previews, tokens,
-   applications, and provenance.
+**1. Landscape.** Look at 6–10 real peers in the category (web search). Make a one-slide board:
+for each peer, the name set in a similar typeface, its colors as swatches, and three words for its
+tone. Name 2–3 open territories nobody owns. Ask which territory feels right.
 
-Use Domo's `council` for the initial visual directions and blind critique when the decision is open-
-ended. Use a focused delegate for production or a single critique. Consensus is not approval.
+**2. Directions.** For the chosen territory (or the two strongest), make **three style tiles**, not
+logos: the name set large in 2–3 candidate typefaces, a type specimen (headline, body, small text
+at real sizes), a palette with roles (ground, ink, accent, support) and contrast ratios, one graphic
+element, and one real application (a newsletter cover at its real size). Directions must differ on
+at least two axes (e.g. editorial/technical, quiet/loud), not be recolors. Present them as a deck
+(see Presenting) and ask for one, or a mix.
 
-## Quality gates
+**3. Marks.** In the chosen direction, sketch **12–20 wordmark and mark options quickly**, then edit
+down. Most strong publication brands are wordmarks; only add a symbol if it earns its place. Put all
+of them on a contact sheet (`../brand-foundation/scripts/make-contact-sheet.mjs`), cut to the best
+4–6 against the craft checks, and show those large plus the full sheet. Ask the user to pick up to
+two.
 
-Before calling the work finished:
+**4. Refine.** At most three rounds per pick: render, list specific defects (spacing between
+particular letters, stroke weight at 16px, balance), fix them, and show before/after. Ask whether
+it's done.
 
-- render at 16, 24, 32, 64, 128, and 256px when applicable;
-- test light, dark, monochrome, and reversed grounds;
-- check SVG `viewBox`, clipping, external references, and accidental rasterization;
-- check WCAG contrast for text and supporting graphics;
-- use licensed fonts and record them;
-- do not copy or trace a recognizable existing mark;
-- include the one-sentence rationale and the worst remaining risk;
-- keep the source files beside the previews in the topic-local brand pack.
+**5. Deliver.** The kit: SVG masters (color, one-color, reversed), favicon and avatar set, tokens,
+2–3 templates as HTML (newsletter cover, social card, profile banner) with their PNG renders, and a
+short brand book. Validate with `../brand-foundation/scripts/validate-brand-pack.mjs`.
 
-Use [scripts/init-brand-pack.mjs](../brand-foundation/scripts/init-brand-pack.mjs),
-[scripts/validate-brand-pack.mjs](../brand-foundation/scripts/validate-brand-pack.mjs), and
-[scripts/make-contact-sheet.mjs](../brand-foundation/scripts/make-contact-sheet.mjs) through the
-paths in the sibling skill. Use [references/asset-routing.md](references/asset-routing.md) and
-[references/provenance.md](references/provenance.md) for details.
+## Before showing anything
 
-## Delivery
+No first drafts. Every image you show has passed these:
 
-Keep the explanation in normal prose outside the image. A visual must never replace the answer or
-make the user's decision disappear. Name the generated files and leave the editable source available.
-Do not call a name or mark legally cleared; use the advisory process in `brand-foundation`'s claims
-reference.
+- you rendered it with `snapshot_html` and looked at the PNG yourself;
+- marks: contact sheet at 16, 24, 32, 64, 128 and 256px on light and dark, plus solid black;
+- text set in real, licensed fonts (Google Fonts by default; record each license);
+- WCAG contrast measured for every text/ground pair;
+- checked against [references/generic-tells.md](references/generic-tells.md), and anything that
+  matches is redone, not explained away;
+- the craft checks in [references/craft.md](references/craft.md).
+
+## Presenting
+
+Present each stage as a deck: one idea per slide at 1920×1080, large, with one sentence of
+rationale and the honest risk. Start from
+[../brand-foundation/templates/deck.html](../brand-foundation/templates/deck.html), save it in
+`brand-pack/presentations/`, `attach_file` it (it opens live in Domo's viewer) and `export_pdf` it.
+In the chat itself, show only the single most important slide with `snapshot_html`, then the
+decision. Never cram several directions into one small board.
+
+Write your explanation as prose in the reply; a picture never replaces the words or the decision.
+
+## Using other models
+
+Use `council` to critique a shortlist, not to generate directions in words: show the candidates
+(as files or descriptions of what's on screen) and ask each model which is strongest, which is
+weakest, and one specific fix. Consensus is advice, not approval. If a council member fails, say so.
+
+## References
+
+- [references/craft.md](references/craft.md): how to make good marks, wordmarks, type and color in code.
+- [references/generic-tells.md](references/generic-tells.md): looks that read as generated.
+- [references/visual-system.md](references/visual-system.md), [references/asset-routing.md](references/asset-routing.md),
+  [references/provenance.md](references/provenance.md): system, formats and licensing records.
