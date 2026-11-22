@@ -404,7 +404,9 @@ const SnapshotHtml = Tool.make("snapshot_html", {
   description:
     "Turn an HTML page you write into a PNG and show it in your reply: the way to show a design " +
     "mockup, cover, logo or social card as a real picture. Write a complete page sized to " +
-    "width x height; web fonts may load from Google Fonts, nothing else from the network. " +
+    "width (default 1200). Give a height only for a fixed format (a 1200x630 social card); " +
+    "without one the picture is exactly as tall as the content. Web fonts may load from Google " +
+    "Fonts, nothing else from the network. " +
     "Returns where the PNG was saved so you can keep or reuse it.",
   parameters: Schema.Struct({
     html: Schema.NonEmptyString.pipe(Schema.check(Schema.isMaxLength(200_000))),
@@ -902,7 +904,7 @@ const DomoToolHandlers = DomoTools.toLayer(
         return `Saved ${out}. ${shown}`
       }),
       snapshot_html: Effect.fnUntraced(function* ({ html, width, height }) {
-        const png = yield* visualCheck.snapshot(html, width ?? 1200, height ?? 630)
+        const png = yield* visualCheck.snapshot(html, width ?? 1200, height)
         if (Option.isNone(png))
           return "Chrome isn't available on this computer, so no picture could be made."
         return yield* showImage(png.value, "image/png")

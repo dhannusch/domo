@@ -77,6 +77,22 @@ describe.skipIf(!chrome)("VisualCheck", () => {
   )
 
   it.live(
+    "without a height, the snapshot is exactly as tall as its content",
+    () =>
+      Effect.gen(function* () {
+        const png = yield* (yield* VisualCheck).snapshot(
+          "<body style='margin:0'><div style='height:250px;background:#2f5d50'></div></body>",
+          400,
+          undefined,
+        )
+        const bytes = Option.getOrThrow(png)
+        const view = new DataView(bytes.buffer, bytes.byteOffset)
+        expect([view.getUint32(16), view.getUint32(20)]).toEqual([800, 500])
+      }).pipe(Effect.provide(TestLayer)),
+    30_000,
+  )
+
+  it.live(
     "catches overlapping labels, overflow and tiny text, and passes a clean diagram",
     () =>
       Effect.gen(function* () {

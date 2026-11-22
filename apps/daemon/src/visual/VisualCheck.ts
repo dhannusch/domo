@@ -54,7 +54,12 @@ export class VisualCheck extends Context.Service<
      * A PNG of a whole HTML page at this size (2x for sharpness), for mockups the user should see
      * as a picture. Web fonts may load from Google Fonts; nothing else. None without Chrome.
      */
-    snapshot(html: string, width: number, height: number): Effect.Effect<Option.Option<Uint8Array>>
+    /** Without a height, the picture is as tall as the content (no empty space below). */
+    snapshot(
+      html: string,
+      width: number,
+      height: number | undefined,
+    ): Effect.Effect<Option.Option<Uint8Array>>
     /**
      * A PDF of a whole HTML page, one page per `@page` (a deck's slides). Fonts as for snapshot.
      * None without Chrome.
@@ -136,13 +141,16 @@ export class VisualCheck extends Context.Service<
       const snapshot = Effect.fn("VisualCheck.snapshot")(function* (
         html: string,
         width: number,
-        height: number,
+        height: number | undefined,
       ) {
         const b = yield* browser
         if (Option.isNone(b)) return Option.none<Uint8Array>()
         return yield* Effect.acquireUseRelease(
           Effect.tryPromise(() =>
-            b.value.newContext({ viewport: { width, height }, deviceScaleFactor: 2 }),
+            b.value.newContext({
+              viewport: { width, height: height ?? 800 },
+              deviceScaleFactor: 2,
+            }),
           ),
           (context) =>
             Effect.tryPromise(async () => {
@@ -154,6 +162,17 @@ export class VisualCheck extends Context.Service<
               const page = await context.newPage()
               await page.setContent(html, { waitUntil: "networkidle", timeout: 10000 })
               await page.evaluate(() => document.fonts.ready)
+              if (height === undefined) {
+                // Fit the content: the lowest element's bottom, plus the body's bottom margin.
+                const bottom = await page.evaluate(() => {
+                  let max = 0
+                  for (const element of document.body.querySelectorAll("*"))
+                    max = Math.max(max, element.getBoundingClientRect().bottom)
+                  const margin = Number.parseFloat(getComputedStyle(document.body).marginBottom)
+                  return Math.ceil(max + (Number.isFinite(margin) ? margin : 0))
+                })
+                await page.setViewportSize({ width, height: Math.min(Math.max(bottom, 100), 4000) })
+              }
               const png = await page.screenshot({ type: "png", timeout: 10000 })
               return Option.some(new Uint8Array(png))
             }),
