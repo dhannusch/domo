@@ -50,7 +50,7 @@ offer to do it yourself when one of your tools can.
 - **Default model** for replies, and **background model** for filing (cheaper is fine).
 - **Your instructions for Domo:** edit `domo.md`, the user's own words on how you should behave.
   You may only suggest changes with `propose_instructions_change`.
-- **Appearance:** System, Light or Dark, per device. The Chalk interface uses neutral paper and charcoal, with flat controls and comfortable touch targets. Settings and files open in place, with Done kept at the top.
+- **Appearance:** System, Light or Dark, per device. The app icon is a custom lowercase d. The Chalk interface uses neutral paper and charcoal, with flat controls and comfortable touch targets. Settings and files open in place, with Done kept at the top.
 - **What Domo knows:** your nightly profile summary and every note you keep, each with a remove
   button. "Let Domo interview you" starts the getting-to-know-you interview.
 - **Self-improvement:** the Lab on or off, with undo for each change it made.

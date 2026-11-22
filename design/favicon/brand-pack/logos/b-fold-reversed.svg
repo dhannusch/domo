@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <title>Domo — Fold reversed concept, proposed</title>
+  <path fill="#292929" d="M0 0H256V256H0Z"/>
+  <path fill="#f5f5f5" transform="translate(-12.8 -12.8) scale(1.1)" d="M72 64H184C188.418 64 192 67.582 192 72V184C192 188.418 188.418 192 184 192H136V120H64V72C64 67.582 67.582 64 72 64ZM64 132L124 192H72C67.582 192 64 188.418 64 184V132Z"/>
+</svg>

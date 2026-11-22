@@ -1,76 +1,101 @@
-// Draws Domo's app icons (paper ground, a graphite ring around a charcoal seal) as PNGs,
-// with no image tooling: `node scripts/make-icons.ts`.
-import { writeFileSync } from "node:fs"
+// Rasterize the approved SVG masters; needs the same Chrome used by screenshots/visual checks.
+// Generated assets are committed, so `domo update` needs no browser to build the web app.
+import { createHash } from "node:crypto"
+import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { deflateSync } from "node:zlib"
+import { Schema } from "effect"
+import { chromium } from "playwright-core"
 
-const PAPER = [0xf5, 0xf5, 0xf5]
-const INK = [0x29, 0x29, 0x29]
-const ACCENT = [0x50, 0x50, 0x50]
+const WEB = join(import.meta.dirname, "../apps/web")
+const PUBLIC = join(WEB, "public")
+const ICONS = join(PUBLIC, "icons")
+const mark = readFileSync(join(ICONS, "domo.svg"), "utf8")
+const favicon = readFileSync(join(ICONS, "favicon.svg"), "utf8")
+const app = mark.replace(
+  "<title>Domo</title>",
+  '<title>Domo</title><path fill="#f5f5f5" d="M0 0h256v256H0z"/>',
+)
+const badge = mark.replaceAll("#292929", "#ffffff")
+const version = createHash("sha256")
+  .update(app)
+  .update(favicon)
+  .update(badge)
+  .digest("hex")
+  .slice(0, 10)
 
-const crcTable = Array.from({ length: 256 }, (_, n) => {
-  let c = n
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1
-  return c >>> 0
-})
-const crc = (bytes: Buffer) => {
-  let c = 0xffffffff
-  for (const b of bytes) c = (crcTable[(c ^ b) & 0xff] ?? 0) ^ (c >>> 8)
-  return (c ^ 0xffffffff) >>> 0
-}
-const chunk = (type: string, data: Buffer) => {
-  const body = Buffer.concat([Buffer.from(type), data])
-  const out = Buffer.alloc(8 + data.length + 4)
-  out.writeUInt32BE(data.length, 0)
-  body.copy(out, 4)
-  out.writeUInt32BE(crc(body), 8 + data.length)
-  return out
-}
-
-/** Coverage of a pixel by a disc, 4×4 supersampled for smooth edges. */
-const cover = (x: number, y: number, c: number, r: number) => {
-  let hits = 0
-  for (let i = 0; i < 4; i++)
-    for (let j = 0; j < 4; j++) {
-      const dx = x + (i + 0.5) / 4 - c
-      const dy = y + (j + 0.5) / 4 - c
-      if (dx * dx + dy * dy <= r * r) hits++
-    }
-  return hits / 16
-}
-const mix = (a: Array<number>, b: Array<number>, t: number) =>
-  a.map((v, i) => Math.round(v + ((b[i] ?? 0) - v) * t))
-
-const icon = (size: number, scale: number) => {
-  const c = size / 2
-  const ring = size * 0.34 * scale
-  const width = size * 0.035 * scale
-  const seal = size * 0.2 * scale
-  const rows: Array<Buffer> = []
-  for (let y = 0; y < size; y++) {
-    const row = Buffer.alloc(1 + size * 3)
-    for (let x = 0; x < size; x++) {
-      let px = PAPER
-      px = mix(px, INK, cover(x, y, c, ring) - cover(x, y, c, ring - width))
-      px = mix(px, ACCENT, cover(x, y, c, seal))
-      row.set(px, 1 + x * 3)
-    }
-    rows.push(row)
+// Playwright is a rendering-adapter edge, like scripts/demo/screenshots.ts.
+const browser = await chromium.launch({ channel: "chrome", headless: true })
+try {
+  const context = await browser.newContext({ deviceScaleFactor: 1, colorScheme: "light" })
+  const page = await context.newPage()
+  const outputs: ReadonlyArray<readonly [string, number, string, string]> = [
+    ["icon-192", 192, app, "icon-192.png"],
+    ["icon-512", 512, app, "icon-512.png"],
+    ["icon-maskable-512", 512, app, "icon-maskable-512.png"],
+    ["apple-touch-icon", 180, app, "apple-touch-icon.png"],
+    ["favicon-16", 16, favicon, "favicon-16.png"],
+    ["favicon-32", 32, favicon, "favicon-32.png"],
+    ["badge-96", 96, badge, "badge-96.png"],
+  ]
+  for (const [name, size, svg, alias] of outputs) {
+    await page.setViewportSize({ width: size, height: size })
+    await page.setContent(
+      `<body style="margin:0;background:transparent"><img width="${size}" height="${size}" src="data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}"></body>`,
+    )
+    await page.locator("img").evaluate((image: HTMLImageElement) => image.decode())
+    const png = await page.screenshot({ omitBackground: true })
+    writeFileSync(join(ICONS, `${name}-${version}.png`), png)
+    // Old pages and notification workers can still use the original URLs.
+    writeFileSync(join(ICONS, alias), png)
   }
-  const header = Buffer.alloc(13)
-  header.writeUInt32BE(size, 0)
-  header.writeUInt32BE(size, 4)
-  header.set([8, 2, 0, 0, 0], 8)
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    chunk("IHDR", header),
-    chunk("IDAT", deflateSync(Buffer.concat(rows))),
-    chunk("IEND", Buffer.alloc(0)),
-  ])
+} finally {
+  await browser.close()
 }
+writeFileSync(join(ICONS, `favicon-${version}.svg`), favicon)
+writeFileSync(join(ICONS, "app.svg"), app)
 
-const dir = join(import.meta.dirname, "../apps/web/public/icons")
-writeFileSync(join(dir, "icon-192.png"), icon(192, 1))
-writeFileSync(join(dir, "icon-512.png"), icon(512, 1))
-writeFileSync(join(dir, "icon-maskable-512.png"), icon(512, 0.8))
-writeFileSync(join(dir, "apple-touch-icon.png"), icon(180, 1))
+// Preserve every other manifest field: the app's identity/start URL must stay stable.
+const manifestPath = join(PUBLIC, "manifest.webmanifest")
+const manifest = Schema.decodeUnknownSync(
+  Schema.fromJsonString(Schema.Record(Schema.String, Schema.Unknown)),
+)(readFileSync(manifestPath, "utf8"))
+writeFileSync(
+  manifestPath,
+  `${JSON.stringify(
+    {
+      ...manifest,
+      icons: [
+        { src: `/icons/icon-192-${version}.png`, sizes: "192x192", type: "image/png" },
+        { src: `/icons/icon-512-${version}.png`, sizes: "512x512", type: "image/png" },
+        {
+          src: `/icons/icon-maskable-512-${version}.png`,
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
+        },
+      ],
+    },
+    null,
+    2,
+  )}\n`,
+)
+const htmlPath = join(WEB, "index.html")
+const html = readFileSync(htmlPath, "utf8")
+  .replace(/ {4}<link rel="icon"[^>]*>\n/g, "")
+  .replace(
+    / {4}<link rel="apple-touch-icon"[^>]*>/,
+    `    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32-${version}.png" />\n` +
+      `    <link rel="icon" type="image/svg+xml" sizes="any" href="/icons/favicon-${version}.svg" />\n` +
+      `    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon-${version}.png" />`,
+  )
+writeFileSync(htmlPath, html)
+const workerPath = join(PUBLIC, "sw.js")
+writeFileSync(
+  workerPath,
+  readFileSync(workerPath, "utf8")
+    .replace(/icon: "\/icons\/[^"]+"/, `icon: "/icons/icon-192-${version}.png"`)
+    .replace(/badge: "\/icons\/[^"]+"/, `badge: "/icons/badge-96-${version}.png"`),
+)
+console.log(
+  `Generated Domo icons (${version}); updated manifest, favicon, touch icon and notifications.`,
+)

@@ -158,6 +158,12 @@ The Lab improves domo without a human watching, so every change must be testable
 - `settings/Settings.ts` stores only the user's overrides in `meta`; defaults come from `DomoConfig`. Anything that depends on the away clock reads `Settings.awayMs`, never `config.awaySeconds`. Every change emits `SettingChanged`.
 - Components use the refined Soft Focus style: comfortable spacing, flat neutral surfaces, 6–10px control corners and a 2px charcoal border for a recommendation or selected value. Keep prose, checklists and receipts mostly unboxed. Inputs have visible boundaries, actions have 44px hit areas, and phone settings/file views use native sheets with sticky Done controls.
 
+## App icons
+
+- The approved icon is the custom lowercase **d**, in neutral Chalk/graphite. Editable masters are `apps/web/public/icons/domo.svg` and the optically adjusted, light/dark `favicon.svg`.
+- `node scripts/make-icons.ts` renders committed PNGs with Chrome and updates content-versioned URLs in the manifest, HTML touch/favicon links and notification worker. Regenerate when either master changes; normal host updates only build/copy the committed assets and need no Chrome for this step.
+- Keep the manifest URL, name, scope and start URL stable across icon updates. Static responses revalidate (`Cache-Control: no-cache`). Installed icon refresh remains browser-controlled; Chrome can ask to review the icon update, and iOS/iPadOS shortcuts may need re-adding.
+
 ## Remote (phone)
 
 - The daemon only listens on 127.0.0.1. `scripts/remote.sh` puts it on the tailnet over HTTPS (`tailscale serve`), which the PWA and Web Push need. `scripts/install-launchd.sh` keeps it running at login.

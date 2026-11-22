@@ -213,7 +213,8 @@ const FileRoute = HttpRouter.add(
 )
 
 /** The built PWA. In development Vite serves the UI and proxies /rpc here. */
-const StaticRoute = HttpStaticServer.layer({ root: WEB_DIST, spa: true })
+// Revalidate metadata and the app shell on open so a host update exposes new icon URLs.
+const StaticRoute = HttpStaticServer.layer({ root: WEB_DIST, spa: true, cacheControl: "no-cache" })
 
 /**
  * HTTP server on localhost only. Remote access is Tailscale's job (`tailscale

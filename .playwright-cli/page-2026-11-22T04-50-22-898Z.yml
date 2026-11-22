@@ -1,0 +1,124 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - paragraph [ref=e4]: Domo · Chalk · Icon study
+      - heading "A mark that belongs to Domo." [level=1] [ref=e5]
+      - paragraph [ref=e6]: Three SVG directions, tested as tiny favicons and installed-app icons. No production assets replaced.
+    - generic [ref=e7]:
+      - img "Existing ring and disc icon" [ref=e8]
+      - generic [ref=e9]:
+        - text: Current
+        - text: Ring + disc
+  - main [ref=e10]:
+    - article [ref=e11]:
+      - heading "A · Custom d" [level=2] [ref=e12]
+      - paragraph [ref=e13]: A compact, bespoke monogram. Direct and typographic.
+      - img "Custom d PWA icon" [ref=e15]
+      - paragraph [ref=e16]: Favicon and small-size tests
+      - generic [ref=e17]:
+        - figure "16px" [ref=e18]:
+          - img "Custom d at 16px" [ref=e19]
+          - generic [ref=e20]: 16px
+        - figure "24px" [ref=e21]:
+          - img "Custom d at 24px" [ref=e22]
+          - generic [ref=e23]: 24px
+        - figure "32px" [ref=e24]:
+          - img "Custom d at 32px" [ref=e25]
+          - generic [ref=e26]: 32px
+        - figure "64px" [ref=e27]:
+          - img "Custom d at 64px" [ref=e28]
+          - generic [ref=e29]: 64px
+      - generic [ref=e30]:
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - generic [ref=e33]: Domo
+            - generic [ref=e34]: ×
+          - generic [ref=e35]:
+            - generic [ref=e36]: Domo
+            - generic [ref=e37]: ×
+        - img "Custom d reversed at 128px" [ref=e39]
+      - paragraph [ref=e40]:
+        - strong [ref=e41]: "Tradeoff:"
+        - text: A letter is immediately legible, but less abstract than the alternatives.
+      - generic [ref=e42]:
+        - link "Source SVG" [ref=e43] [cursor=pointer]:
+          - /url: a-d/symbol.svg
+        - link "Rationale" [ref=e44] [cursor=pointer]:
+          - /url: a-d/rationale.md
+    - article [ref=e45]:
+      - heading "B · Fold" [level=2] [ref=e46]
+      - paragraph [ref=e47]: A folded note, reduced to one clear gesture.
+      - img "Fold PWA icon" [ref=e49]
+      - paragraph [ref=e50]: Favicon and small-size tests
+      - generic [ref=e51]:
+        - figure "16px" [ref=e52]:
+          - img "Fold at 16px" [ref=e53]
+          - generic [ref=e54]: 16px
+        - figure "24px" [ref=e55]:
+          - img "Fold at 24px" [ref=e56]
+          - generic [ref=e57]: 24px
+        - figure "32px" [ref=e58]:
+          - img "Fold at 32px" [ref=e59]
+          - generic [ref=e60]: 32px
+        - figure "64px" [ref=e61]:
+          - img "Fold at 64px" [ref=e62]
+          - generic [ref=e63]: 64px
+      - generic [ref=e64]:
+        - generic [ref=e65]:
+          - generic [ref=e66]:
+            - generic [ref=e67]: Domo
+            - generic [ref=e68]: ×
+          - generic [ref=e69]:
+            - generic [ref=e70]: Domo
+            - generic [ref=e71]: ×
+        - img "Fold reversed at 128px" [ref=e73]
+      - paragraph [ref=e74]:
+        - strong [ref=e75]: "Tradeoff:"
+        - text: Quietly distinctive, with a more document-oriented association.
+      - generic [ref=e76]:
+        - link "Source SVG" [ref=e77] [cursor=pointer]:
+          - /url: b-fold/symbol.svg
+        - link "Rationale" [ref=e78] [cursor=pointer]:
+          - /url: b-fold/rationale.md
+    - article [ref=e79]:
+      - heading "C · Conversation" [level=2] [ref=e80]
+      - paragraph [ref=e81]: One continuous conversational shape, with no extra ornament.
+      - img "Conversation PWA icon" [ref=e83]
+      - paragraph [ref=e84]: Favicon and small-size tests
+      - generic [ref=e85]:
+        - figure "16px" [ref=e86]:
+          - img "Conversation at 16px" [ref=e87]
+          - generic [ref=e88]: 16px
+        - figure "24px" [ref=e89]:
+          - img "Conversation at 24px" [ref=e90]
+          - generic [ref=e91]: 24px
+        - figure "32px" [ref=e92]:
+          - img "Conversation at 32px" [ref=e93]
+          - generic [ref=e94]: 32px
+        - figure "64px" [ref=e95]:
+          - img "Conversation at 64px" [ref=e96]
+          - generic [ref=e97]: 64px
+      - generic [ref=e98]:
+        - generic [ref=e99]:
+          - generic [ref=e100]:
+            - generic [ref=e101]: Domo
+            - generic [ref=e102]: ×
+          - generic [ref=e103]:
+            - generic [ref=e104]: Domo
+            - generic [ref=e105]: ×
+        - img "Conversation reversed at 128px" [ref=e107]
+      - paragraph [ref=e108]:
+        - strong [ref=e109]: "Tradeoff:"
+        - text: Closest to the chat category; needs to avoid looking like a generic messenger.
+      - generic [ref=e110]:
+        - link "Source SVG" [ref=e111] [cursor=pointer]:
+          - /url: c-chat/symbol.svg
+        - link "Rationale" [ref=e112] [cursor=pointer]:
+          - /url: c-chat/rationale.md
+  - contentinfo [ref=e113]:
+    - paragraph [ref=e114]: "Shown at actual CSS sizes: 16, 24, 32, 64, 128 and 256px. The app tiles simulate platform cropping; canonical SVGs retain a full square background."
+    - paragraph [ref=e115]: All artwork is authored vector geometry, with no font dependency, image generation or external artwork. These are draft directions for selection.
+    - link "Full size and colorway sheet" [ref=e116] [cursor=pointer]:
+      - /url: brand-pack/previews/contact-sheet.html
+    - link "Notes and critique" [ref=e117] [cursor=pointer]:
+      - /url: brand-pack/decisions.md
