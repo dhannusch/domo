@@ -26,6 +26,8 @@ export const TelemetryEvent = Schema.Union([
   Schema.TaggedStruct("ViewOpened", { componentId: ComponentId }),
   Schema.TaggedStruct("SettingChanged", { key: Schema.String }),
   Schema.TaggedStruct("ReplyStopped", { messageId: MessageId }),
+  /** The user sent while Domo was replying: "steer" stopped that reply, "queue" waited for it. */
+  Schema.TaggedStruct("SentWhileReplying", { mode: Schema.Literals(["steer", "queue"]) }),
   Schema.TaggedStruct("ChoiceSkipped", { componentId: ComponentId }),
   Schema.TaggedStruct("HighlightCommented", { withComment: Schema.Boolean }),
   Schema.TaggedStruct("ImageAttached", { via: Schema.Literals(["button", "paste", "drop"]) }),

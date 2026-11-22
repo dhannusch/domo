@@ -2,11 +2,12 @@ import { useAtom, useAtomSet, useAtomValue } from "@effect/atom-react"
 import { AsyncResult } from "effect/reactivity"
 import { type FormEvent, type KeyboardEvent, useRef, useState } from "react"
 import { AttachmentTray, ImageIcon, useAttachments } from "./Attachments.tsx"
-import { modelsAtom, sendAtom } from "./atoms.ts"
+import { chatAtom, modelsAtom, sendAtom } from "./atoms.ts"
 import { ConnectionStatus } from "./ConnectionStatus.tsx"
 import { MentionMenu, mentionMatches, mentionQuery } from "./MentionMenu.tsx"
 import { NeedsYou } from "./NeedsYou.tsx"
 import { hasComments, replyAtom, toReplyTo } from "./reply.ts"
+import { replying } from "./view.ts"
 
 export function Composer() {
   const send = useAtomSet(sendAtom, { mode: "promise" })
@@ -18,6 +19,9 @@ export function Composer() {
   const [dismissed, setDismissed] = useState(false)
   const attachments = useAttachments()
   const picker = useRef<HTMLInputElement>(null)
+  const chat = useAtomValue(chatAtom)
+  // While Domo is replying, a message can wait for that reply (queue) or change its course (steer).
+  const busy = AsyncResult.isSuccess(chat) && replying(chat.value)
   const query = dismissed ? undefined : mentionQuery(text)
   const suggestions =
     query === undefined || !AsyncResult.isSuccess(models) ? [] : mentionMatches(models.value, query)
@@ -27,7 +31,7 @@ export function Composer() {
     area.current?.focus()
   }
 
-  const submit = (event?: FormEvent) => {
+  const submit = (event?: FormEvent, mode: "queue" | "steer" = "queue") => {
     event?.preventDefault()
     const trimmed = text.trim()
     const images = attachments.refs
@@ -44,6 +48,7 @@ export function Composer() {
         text: trimmed,
         ...(replyTo === undefined ? {} : { replyTo }),
         ...(images.length === 0 ? {} : { images }),
+        ...(busy ? { mode } : {}),
       },
     }).catch(() => {
       setText((current) => (current.length === 0 ? trimmed : current))
@@ -68,9 +73,15 @@ export function Composer() {
       }
       if (event.key === "Escape") return setDismissed(true)
     }
-    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) submit(event)
+    if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing)
+      // Enter queues (it never interrupts); ⌘/Ctrl+Enter steers.
+      submit(event, event.metaKey || event.ctrlKey ? "steer" : "queue")
     if (event.key === "Escape" && reply.length > 0) setReply([])
   }
+
+  const empty =
+    (text.trim().length === 0 && attachments.refs.length === 0 && !hasComments(reply)) ||
+    attachments.busy
 
   return (
     <div className="composer">
@@ -159,16 +170,32 @@ export function Composer() {
             if (attachments.add(event.clipboardData.files, "paste") > 0) event.preventDefault()
           }}
         />
-        <button
-          type="submit"
-          data-testid="composer-send"
-          disabled={
-            (text.trim().length === 0 && attachments.refs.length === 0 && !hasComments(reply)) ||
-            attachments.busy
-          }
-        >
-          Send
-        </button>
+        {busy ? (
+          <span className="composer-modes">
+            <button
+              type="button"
+              className="composer-steer"
+              data-testid="composer-steer"
+              title="Stop the current reply and answer this now (⌘↩)"
+              disabled={empty}
+              onClick={() => submit(undefined, "steer")}
+            >
+              Steer
+            </button>
+            <button
+              type="submit"
+              data-testid="composer-send"
+              title="Answer this after the current reply (↩)"
+              disabled={empty}
+            >
+              Queue
+            </button>
+          </span>
+        ) : (
+          <button type="submit" data-testid="composer-send" disabled={empty}>
+            Send
+          </button>
+        )}
       </form>
     </div>
   )

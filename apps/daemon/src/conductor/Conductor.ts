@@ -11,7 +11,17 @@ import {
   Topic,
   TopicId,
 } from "@domo/domain"
-import { Context, DateTime, Effect, FiberMap, FileSystem, Layer, Option, Semaphore } from "effect"
+import {
+  Context,
+  DateTime,
+  Effect,
+  FiberMap,
+  FileSystem,
+  Layer,
+  Option,
+  Ref,
+  Semaphore,
+} from "effect"
 import { ChatBus } from "../chat/ChatBus.ts"
 import { ChatStore } from "../chat/ChatStore.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
@@ -34,6 +44,7 @@ export interface SendInput {
   readonly text: string
   readonly replyTo?: ReplyTo
   readonly images?: ReadonlyArray<ImageRef>
+  readonly mode?: "queue" | "steer"
 }
 
 export interface AnswerInput {
@@ -113,6 +124,8 @@ export class Conductor extends Context.Service<
       /** Replies in progress (or queued), by their message, so Stop can end one. */
       const replies = yield* FiberMap.make<MessageId>()
       const oneAtATime = yield* Semaphore.make(1)
+      /** Chat replies running or waiting their turn (not ones only filing afterwards). */
+      const active = yield* Ref.make<ReadonlySet<MessageId>>(new Set())
       const interrupted = yield* store.interruptStreaming
       if (interrupted > 0)
         yield* Effect.logInfo(`marked ${interrupted} interrupted reply(s) from before the restart`)
@@ -332,6 +345,17 @@ export class Conductor extends Context.Service<
         if (mention.text.trim().length === 0 && attached.length === 0 && !commented)
           return yield* fail("Nothing to send after the model mention.")
 
+        // Sent while Domo is replying: steering stops those replies (what they wrote stays, and
+        // reaches the next run as context it hasn't seen); queueing answers after them.
+        const busy = [...(yield* Ref.get(active))]
+        if (busy.length > 0) {
+          const mode = input.mode ?? "queue"
+          yield* telemetry.record({ _tag: "SentWhileReplying", mode })
+          if (mode === "steer")
+            yield* Effect.forEach(busy, (id) => FiberMap.remove(replies, id), { discard: true })
+        }
+        const waits = (yield* Ref.get(active)).size > 0
+
         // Replying to an unanswered Choice in your own words answers it.
         if (input.replyTo !== undefined) {
           const replied = yield* store.getMessage(input.replyTo.messageId)
@@ -383,7 +407,7 @@ export class Conductor extends Context.Service<
           id: MessageId.make(yield* newId),
           topicId: topic.id,
           role: "agent",
-          status: "streaming",
+          status: waits ? "queued" : "streaming",
           text: "",
           model: topic.model.key,
           createdAt: now,
@@ -407,11 +431,27 @@ export class Conductor extends Context.Service<
               : ""
         const asked = [quoted ?? "", said].filter((part) => part.length > 0).join("\n\n")
         const prompt = Option.isSome(pickUp) ? `${pickUpNote(pickUp.value)}\n\n${asked}` : asked
+        yield* Ref.update(active, (ids) => new Set(ids).add(agentMessage.id))
+        const settled = Ref.update(active, (ids) => {
+          const rest = new Set(ids)
+          rest.delete(agentMessage.id)
+          return rest
+        })
         yield* FiberMap.run(
           replies,
           agentMessage.id,
           oneAtATime
-            .withPermits(1)(runAgent(topic, userMessage, agentMessage, prompt))
+            .withPermits(1)(
+              Effect.gen(function* () {
+                if (waits) {
+                  const started = new Message({ ...agentMessage, status: "streaming" })
+                  yield* store.updateMessage(started)
+                  yield* bus.publish({ _tag: "MessageUpdated", message: started })
+                }
+                return yield* runAgent(topic, userMessage, agentMessage, prompt)
+              }),
+            )
+            .pipe(Effect.ensuring(settled))
             .pipe(
               // Stopped while still waiting its turn: end it too (a started run ends itself).
               Effect.onInterrupt(() => finishStopped(store, bus, agentMessage.id, "")),

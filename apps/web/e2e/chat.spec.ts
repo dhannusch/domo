@@ -178,3 +178,39 @@ test("Stop ends a reply that's being written, and keeps what it wrote", async ({
   await expect(reply).toContainText("Stopped.")
   await expect(reply.getByTestId("stop")).toHaveCount(0)
 })
+
+test("sending while Domo replies queues by default, and says so", async ({ page }, info) => {
+  await page.goto("/")
+  const first = `[[slow]] first thought ${info.project.name}`
+  await page.getByTestId("composer-input").fill(first)
+  await page.getByTestId("composer-send").click()
+  const running = page.getByTestId("message-agent").filter({ hasText: first }).last()
+  await expect(running).toHaveAttribute("data-status", "streaming")
+  const next = `and another ${info.project.name}`
+  await page.getByTestId("composer-input").fill(next)
+  await expect(page.getByTestId("composer-send")).toHaveText("Queue")
+  await expect(page.getByTestId("composer-steer")).toBeVisible()
+  await page.getByTestId("composer-input").press("Enter")
+  await expect(page.getByTestId("reply-queued")).toBeVisible()
+  // The first reply finishes untouched, then the queued one is answered.
+  await expect(running).toHaveAttribute("data-status", "done")
+  await expect(running).not.toContainText("Stopped.")
+  await expect(agentReply(page, `Echo: ${next}`)).toBeVisible()
+  await expect(page.getByTestId("reply-queued")).toHaveCount(0)
+  await expect(page.getByTestId("composer-send")).toHaveText("Send")
+})
+
+test("Steer stops the current reply and answers the new message now", async ({ page }, info) => {
+  await page.goto("/")
+  const first = `[[slow]] wrong direction ${info.project.name}`
+  await page.getByTestId("composer-input").fill(first)
+  await page.getByTestId("composer-send").click()
+  const running = page.getByTestId("message-agent").filter({ hasText: first }).last()
+  await expect(running).toHaveAttribute("data-status", "streaming")
+  const steer = `actually do this ${info.project.name}`
+  await page.getByTestId("composer-input").fill(steer)
+  await page.getByTestId("composer-steer").click()
+  await expect(running).toContainText("Stopped.")
+  await expect(agentReply(page, `Echo: ${steer}`)).toBeVisible()
+  await expect(page.getByTestId("reply-queued")).toHaveCount(0)
+})

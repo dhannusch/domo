@@ -82,7 +82,8 @@ export const Role = Schema.Literals(["user", "agent"])
 export type Role = typeof Role.Type
 
 /** Agent messages stream in; user messages are always "done". */
-export const MessageStatus = Schema.Literals(["streaming", "done", "failed"])
+/** "queued": a reply waiting for the one before it to finish (it turns "streaming" when it starts). */
+export const MessageStatus = Schema.Literals(["queued", "streaming", "done", "failed"])
 export type MessageStatus = typeof MessageStatus.Type
 
 export class Message extends Schema.Class<Message>("domo/domain/Message")({

@@ -56,7 +56,11 @@ export const finishStopped = Effect.fnUntraced(function* (
   written: string,
 ) {
   const latest = yield* store.getMessage(messageId)
-  if (Option.isNone(latest) || latest.value.status !== "streaming") return
+  if (
+    Option.isNone(latest) ||
+    (latest.value.status !== "streaming" && latest.value.status !== "queued")
+  )
+    return
   const { work, ...rest } = latest.value
   const kept = written.trim()
   const stopped = new Message({

@@ -60,6 +60,7 @@ export const DaemonLive = Layer.mergeAll(
   Sleep.loop,
   Lab.loop,
   Reminders.loop,
+  Notifier.replies,
 ).pipe(
   Layer.provideMerge(Reminders.layer),
   Layer.provideMerge(Conductor.layer),

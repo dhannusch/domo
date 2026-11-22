@@ -33,7 +33,7 @@ export class Settings extends Context.Service<
       const sql = yield* SqlClient.SqlClient
       const config = yield* DomoConfig
       const defaults: DomoSettings = {
-        notifications: "needed",
+        notifications: "all",
         awaySeconds: config.awaySeconds,
         lab: true,
         model: "opus",

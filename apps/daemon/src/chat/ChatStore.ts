@@ -445,12 +445,12 @@ export class ChatStore extends Context.Service<
       const interruptStreaming = Effect.gen(function* () {
         const rows = yield* sql<{
           n: number
-        }>`SELECT COUNT(*) AS n FROM messages WHERE status = 'streaming'`
+        }>`SELECT COUNT(*) AS n FROM messages WHERE status IN ('streaming', 'queued')`
         yield* sql`
           UPDATE messages SET status = 'failed',
             text = CASE WHEN text = '' THEN 'Interrupted when Domo restarted.' ELSE text END,
             work = CASE WHEN work IS NULL THEN NULL ELSE json_set(work, '$.status', 'failed') END
-          WHERE status = 'streaming'
+          WHERE status IN ('streaming', 'queued')
         `
         return rows[0]?.n ?? 0
       }).pipe(Effect.orDie)

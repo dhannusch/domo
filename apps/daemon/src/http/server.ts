@@ -87,6 +87,7 @@ const RpcHandlers = DomoRpc.toLayer(
       SaveInstructions: ({ text }) => instructions.save(text, "you"),
       PushKey: () => Effect.succeed(notifier.publicKey),
       Subscribe: ({ subscription }) => notifier.subscribe(subscription),
+      TestPush: () => notifier.test,
       Track: ({ event }) => telemetry.record(event),
     })
   }),

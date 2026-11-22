@@ -1,6 +1,6 @@
 import type { PushSubscriptionJson } from "@domo/domain"
 import { useAtomSet } from "@effect/atom-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { pushKeyAtom, subscribeAtom } from "../chat/atoms.ts"
 
 const DISMISSED = "domo.push-offer"
@@ -33,15 +33,29 @@ type Subscribe = (input: { payload: { subscription: PushSubscriptionJson } }) =>
 
 export const pushSupported = () => "PushManager" in window && "Notification" in window
 
-/** Asks for permission (needs a tap on iOS) and registers this device for notifications. */
-export const enablePush = async (getKey: GetKey, subscribe: Subscribe): Promise<boolean> => {
-  if ((await Notification.requestPermission()) !== "granted") return false
+const sameKey = (a: ArrayBuffer | null, b: Uint8Array) => {
+  if (a === null || a.byteLength !== b.byteLength) return false
+  const bytes = new Uint8Array(a)
+  return bytes.every((byte, i) => byte === b[i])
+}
+
+/**
+ * Registers this device with the daemon, reusing the browser's subscription when it was made
+ * with the daemon's current key. Needs notification permission already granted.
+ */
+const register = async (getKey: GetKey, subscribe: Subscribe): Promise<boolean> => {
   const registration = await navigator.serviceWorker.ready
-  const key = await getKey({ payload: undefined })
-  const subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: fromBase64Url(key),
-  })
+  const key = fromBase64Url(await getKey({ payload: undefined }))
+  const existing = await registration.pushManager.getSubscription()
+  if (existing !== null && !sameKey(existing.options.applicationServerKey, key))
+    await existing.unsubscribe()
+  const subscription =
+    existing !== null && sameKey(existing.options.applicationServerKey, key)
+      ? existing
+      : await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: key,
+        })
   const json = subscription.toJSON()
   if (
     json.endpoint === undefined ||
@@ -60,6 +74,22 @@ export const enablePush = async (getKey: GetKey, subscribe: Subscribe): Promise<
   return true
 }
 
+/** Asks for permission (needs a tap on iOS) and registers this device for notifications. */
+export const enablePush = async (getKey: GetKey, subscribe: Subscribe): Promise<boolean> => {
+  if ((await Notification.requestPermission()) !== "granted") return false
+  return register(getKey, subscribe)
+}
+
+/**
+ * Re-registers a device that already allowed notifications, every time the app opens, so a
+ * daemon that lost or replaced its subscription (new keys, a new home, an expired endpoint)
+ * still reaches it without the user doing anything.
+ */
+export const refreshPush = (getKey: GetKey, subscribe: Subscribe): Promise<boolean> =>
+  pushSupported() && Notification.permission === "granted" && window.isSecureContext
+    ? register(getKey, subscribe).catch(() => false)
+    : Promise.resolve(false)
+
 /**
  * One quiet line in the installed app, once: notifications are only for
  * decisions that block on the user. iOS needs the tap to ask for permission.
@@ -68,6 +98,10 @@ export function PushOffer() {
   const [visible, setVisible] = useState(offerable)
   const getKey = useAtomSet(pushKeyAtom, { mode: "promise" })
   const subscribe = useAtomSet(subscribeAtom, { mode: "promise" })
+  // biome-ignore lint/correctness/useExhaustiveDependencies: once per app open
+  useEffect(() => {
+    void refreshPush(getKey, subscribe)
+  }, [])
   if (!visible) return null
   const close = () => {
     try {
@@ -83,7 +117,7 @@ export function PushOffer() {
   }
   return (
     <p className="push-offer" data-testid="push-offer">
-      <span>Want a notification when I need your decision?</span>
+      <span>Want a notification when I reply or need your decision?</span>
       <button
         type="button"
         className="quiet-action"

@@ -76,6 +76,7 @@ export const modelsAtom = DomoClient.query("Models", undefined)
 export const undoLabChangeAtom = DomoClient.mutation("UndoLabChange")
 
 export const subscribeAtom = DomoClient.mutation("Subscribe")
+export const testPushAtom = DomoClient.mutation("TestPush")
 
 /** What "view" shows for one run, fetched when first opened. */
 export const runAtom = Atom.family((runId: RunId) => DomoClient.query("Run", { runId }))

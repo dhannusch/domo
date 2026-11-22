@@ -14,7 +14,7 @@ describe("Settings", () => {
     Effect.gen(function* () {
       const settings = yield* Settings
       expect(yield* settings.current).toEqual({
-        notifications: "needed",
+        notifications: "all",
         awaySeconds: 600,
         lab: true,
         model: "opus",
@@ -23,7 +23,7 @@ describe("Settings", () => {
       yield* settings.update({ awaySeconds: 1800 })
       yield* settings.update({ lab: false })
       expect(yield* settings.current).toEqual({
-        notifications: "needed",
+        notifications: "all",
         awaySeconds: 1800,
         lab: false,
         model: "opus",

@@ -69,6 +69,11 @@ export class DomoRpc extends RpcGroup.make(
       images: Schema.optionalKey(
         Schema.Array(ImageRef).pipe(Schema.check(Schema.isMaxLength(MAX_IMAGES))),
       ),
+      /**
+       * While Domo is replying: "queue" (default) answers after the current reply; "steer" stops
+       * it (keeping what it wrote) and answers this message now.
+       */
+      mode: Schema.optionalKey(Schema.Literals(["queue", "steer"])),
     },
     success: Schema.Struct({ messageId: MessageId }),
     error: SendFailed,
@@ -112,6 +117,8 @@ export class DomoRpc extends RpcGroup.make(
   Rpc.make("PushKey", { success: Schema.String }),
   /** This device wants a notification when a decision blocks on the user. */
   Rpc.make("Subscribe", { payload: { subscription: PushSubscriptionJson } }),
+  /** Sends a test notification to every subscribed device now; succeeds with how many got it. */
+  Rpc.make("TestPush", { success: Schema.Number }),
   /** Stops a reply that's being written (a chat reply or a background task). */
   Rpc.make("Stop", { payload: { messageId: MessageId } }),
   /** Answers a message's Choice (an option value, or free text). */

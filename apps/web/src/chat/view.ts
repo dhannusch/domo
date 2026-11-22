@@ -76,6 +76,16 @@ export const applyEvent = (view: ChatView, event: ChatEvent): ChatView => {
   }
 }
 
+/** Whether a chat reply is being written or waiting its turn (background tasks don't count). */
+export const replying = (view: ChatView): boolean => {
+  for (const message of view.messages.values()) {
+    if (message.role !== "agent") continue
+    if (message.status === "queued") return true
+    if (message.status === "streaming" && message.work?.status !== "running") return true
+  }
+  return false
+}
+
 /** Items for the "needs you" marker: unanswered Choices and replies busy with tools. */
 export const needsYou = (view: ChatView) => {
   const decisions: Array<Message> = []

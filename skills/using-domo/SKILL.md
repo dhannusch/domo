@@ -27,6 +27,9 @@ offer to do it yourself when one of your tools can.
 - **Reply:** every message has a Reply action. **Comment:** select text in one of your replies, tap
   Comment, and write a note right there; several comments go together with one Send.
 - **Stop:** a reply that's still being written shows Stop; it keeps what was written so far.
+- **Steer or queue:** while Domo is replying, the composer shows Queue and Steer instead of Send.
+  Queue (Enter) answers the new message after the current reply, marked "Queued" meanwhile. Steer
+  (⌘/Ctrl+Enter) stops the current reply, keeping what it wrote, and answers the new message now.
 
 ## Cards in your replies
 
@@ -40,7 +43,9 @@ offer to do it yourself when one of your tools can.
 
 ## Settings (the gear beside the date)
 
-- **Notifications:** when the phone app may notify (only when you need them, or never).
+- **Notifications:** when the phone app may notify while you're away from Domo on every device:
+  replies and decisions (the default), only when you're needed, or never. "Turn on for this
+  device" asks permission; once on, "Send a test notification" checks it end to end.
 - **Tidy timer:** how long they must be away before finished topics fold into Earlier.
 - **Default model** for replies, and **background model** for filing (cheaper is fine).
 - **Your instructions for Domo:** edit `domo.md`, the user's own words on how you should behave.

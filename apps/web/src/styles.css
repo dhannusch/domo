@@ -245,26 +245,33 @@ body {
   line-height: 1.25rem;
 }
 
+/* Small actions are quiet bordered buttons (index-card style), never underlined text. */
 .quiet-action,
 .more {
-  border: 0;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--margin-rule);
+  border-radius: 8px;
   background: none;
-  padding: 0;
+  padding: 0.05rem 0.55rem;
   font: inherit;
+  line-height: 1.4;
   color: var(--pencil);
   cursor: pointer;
-  text-decoration: underline;
-  text-decoration-color: var(--margin-rule);
-  text-underline-offset: 3px;
+  text-decoration: none;
 }
 
 .quiet-action:hover,
-.more:hover {
-  color: var(--accent);
+.more:hover,
+.quiet-action:focus-visible,
+.more:focus-visible {
+  color: var(--ink);
+  border-color: var(--accent);
 }
 
 .more {
-  display: block;
+  display: flex;
+  width: fit-content;
   font-family: var(--font-hand);
   font-size: 0.9rem;
   margin: calc(var(--line) * -0.5) 0 var(--line);
@@ -597,6 +604,16 @@ body {
   cursor: pointer;
 }
 
+.composer-modes {
+  display: flex;
+  gap: 0.9rem;
+  align-items: center;
+}
+
+.composer .composer-steer {
+  color: var(--ink);
+}
+
 .composer button:disabled {
   color: var(--pencil);
   cursor: default;
@@ -901,10 +918,12 @@ body {
   background: none;
   font: inherit;
   color: var(--ink);
-  text-decoration: underline;
-  text-decoration-color: var(--margin-rule);
-  text-underline-offset: 0.2em;
   cursor: pointer;
+}
+
+.run-file:hover,
+.run-file:focus-visible {
+  color: var(--accent);
 }
 
 .file-viewer {
@@ -1221,6 +1240,18 @@ body {
 .setting-card.picked {
   border: 2px solid var(--accent);
   padding: calc(0.4rem - 1px) calc(0.9rem - 1px);
+}
+
+.setting > .quiet-action {
+  margin-top: 0.5rem;
+}
+
+.setting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .setting-note,

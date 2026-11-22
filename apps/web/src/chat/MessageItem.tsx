@@ -220,7 +220,8 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
   const [expanded, setExpanded] = useState(false)
   if (message.role === "user") return <UserMessage message={message} />
 
-  const streaming = message.status === "streaming"
+  const queued = message.status === "queued"
+  const streaming = message.status === "streaming" || queued
   const full = streaming ? (draft ?? "") : message.text
   const folded = !streaming && !expanded && shouldFold(full, question)
   const text = folded ? leadOf(full) : full
@@ -234,7 +235,7 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
     >
       <div
         data-message-id={message.id}
-        className={`prose${streaming ? " caret" : ""}${message.status === "failed" ? " failed" : ""}`}
+        className={`prose${streaming && !queued ? " caret" : ""}${message.status === "failed" ? " failed" : ""}`}
       >
         {text.length > 0 ? (
           <Markdown remarkPlugins={GFM} components={PROSE}>
@@ -242,7 +243,11 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
           </Markdown>
         ) : null}
       </div>
-      {streaming && message.work?.status === "running" ? (
+      {queued ? (
+        <p className="work-progress" data-testid="reply-queued">
+          Queued: I’ll answer this after the reply above.
+        </p>
+      ) : streaming && message.work?.status === "running" ? (
         <p className="work-progress" data-testid="task-running">
           Working on this in the background: {message.work.summary}
           {progress !== undefined ? `, ${activity(progress.current)}` : ""}

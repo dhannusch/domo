@@ -1,8 +1,19 @@
 import { join } from "node:path"
-import type { PushSubscriptionJson } from "@domo/domain"
-import { Clock, Context, Effect, FileSystem, Layer, Option, Predicate, Schema } from "effect"
+import type { Message, PushSubscriptionJson } from "@domo/domain"
+import {
+  Clock,
+  Context,
+  Effect,
+  FileSystem,
+  Layer,
+  Option,
+  Predicate,
+  Schema,
+  Stream,
+} from "effect"
 import { SqlClient } from "effect/sql"
 import webpush from "web-push"
+import { ChatBus } from "../chat/ChatBus.ts"
 import { DomoConfig } from "../config/DomoConfig.ts"
 import { Presence } from "../presence/Presence.ts"
 import { Settings } from "../settings/Settings.ts"
@@ -26,9 +37,46 @@ export interface Note {
   readonly tag: string
 }
 
+/** The start of a reply as plain text, short enough for a lock screen. */
+export const preview = (text: string): string => {
+  const plain = text
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[#>*_`|~]+/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  return plain.length > 140 ? `${plain.slice(0, 139).trimEnd()}…` : plain
+}
+
+/** What a finished reply should notify as, under the user's setting; none when it shouldn't. */
+export const replyNote = (
+  message: Message,
+  setting: "all" | "needed" | "off",
+): Option.Option<Note> => {
+  if (setting === "off" || message.status === "streaming" || message.status === "queued")
+    return Option.none()
+  const tag = message.component?._tag
+  const asks = (tag === "Choice" || tag === "Questions") && message.resolution === undefined
+  if (!asks && setting !== "all") return Option.none()
+  const body =
+    asks && message.component?._tag === "Choice"
+      ? message.component.question
+      : preview(message.text) || "Your reply is ready."
+  return Option.some({
+    title: asks
+      ? "Domo needs you"
+      : message.status === "failed"
+        ? "Domo hit a problem"
+        : "Domo replied",
+    body,
+    tag: message.id,
+  })
+}
+
 /**
- * Web Push to the user's devices, only for decisions that block on them, and
- * only when they aren't already looking. VAPID keys live in `<home>/vapid.json`.
+ * Web Push to the user's devices when they aren't already looking: decisions that
+ * block on them, reminders, and (by default) finished replies. VAPID keys live in
+ * `<home>/vapid.json`.
  */
 export class Notifier extends Context.Service<
   Notifier,
@@ -36,6 +84,8 @@ export class Notifier extends Context.Service<
     readonly publicKey: string
     subscribe(subscription: PushSubscriptionJson): Effect.Effect<void>
     needsYou(note: Note): Effect.Effect<void>
+    /** Sends a test note to every device now, present or not; how many accepted it. */
+    readonly test: Effect.Effect<number>
   }
 >()("domo/notify/Notifier") {
   static readonly layer = Layer.effect(
@@ -78,6 +128,7 @@ export class Notifier extends Context.Service<
             },
           ),
         ).pipe(
+          Effect.as(true),
           Effect.catch((error) => {
             const status = Predicate.hasProperty(error.cause, "statusCode")
               ? error.cause.statusCode
@@ -86,10 +137,21 @@ export class Notifier extends Context.Service<
             return status === 404 || status === 410
               ? sql`DELETE FROM push_subscriptions WHERE endpoint = ${row.endpoint}`.pipe(
                   Effect.ignore,
+                  Effect.as(false),
                 )
-              : Effect.logWarning("push failed", error)
+              : Effect.logWarning("push failed", status ?? "", error).pipe(Effect.as(false))
           }),
         )
+
+      /** Sends to every subscribed device; how many accepted it. */
+      const sendAll = Effect.fnUntraced(function* (note: Note) {
+        const rows = yield* sql`SELECT endpoint, p256dh, auth FROM push_subscriptions`.pipe(
+          Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(Row))),
+        )
+        const payload = JSON.stringify(note)
+        const sent = yield* Effect.forEach(rows, (row) => send(row, payload), { concurrency: 4 })
+        return sent.filter(Boolean).length
+      })
 
       const needsYou = Effect.fn("Notifier.needsYou")(
         function* (note: Note) {
@@ -97,24 +159,53 @@ export class Notifier extends Context.Service<
           const lastSeen = yield* presence.lastSeenMs
           const now = yield* Clock.currentTimeMillis
           if (Option.isSome(lastSeen) && now - lastSeen.value < PRESENT_MS) return
-          const rows = yield* sql`SELECT endpoint, p256dh, auth FROM push_subscriptions`.pipe(
-            Effect.flatMap(Schema.decodeUnknownEffect(Schema.Array(Row))),
-          )
-          const payload = JSON.stringify(note)
-          yield* Effect.forEach(rows, (row) => send(row, payload), {
-            concurrency: 4,
-            discard: true,
-          })
+          yield* sendAll(note)
         },
         Effect.catchCause((cause) => Effect.logWarning("push skipped", cause)),
       )
 
-      return Notifier.of({ publicKey: keys.publicKey, subscribe, needsYou })
+      const test = sendAll({
+        title: "Domo",
+        body: "Notifications work on this device.",
+        tag: "domo-test",
+      }).pipe(
+        Effect.orElseSucceed(() => 0),
+        Effect.withSpan("Notifier.test"),
+      )
+
+      return Notifier.of({ publicKey: keys.publicKey, subscribe, needsYou, test })
+    }),
+  )
+
+  /** Notifies finished replies (and the decisions they ask for) while the user is away. */
+  static readonly replies = Layer.effectDiscard(
+    Effect.gen(function* () {
+      const notifier = yield* Notifier
+      const bus = yield* ChatBus
+      const settings = yield* Settings
+      yield* bus.feed.pipe(
+        Stream.runForEach((event) =>
+          event._tag === "AgentFinished"
+            ? settings.current.pipe(
+                Effect.map((s) => replyNote(event.message, s.notifications)),
+                Effect.flatMap(
+                  Option.match({ onNone: () => Effect.void, onSome: notifier.needsYou }),
+                ),
+              )
+            : Effect.void,
+        ),
+        Effect.forkScoped,
+      )
     }),
   )
 
   static readonly layerNoop = Layer.succeed(
     Notifier,
-    Notifier.of({ publicKey: "", subscribe: () => Effect.void, needsYou: () => Effect.void }),
+    Notifier.of({
+      publicKey: "",
+      subscribe: () => Effect.void,
+      needsYou: () => Effect.void,
+      test: Effect.succeed(0),
+    }),
   )
 }

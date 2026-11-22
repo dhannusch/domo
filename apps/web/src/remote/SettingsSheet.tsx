@@ -8,6 +8,7 @@ import {
   sendAtom,
   settingsAtom,
   subscribeAtom,
+  testPushAtom,
   trackAtom,
   undoLabChangeAtom,
   updateSettingsAtom,
@@ -109,6 +110,8 @@ function SettingsBody({ view, onClose }: { view: SettingsView; onClose: () => vo
   const track = useAtomSet(trackAtom)
   const getKey = useAtomSet(pushKeyAtom, { mode: "promise" })
   const subscribe = useAtomSet(subscribeAtom, { mode: "promise" })
+  const testPush = useAtomSet(testPushAtom, { mode: "promise" })
+  const [tested, setTested] = useState<string>()
   const [pushHere, setPushHere] = useState(
     () => pushSupported() && Notification.permission === "granted",
   )
@@ -128,20 +131,48 @@ function SettingsBody({ view, onClose }: { view: SettingsView; onClose: () => vo
           name="notifications"
           value={settings.notifications}
           options={[
-            { value: "needed", label: "When I’m needed" },
+            { value: "all", label: "Replies and decisions" },
+            { value: "needed", label: "Only when I’m needed" },
             { value: "off", label: "Off" },
           ]}
           onPick={(notifications) => set({ notifications }, "notifications")}
         />
-        {settings.notifications === "needed" && pushSupported() && !pushHere ? (
-          <button
-            type="button"
-            className="quiet-action"
-            data-testid="push-here"
-            onClick={() => void enablePush(getKey, subscribe).then(setPushHere)}
-          >
-            Turn on for this device
-          </button>
+        <p className="setting-note">Only while you’re away from Domo on every device.</p>
+        {settings.notifications !== "off" && pushSupported() ? (
+          pushHere ? (
+            <div className="setting-actions">
+              <button
+                type="button"
+                className="quiet-action"
+                data-testid="push-test"
+                onClick={() =>
+                  void testPush({ payload: undefined })
+                    .then((n) =>
+                      setTested(
+                        n > 0 ? `Sent to ${n} device${n === 1 ? "" : "s"}.` : "No device got it.",
+                      ),
+                    )
+                    .catch(() => setTested("Couldn’t send."))
+                }
+              >
+                Send a test notification
+              </button>
+              {tested === undefined ? null : (
+                <span className="setting-note" data-testid="push-test-result">
+                  {tested}
+                </span>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="quiet-action"
+              data-testid="push-here"
+              onClick={() => void enablePush(getKey, subscribe).then(setPushHere)}
+            >
+              Turn on for this device
+            </button>
+          )
         ) : null}
       </section>
 

@@ -3,8 +3,11 @@ import { DeviceId } from "./ids.ts"
 
 /** What the user can tweak from the settings sheet (or by asking Domo). */
 export const DomoSettings = Schema.Struct({
-  /** Push notifications: only for decisions that block on the user, or never. */
-  notifications: Schema.Literals(["needed", "off"]),
+  /**
+   * Push notifications while the user is away: for replies and decisions ("all"), only for
+   * decisions that block on them ("needed"), or never.
+   */
+  notifications: Schema.Literals(["all", "needed", "off"]),
   /** Idle time on every device before Domo tidies and runs background work. */
   awaySeconds: Schema.Number.pipe(
     Schema.check(Schema.isBetween({ minimum: 0.01, maximum: 86_400 })),
