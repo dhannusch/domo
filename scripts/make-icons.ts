@@ -1,12 +1,12 @@
-// Draws Domo's app icons (paper ground, a graphite ring around a sage seal) as PNGs,
+// Draws Domo's app icons (paper ground, a graphite ring around a charcoal seal) as PNGs,
 // with no image tooling: `node scripts/make-icons.ts`.
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { deflateSync } from "node:zlib"
 
-const PAPER = [0xec, 0xed, 0xe8]
-const INK = [0x23, 0x26, 0x2b]
-const SAGE = [0x5c, 0x7a, 0x62]
+const PAPER = [0xf5, 0xf5, 0xf5]
+const INK = [0x29, 0x29, 0x29]
+const ACCENT = [0x50, 0x50, 0x50]
 
 const crcTable = Array.from({ length: 256 }, (_, n) => {
   let c = n
@@ -52,7 +52,7 @@ const icon = (size: number, scale: number) => {
     for (let x = 0; x < size; x++) {
       let px = PAPER
       px = mix(px, INK, cover(x, y, c, ring) - cover(x, y, c, ring - width))
-      px = mix(px, SAGE, cover(x, y, c, seal))
+      px = mix(px, ACCENT, cover(x, y, c, seal))
       row.set(px, 1 + x * 3)
     }
     rows.push(row)

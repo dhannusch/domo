@@ -38,17 +38,22 @@ function ChecklistItem({
 
 export function ChecklistView({ message, checklist }: { message: Message; checklist: Checklist }) {
   return (
-    <ul className="checklist" data-testid="checklist">
-      {checklist.items.map((item, index) => (
-        <ChecklistItem
-          // biome-ignore lint/suspicious/noArrayIndexKey: items are addressed by position (the Check RPC uses the index)
-          key={`${index}-${item.label}`}
-          message={message}
-          index={index}
-          label={item.label}
-          done={item.done}
-        />
-      ))}
-    </ul>
+    <div className="checklist-block">
+      <p className="checklist-count" data-testid="checklist-count">
+        {checklist.items.filter((item) => item.done).length} of {checklist.items.length} done
+      </p>
+      <ul className="checklist" data-testid="checklist">
+        {checklist.items.map((item, index) => (
+          <ChecklistItem
+            // biome-ignore lint/suspicious/noArrayIndexKey: items are addressed by position (the Check RPC uses the index)
+            key={`${index}-${item.label}`}
+            message={message}
+            index={index}
+            label={item.label}
+            done={item.done}
+          />
+        ))}
+      </ul>
+    </div>
   )
 }

@@ -1,0 +1,191 @@
+.settings {
+  width: min(36rem, calc(100vw - 3rem));
+  max-height: 90dvh;
+  margin: auto;
+  padding: 0 28px 28px;
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-sheet);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-hand);
+  overscroll-behavior: contain;
+}
+.settings::backdrop {
+  background: color-mix(in srgb, var(--ink) 30%, transparent);
+}
+.settings-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 0;
+  margin-bottom: calc(var(--line) / 2);
+  background: var(--paper);
+}
+.settings h2 {
+  margin: 0;
+  font: 500 var(--text-heading) / 1.4 var(--font-hand);
+}
+.setting {
+  margin: 0 0 var(--line);
+}
+.setting h3 {
+  margin: 0 0 10px;
+  font-size: var(--text-control);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.setting-cards {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin-inline: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.setting-card {
+  min-height: var(--target);
+  max-width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--margin-rule);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: var(--text-caption) / 1.5 var(--font-hand);
+}
+.setting-card.picked {
+  border: 2px solid var(--accent);
+  padding: 9px 12px;
+  background: var(--paper-deep);
+}
+.setting > .quiet-action {
+  margin-top: 10px;
+}
+.setting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+.setting-note,
+.setting-list {
+  font-size: var(--text-caption);
+  line-height: 1.6;
+  color: var(--pencil);
+  margin: 8px 0 0;
+}
+.setting-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.setting-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+.setting-profile {
+  white-space: pre-wrap;
+  font: var(--text-control) / 1.7 var(--font-prose);
+  color: var(--ink);
+}
+.settings summary {
+  min-height: var(--target);
+  padding: 10px 0;
+  cursor: pointer;
+  font-size: var(--text-control);
+}
+.instructions textarea {
+  display: block;
+  width: 100%;
+  min-height: 14rem;
+  margin-top: 10px;
+  padding: 12px;
+  border: 1px solid var(--margin-rule);
+  border-radius: 7px;
+  background: var(--surface);
+  color: var(--ink);
+  font: var(--text-input) / 1.6 var(--font-hand);
+  resize: vertical;
+}
+.instructions-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.instructions-save {
+  min-height: var(--target);
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+  background: var(--accent);
+  color: var(--paper);
+  font: 500 var(--text-control) / 1.4 var(--font-hand);
+}
+.instructions-save:disabled {
+  opacity: 0.65;
+}
+.memory-list {
+  list-style: none;
+  margin: calc(var(--line) / 2) 0 0;
+  padding: 0;
+  display: grid;
+  gap: calc(var(--line) / 2);
+}
+.memory-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--hairline);
+}
+.memory-text {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.memory-name {
+  font-size: var(--text-caption);
+  color: var(--pencil);
+}
+.memory-body {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .settings {
+    width: 100%;
+    max-width: 100%;
+    height: calc(100dvh - 24px);
+    max-height: calc(100dvh - 24px);
+    margin: 24px 0 0;
+    padding: 0 22px 24px;
+    border-bottom: 0;
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  }
+  .settings-head {
+    padding: 18px 0;
+  }
+  .setting-cards[aria-label="model"],
+  .setting-cards[aria-label="notifications"] {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .setting-cards[aria-label="model"] .setting-card,
+  .setting-cards[aria-label="notifications"] .setting-card {
+    text-align: left;
+  }
+}

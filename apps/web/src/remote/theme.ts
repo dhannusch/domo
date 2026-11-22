@@ -3,7 +3,7 @@ export type ThemeChoice = "system" | "light" | "dark"
 
 const KEY = "domo.theme"
 /** The status-bar colors, matching --paper in each theme. */
-const BAR = { light: "#ecede8", dark: "#181b19" }
+const BAR = { light: "#f5f5f5", dark: "#1c1c1c" }
 
 export const readTheme = (): ThemeChoice => {
   try {

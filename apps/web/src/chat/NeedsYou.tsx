@@ -9,7 +9,10 @@ import { needsYou } from "./view.ts"
 const jumpTo = (message: Message) => {
   const element = document.querySelector(`[data-message-id="${message.id}"]`)?.closest("article")
   if (element == null) return
-  element.scrollIntoView({ behavior: "smooth", block: "center" })
+  element.scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth",
+    block: "center",
+  })
   element.classList.add("flash")
   window.setTimeout(() => element.classList.remove("flash"), 1600)
 }
@@ -51,6 +54,7 @@ export function NeedsYou() {
             <li key={message.id}>
               <button
                 type="button"
+                data-testid={`needs-you-item-${message.id}`}
                 onClick={() => {
                   setOpen(false)
                   jumpTo(message)

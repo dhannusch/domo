@@ -65,13 +65,14 @@ export function ChoiceView({ message, choice }: { message: Message; choice: Choi
               }).catch(() => setPending(undefined))
             }}
           >
-            <span className="choice-label">{option.label}</span>
-            {option.consequence !== undefined || option.value === preselected ? (
-              <span className="choice-consequence">
-                {[option.consequence, option.value === preselected ? "my pick" : undefined]
-                  .filter((part) => part !== undefined)
-                  .join(" · ")}
-              </span>
+            <span className="choice-heading">
+              <span className="choice-label">{option.label}</span>
+              {option.value === preselected ? (
+                <span className="choice-recommendation">Recommended</span>
+              ) : null}
+            </span>
+            {option.consequence !== undefined ? (
+              <span className="choice-consequence">{option.consequence}</span>
             ) : null}
           </button>
         ))}

@@ -31,13 +31,13 @@ test("appearance: dark sticks on this device, and System follows the OS again", 
     page.evaluate(() =>
       getComputedStyle(document.documentElement).getPropertyValue("--paper").trim(),
     )
-  expect(await paper()).toBe("#181b19")
+  expect(await paper()).toBe("#1c1c1c")
   await page.reload()
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark")
   await page.getByTestId("settings-open").click()
   await page.getByTestId("setting-theme-system").click()
   await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/)
-  expect(await paper()).toBe("#ecede8")
+  expect(await paper()).toBe("#f5f5f5")
 })
 
 test("the default model can be changed from settings", async ({ page }) => {

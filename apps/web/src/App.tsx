@@ -15,7 +15,10 @@ export function App() {
     <>
       <main className="page">
         <div className="masthead-row">
-          <p className="masthead">{today.format(new Date())}</p>
+          <div className="masthead-identity">
+            <span className="wordmark">domo</span>
+            <p className="masthead">{today.format(new Date())}</p>
+          </div>
           <button
             type="button"
             className="settings-button"

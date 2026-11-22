@@ -8,20 +8,20 @@ export type VisualTheme = Readonly<Record<string, string>>
 /** Domo's palette for visuals; the web app passes its live CSS values instead. */
 export const VISUAL_THEMES: { readonly light: VisualTheme; readonly dark: VisualTheme } = {
   light: {
-    "--paper": "#ecede8",
-    "--paper-deep": "#e1e3dc",
-    "--ink": "#23262b",
-    "--accent": "#5c7a62",
-    "--pencil": "#6a6d70",
-    "--margin-rule": "#9db0a0",
+    "--paper": "#f5f5f5",
+    "--paper-deep": "#e8e8e8",
+    "--ink": "#292929",
+    "--accent": "#505050",
+    "--pencil": "#626262",
+    "--margin-rule": "#878787",
   },
   dark: {
-    "--paper": "#181b19",
-    "--paper-deep": "#202421",
-    "--ink": "#daddd6",
-    "--accent": "#9bb89f",
-    "--pencil": "#8d928c",
-    "--margin-rule": "#4e6553",
+    "--paper": "#1c1c1c",
+    "--paper-deep": "#333333",
+    "--ink": "#ebebeb",
+    "--accent": "#d0d0d0",
+    "--pencil": "#b9b9b9",
+    "--margin-rule": "#959595",
   },
 }
 

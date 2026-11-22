@@ -46,6 +46,7 @@ export function QuestionsView({ message, questions }: { message: Message; questi
 
   return (
     <fieldset className="questions" data-testid="questions" data-concept="needs-you">
+      <legend className="visually-hidden">Questions from Domo</legend>
       {questions.questions.map((q, i) => (
         <label key={q.question} className="questions-item">
           <span>{q.question}</span>

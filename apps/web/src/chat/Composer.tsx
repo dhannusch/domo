@@ -7,10 +7,12 @@ import { ConnectionStatus } from "./ConnectionStatus.tsx"
 import { MentionMenu, mentionMatches, mentionQuery } from "./MentionMenu.tsx"
 import { NeedsYou } from "./NeedsYou.tsx"
 import { hasComments, replyAtom, toReplyTo } from "./reply.ts"
+import { useComposerSize } from "./useComposerSize.ts"
 import { replying } from "./view.ts"
 
 export function Composer() {
   const send = useAtomSet(sendAtom, { mode: "promise" })
+  const shell = useComposerSize()
   const [text, setText] = useState("")
   const [reply, setReply] = useAtom(replyAtom)
   const area = useRef<HTMLTextAreaElement>(null)
@@ -84,7 +86,7 @@ export function Composer() {
     attachments.busy
 
   return (
-    <div className="composer">
+    <div className="composer" ref={shell} data-testid="composer">
       <ConnectionStatus />
       <NeedsYou />
       {reply.map((draft, index) => (
@@ -192,8 +194,23 @@ export function Composer() {
             </button>
           </span>
         ) : (
-          <button type="submit" data-testid="composer-send" disabled={empty}>
-            Send
+          <button
+            type="submit"
+            className="composer-send-icon"
+            data-testid="composer-send"
+            aria-label="Send message"
+            title="Send message"
+            disabled={empty}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              aria-hidden="true"
+            >
+              <path d="M12 20V4m-7 7 7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         )}
       </form>

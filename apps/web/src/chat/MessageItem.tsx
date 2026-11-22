@@ -131,6 +131,8 @@ function MessageImages({
         <a
           key={image.id}
           href={imageUrl(image)}
+          data-testid="message-image-open"
+          aria-haspopup="dialog"
           onClick={(event) => {
             event.preventDefault()
             setOpen(image)
@@ -165,6 +167,7 @@ function MessageFiles({ message }: { message: Message }) {
             type="button"
             className="file-card"
             data-testid="file-card"
+            aria-haspopup="dialog"
             onClick={() => setOpen(file)}
           >
             <span className="file-card-name">{file.name}</span>
@@ -192,8 +195,9 @@ function UserMessage({ message }: { message: Message }) {
           t.quote === undefined ? [] : [{ exact: t.quote.exact, comment: t.comment }],
         )
   return (
-    <div
+    <article
       className="user-message"
+      aria-label="You said"
       data-testid="message-user"
       data-message-id={message.id}
       data-row-id={message.id}
@@ -211,7 +215,7 @@ function UserMessage({ message }: { message: Message }) {
       ))}
       <MessageImages message={message} alt="Attached by you" />
       {message.text.length > 0 ? <p className="user-text">{message.text}</p> : null}
-    </div>
+    </article>
   )
 }
 
@@ -229,6 +233,7 @@ export function MessageItem({ message, draft, question, refiledTo, progress }: P
   return (
     <article
       data-testid="message-agent"
+      aria-label="Domo said"
       data-status={message.status}
       data-row-id={message.id}
       data-concept="message"

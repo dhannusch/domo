@@ -20,7 +20,8 @@ const liveTheme = () => {
 export function VisualView({ visual }: { visual: Visual }) {
   const frame = useRef<HTMLIFrameElement>(null)
   const [height, setHeight] = useState(160)
-  const doc = useMemo(() => visualDocument(visual.html, liveTheme()), [visual.html])
+  const [theme, setTheme] = useState(liveTheme)
+  const doc = useMemo(() => visualDocument(visual.html, theme), [visual.html, theme])
   // Listen before the frame can load: a missed first report would leave it at the default height.
   useLayoutEffect(() => {
     const onMessage = (event: MessageEvent<unknown>) => {
@@ -30,8 +31,20 @@ export function VisualView({ visual }: { visual: Visual }) {
       const next = Number(data.domoVisualHeight)
       if (Number.isFinite(next) && next > 0) setHeight(Math.min(Math.ceil(next), MAX_HEIGHT))
     }
+    const updateTheme = () => setTheme(liveTheme())
+    const observer = new MutationObserver(updateTheme)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    })
+    const preference = window.matchMedia("(prefers-color-scheme: dark)")
+    preference.addEventListener("change", updateTheme)
     window.addEventListener("message", onMessage)
-    return () => window.removeEventListener("message", onMessage)
+    return () => {
+      observer.disconnect()
+      preference.removeEventListener("change", updateTheme)
+      window.removeEventListener("message", onMessage)
+    }
   }, [])
   return (
     <figure className="visual" data-testid="visual">

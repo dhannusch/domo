@@ -197,7 +197,7 @@ test("sending while Domo replies queues by default, and says so", async ({ page 
   await expect(running).not.toContainText("Stopped.")
   await expect(agentReply(page, `Echo: ${next}`)).toBeVisible()
   await expect(page.getByTestId("reply-queued")).toHaveCount(0)
-  await expect(page.getByTestId("composer-send")).toHaveText("Send")
+  await expect(page.getByTestId("composer-send")).toHaveAccessibleName("Send message")
 })
 
 test("Steer stops the current reply and answers the new message now", async ({ page }, info) => {

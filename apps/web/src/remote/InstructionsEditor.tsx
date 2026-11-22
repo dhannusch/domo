@@ -55,7 +55,12 @@ export function InstructionsEditor() {
         onChange={(event) => setDraft(event.target.value)}
       />
       <div className="instructions-actions">
-        <button type="button" className="quiet-action" onClick={() => setDraft(undefined)}>
+        <button
+          type="button"
+          className="quiet-action"
+          data-testid="instructions-cancel"
+          onClick={() => setDraft(undefined)}
+        >
           Cancel
         </button>
         <button

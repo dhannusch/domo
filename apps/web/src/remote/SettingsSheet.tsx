@@ -55,7 +55,7 @@ function Cards<T extends string | number | boolean>({
   onPick: (value: T) => void
 }) {
   return (
-    <div className="setting-cards">
+    <fieldset className="setting-cards" aria-label={name}>
       {options.map((option) => (
         <button
           key={String(option.value)}
@@ -68,7 +68,7 @@ function Cards<T extends string | number | boolean>({
           {option.label}
         </button>
       ))}
-    </div>
+    </fieldset>
   )
 }
 
@@ -91,6 +91,7 @@ function LabChanges({ changes }: { changes: ReadonlyArray<LabChange> }) {
             <button
               type="button"
               className="quiet-action"
+              data-testid={`lab-undo-${change.id}`}
               onClick={() =>
                 void undo({ payload: { id: change.id }, reactivityKeys: ["settings"] })
               }
@@ -334,9 +335,15 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
     if (!open && el.open) el.close()
   }, [open, refresh])
   return (
-    <dialog ref={dialog} className="settings" data-testid="settings" onClose={onClose}>
+    <dialog
+      ref={dialog}
+      className="settings"
+      aria-labelledby="settings-title"
+      data-testid="settings"
+      onClose={onClose}
+    >
       <div className="settings-head">
-        <h2>Settings</h2>
+        <h2 id="settings-title">Settings</h2>
         <button
           type="button"
           className="quiet-action"

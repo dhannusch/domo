@@ -1,8 +1,9 @@
 import type { FileRef } from "@domo/domain"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useId, useRef, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { accessToken } from "../../remote/token.ts"
+import { ZoomImage } from "./ZoomImage.tsx"
 
 const GFM = [remarkGfm]
 
@@ -57,6 +58,7 @@ export function FileViewer({
   kind: ViewKind
   onClose: () => void
 }) {
+  const titleId = useId()
   const dialog = useRef<HTMLDialogElement>(null)
   const [loaded, setLoaded] = useState<Loaded | undefined>(undefined)
   const reads = kind === "markdown" || kind === "text"
@@ -75,29 +77,41 @@ export function FileViewer({
     }
   }, [url, reads])
 
-  const wide = kind === "page" || kind === "pdf"
+  const wide = kind === "page" || kind === "pdf" || kind === "image"
   return (
     <dialog
       ref={dialog}
       className={`file-viewer${wide ? " wide" : ""}`}
       data-testid="file-viewer"
+      aria-labelledby={titleId}
       onClose={onClose}
     >
       <div className="file-viewer-head">
-        <h2>{name}</h2>
+        <h2 id={titleId}>{name}</h2>
         <div className="file-viewer-actions">
-          {wide ? (
-            <a className="quiet-action" href={url} target="_blank" rel="noreferrer">
+          {wide && kind !== "image" ? (
+            <a
+              className="quiet-action"
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              data-testid="file-open-tab"
+            >
               Open in a tab
             </a>
           ) : null}
-          <button type="button" className="quiet-action" onClick={() => dialog.current?.close()}>
+          <button
+            type="button"
+            className="quiet-action"
+            data-testid="file-done"
+            onClick={() => dialog.current?.close()}
+          >
             Done
           </button>
         </div>
       </div>
       {kind === "image" ? (
-        <img src={url} alt={name} />
+        <ZoomImage src={url} alt={name} />
       ) : kind === "page" ? (
         <iframe
           className="file-frame"
