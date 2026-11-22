@@ -31,12 +31,18 @@ export class Presence extends Context.Service<
     touch(
       deviceId: DeviceId,
       readThrough: MessageId | undefined,
+      label?: string,
     ): Effect.Effect<{ readonly summary: Option.Option<ReturnSummary>; readonly greeting: boolean }>
     /** Latest activity on any device (epoch ms), if anyone has ever been here. */
     readonly lastSeenMs: Effect.Effect<Option.Option<number>>
-    /** Every device that has used Domo, most recent first. */
+    /** Devices seen in the last 30 days, most recent first, with whether each gets push. */
     readonly devices: Effect.Effect<
-      ReadonlyArray<{ readonly id: DeviceId; readonly lastSeen: string }>
+      ReadonlyArray<{
+        readonly id: DeviceId
+        readonly label?: string
+        readonly lastSeen: string
+        readonly notifications: boolean
+      }>
     >
     /** The furthest message any device has read (seq). */
     readonly readSeq: Effect.Effect<number>
@@ -86,14 +92,17 @@ export class Presence extends Context.Service<
       const touch = Effect.fn("Presence.touch")(function* (
         deviceId: DeviceId,
         readThrough: MessageId | undefined,
+        label?: string,
       ) {
         const nowMs = yield* Clock.currentTimeMillis
         const previous = yield* lastSeenMs
         const seq = readThrough === undefined ? 0 : ((yield* store.messageSeq(readThrough)) ?? 0)
         yield* sql`
-            INSERT INTO devices (id, last_seen, read_through_seq) VALUES (${deviceId}, ${iso(nowMs)}, ${seq})
+            INSERT INTO devices (id, last_seen, read_through_seq, label)
+            VALUES (${deviceId}, ${iso(nowMs)}, ${seq}, ${label ?? null})
             ON CONFLICT (id) DO UPDATE SET
               last_seen = excluded.last_seen,
+              label = COALESCE(excluded.label, devices.label),
               read_through_seq = MAX(devices.read_through_seq, excluded.read_through_seq)
           `
         const wasAway = Option.isSome(previous) && nowMs - previous.value > (yield* settings.awayMs)
@@ -104,14 +113,25 @@ export class Presence extends Context.Service<
         }
       }, Effect.orDie)
 
-      const devices = sql<{ id: string; last_seen: string }>`
-        SELECT id, last_seen FROM devices ORDER BY last_seen DESC LIMIT 20
-      `.pipe(
-        Effect.map((rows) =>
-          rows.map((r) => ({ id: DeviceIdSchema.make(r.id), lastSeen: r.last_seen })),
-        ),
-        Effect.orDie,
-      )
+      const devices = Effect.gen(function* () {
+        const since = iso((yield* Clock.currentTimeMillis) - 30 * 86_400_000)
+        const rows = yield* sql<{
+          id: string
+          label: string | null
+          last_seen: string
+          push: number
+        }>`
+          SELECT d.id, d.label, d.last_seen,
+            EXISTS (SELECT 1 FROM push_subscriptions p WHERE p.device_id = d.id) AS push
+          FROM devices d WHERE d.last_seen > ${since} ORDER BY d.last_seen DESC LIMIT 20
+        `
+        return rows.map((r) => ({
+          id: DeviceIdSchema.make(r.id),
+          ...(r.label === null ? {} : { label: r.label }),
+          lastSeen: r.last_seen,
+          notifications: r.push > 0,
+        }))
+      }).pipe(Effect.orDie)
 
       return Presence.of({ touch, lastSeenMs, readSeq, devices })
     }),

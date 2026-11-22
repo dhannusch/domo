@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import type { Message, PushSubscriptionJson } from "@domo/domain"
+import type { DeviceId, Message, PushSubscriptionJson } from "@domo/domain"
 import {
   Clock,
   Context,
@@ -82,7 +82,7 @@ export class Notifier extends Context.Service<
   Notifier,
   {
     readonly publicKey: string
-    subscribe(subscription: PushSubscriptionJson): Effect.Effect<void>
+    subscribe(subscription: PushSubscriptionJson, deviceId?: DeviceId): Effect.Effect<void>
     needsYou(note: Note): Effect.Effect<void>
     /** Sends a test note to every device now, present or not; how many accepted it. */
     readonly test: Effect.Effect<number>
@@ -109,10 +109,18 @@ export class Notifier extends Context.Service<
         Effect.orDie,
       )
 
-      const subscribe = Effect.fn("Notifier.subscribe")(function* (s: PushSubscriptionJson) {
+      const subscribe = Effect.fn("Notifier.subscribe")(function* (
+        s: PushSubscriptionJson,
+        deviceId?: DeviceId,
+      ) {
+        // A device has one subscription: a new one replaces the old (its endpoint stops working).
+        if (deviceId !== undefined)
+          yield* sql`DELETE FROM push_subscriptions WHERE device_id = ${deviceId} AND endpoint != ${s.endpoint}`
         yield* sql`
-          INSERT INTO push_subscriptions (endpoint, p256dh, auth) VALUES (${s.endpoint}, ${s.keys.p256dh}, ${s.keys.auth})
-          ON CONFLICT (endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth
+          INSERT INTO push_subscriptions (endpoint, p256dh, auth, device_id)
+          VALUES (${s.endpoint}, ${s.keys.p256dh}, ${s.keys.auth}, ${deviceId ?? null})
+          ON CONFLICT (endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth,
+            device_id = COALESCE(excluded.device_id, push_subscriptions.device_id)
         `
       }, Effect.orDie)
 

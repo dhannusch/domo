@@ -57,6 +57,15 @@ export const SettingsView = Schema.Struct({
   /** Every note, most recently used first. */
   memories: Schema.Array(MemoryItem),
   labChanges: Schema.Array(LabChange),
-  devices: Schema.Array(Schema.Struct({ id: DeviceId, lastSeen: Schema.String })),
+  /** Devices seen in the last 30 days, most recent first. */
+  devices: Schema.Array(
+    Schema.Struct({
+      id: DeviceId,
+      label: Schema.optionalKey(Schema.String),
+      lastSeen: Schema.String,
+      /** Whether this device is subscribed to push notifications. */
+      notifications: Schema.Boolean,
+    }),
+  ),
 })
 export type SettingsView = typeof SettingsView.Type

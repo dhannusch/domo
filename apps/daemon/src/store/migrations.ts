@@ -149,4 +149,9 @@ export const migrations = {
     const sql = yield* SqlClient.SqlClient
     yield* sql`ALTER TABLE messages ADD COLUMN files TEXT`
   }),
+  "0014_device_labels": Effect.gen(function* () {
+    const sql = yield* SqlClient.SqlClient
+    yield* sql`ALTER TABLE devices ADD COLUMN label TEXT`
+    yield* sql`ALTER TABLE push_subscriptions ADD COLUMN device_id TEXT`
+  }),
 }

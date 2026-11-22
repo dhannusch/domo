@@ -50,8 +50,8 @@ const RpcHandlers = DomoRpc.toLayer(
         Effect.all({ messages: store.recentMessages(clamp(limit)), earlier: store.foldedCount }),
       Earlier: ({ limit }) => store.earlierMessages(clamp(limit)),
       Messages: ({ ids }) => store.getMessages(ids.slice(0, 50)),
-      Presence: ({ deviceId, readThrough }) =>
-        presence.touch(deviceId, readThrough).pipe(
+      Presence: ({ deviceId, readThrough, label }) =>
+        presence.touch(deviceId, readThrough, label).pipe(
           Effect.tap(({ greeting }) => (greeting ? checkIns.runInBackground : Effect.void)),
           Effect.map(({ summary }) => Option.getOrNull(summary)),
         ),
@@ -86,7 +86,7 @@ const RpcHandlers = DomoRpc.toLayer(
       Instructions: () => instructions.read,
       SaveInstructions: ({ text }) => instructions.save(text, "you"),
       PushKey: () => Effect.succeed(notifier.publicKey),
-      Subscribe: ({ subscription }) => notifier.subscribe(subscription),
+      Subscribe: ({ subscription, deviceId }) => notifier.subscribe(subscription, deviceId),
       TestPush: () => notifier.test,
       Track: ({ event }) => telemetry.record(event),
     })

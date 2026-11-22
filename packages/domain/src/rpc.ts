@@ -92,7 +92,12 @@ export class DomoRpc extends RpcGroup.make(
    * message. Returns the return line when they come back from an absence.
    */
   Rpc.make("Presence", {
-    payload: { deviceId: DeviceId, readThrough: Schema.optionalKey(MessageId) },
+    payload: {
+      deviceId: DeviceId,
+      readThrough: Schema.optionalKey(MessageId),
+      /** What this device is, as the settings list names it ("iPhone app", "Mac · Chrome"). */
+      label: Schema.optionalKey(Schema.String.pipe(Schema.check(Schema.isMaxLength(60)))),
+    },
     success: Schema.NullOr(ReturnSummary),
   }),
   /** Puts the topics of a tidy back on the page. */
@@ -116,7 +121,9 @@ export class DomoRpc extends RpcGroup.make(
   /** The VAPID public key devices subscribe with. */
   Rpc.make("PushKey", { success: Schema.String }),
   /** This device wants a notification when a decision blocks on the user. */
-  Rpc.make("Subscribe", { payload: { subscription: PushSubscriptionJson } }),
+  Rpc.make("Subscribe", {
+    payload: { subscription: PushSubscriptionJson, deviceId: Schema.optionalKey(DeviceId) },
+  }),
   /** Sends a test notification to every subscribed device now; succeeds with how many got it. */
   Rpc.make("TestPush", { success: Schema.Number }),
   /** Stops a reply that's being written (a chat reply or a background task). */
