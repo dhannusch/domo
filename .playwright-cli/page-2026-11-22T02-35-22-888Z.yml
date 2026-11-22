@@ -1,0 +1,38 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]: domo
+      - generic [ref=e5]: Saturday, November 21
+    - button "Settings" [ref=e6] [cursor=pointer]: ⚙
+  - main "Conversation" [ref=e7]:
+    - article "You said" [ref=e8]:
+      - paragraph [ref=e9]: Help me make room for the newsletter this week.
+    - article "Domo said" [ref=e10]:
+      - paragraph [ref=e12]: You have two quiet evenings. I’d protect Tuesday for the first draft and keep Thursday for editing.
+      - generic [ref=e13]:
+        - generic [ref=e14]: From Wednesday
+        - button "View" [ref=e15] [cursor=pointer]
+      - group "Where should we start?" [ref=e16]:
+        - generic [ref=e17]: Where should we start?
+        - generic [ref=e18]:
+          - button "Recommended Protect Tuesday Two hours for a first draft" [ref=e19] [cursor=pointer]:
+            - generic [ref=e20]: Recommended
+            - strong [ref=e21]: Protect Tuesday
+            - generic [ref=e22]: Two hours for a first draft
+          - button "Keep it flexible I’ll find a gap during the week" [ref=e23] [cursor=pointer]:
+            - strong [ref=e24]: Keep it flexible
+            - generic [ref=e25]: I’ll find a gap during the week
+        - generic [ref=e26]:
+          - button "Something else" [ref=e27] [cursor=pointer]
+          - status
+      - button "↩ Reply" [ref=e29] [cursor=pointer]
+  - generic [ref=e31]:
+    - button "1 needs you" [ref=e33] [cursor=pointer]:
+      - text: 1 needs you
+      - generic [ref=e35]: ⌃
+    - generic [ref=e36]:
+      - button "Attach an image" [ref=e37] [cursor=pointer]: ＋
+      - textbox "Message Domo" [ref=e38]:
+        - /placeholder: Message Domo…
+      - button "Send message" [ref=e39] [cursor=pointer]: ↑
+  - status [ref=e40]

@@ -1,0 +1,12 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Saturday, November 21
+      - button "Settings" [ref=e6] [cursor=pointer]:
+        - img [ref=e7]
+  - generic [ref=e18]:
+    - button "Attach an image" [ref=e19] [cursor=pointer]:
+      - img [ref=e20]
+    - textbox "Message Domo" [ref=e24]:
+      - /placeholder: Message Domo…
+    - button "Send" [disabled] [ref=e25]

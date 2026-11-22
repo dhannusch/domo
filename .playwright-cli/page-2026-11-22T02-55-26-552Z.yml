@@ -1,0 +1,123 @@
+- generic [ref=e2]:
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: domo
+        - paragraph [ref=e7]: Saturday, November 21
+      - button "Settings" [ref=e8] [cursor=pointer]:
+        - img [ref=e9]
+    - article "You said" [ref=e19]:
+      - paragraph [ref=e20]: Can you compare the two contractor quotes for the kitchen?
+    - article "Domo said" [ref=e21]:
+      - paragraph [ref=e23]: Go with Hale & Co. They cost $1,500 more, but they start seven weeks sooner and their warranty is twice as long.
+      - table [ref=e25]:
+        - rowgroup [ref=e26]:
+          - row "Option Price Start Warranty" [ref=e27]:
+            - columnheader "Option" [ref=e28]:
+              - generic [ref=e29]: Option
+            - columnheader "Price" [ref=e30]
+            - columnheader "Start" [ref=e31]
+            - columnheader "Warranty" [ref=e32]
+        - rowgroup [ref=e33]:
+          - row "Hale & Co. Recommended $18.4k Dec 2 2 years" [ref=e34]:
+            - rowheader "Hale & Co. Recommended" [ref=e35]:
+              - text: Hale & Co.
+              - generic [ref=e36]: Recommended
+            - cell "$18.4k" [ref=e37]
+            - cell "Dec 2" [ref=e38]
+            - cell "2 years" [ref=e39]
+          - row "Birch Build $16.9k Jan 20 1 year" [ref=e40]:
+            - rowheader "Birch Build" [ref=e41]
+            - cell "$16.9k" [ref=e42]
+            - cell "Jan 20" [ref=e43]
+            - cell "1 year" [ref=e44]
+      - generic [ref=e46]:
+        - generic [ref=e47]: Opus 5.5
+        - button "Reply" [ref=e48] [cursor=pointer]
+    - article "You said" [ref=e49]:
+      - paragraph [ref=e50]: Hale it is. What has to happen before they start?
+    - article "Domo said" [ref=e51]:
+      - paragraph [ref=e53]: Three things before December 2. I've already done the first.
+      - generic [ref=e54]:
+        - paragraph [ref=e55]: 1 of 3 done
+        - list [ref=e56]:
+          - listitem [ref=e57]:
+            - generic [ref=e58] [cursor=pointer]:
+              - checkbox "Confirm the start date with Hale & Co." [checked] [ref=e59]
+              - generic [ref=e60]: Confirm the start date with Hale & Co.
+          - listitem [ref=e61]:
+            - generic [ref=e62] [cursor=pointer]:
+              - checkbox "Pay the 10% deposit ($1,840)" [ref=e63]
+              - generic [ref=e64]: Pay the 10% deposit ($1,840)
+          - listitem [ref=e65]:
+            - generic [ref=e66] [cursor=pointer]:
+              - checkbox "Clear the kitchen by Nov 30" [ref=e67]
+              - generic [ref=e68]: Clear the kitchen by Nov 30
+      - generic [ref=e70]:
+        - generic [ref=e71]: Opus 5.5
+        - button "Reply" [ref=e72] [cursor=pointer]
+    - article "You said" [ref=e73]:
+      - paragraph [ref=e74]: Clean up the budget script and make sure the totals add up.
+    - article "Domo said" [ref=e75]:
+      - paragraph [ref=e77]: Done. The totals now round once, at the end, so they match the quotes to the cent.
+      - generic [ref=e78]:
+        - generic [ref=e79]:
+          - generic [ref=e80]: Edited 2 files, tests pass in home-budget
+          - button "view" [ref=e81] [cursor=pointer]
+        - generic [ref=e82]:
+          - generic [ref=e83]: Codex
+          - button "Reply" [ref=e84] [cursor=pointer]
+    - article "You said" [ref=e85]:
+      - paragraph [ref=e86]: How does the heat pump they're installing actually work?
+    - article "Domo said" [ref=e87]:
+      - paragraph [ref=e89]: It moves heat instead of making it. Outside, the refrigerant is colder than the air, so it soaks up heat even in winter. The compressor squeezes it hot, and indoors that heat flows into the room.
+      - 'figure "A loop: the outdoor coil gathers heat, the compressor heats the gas to 60°C, the indoor coil releases it, and the expansion valve cools it again." [ref=e90]':
+        - iframe [ref=e91]:
+          - img "Heat pump loop" [ref=f1e2]:
+            - generic [ref=f1e9]:
+              - generic [ref=f1e10]:
+                - generic [ref=f1e11]: Outdoor coil
+                - generic [ref=f1e12]: Compressor
+                - generic [ref=f1e13]: Indoor coil
+                - generic [ref=f1e14]: Expansion valve
+              - generic [ref=f1e15]:
+                - generic [ref=f1e16]: gathers heat
+                - generic [ref=f1e17]: squeezes it hot
+                - generic [ref=f1e18]: warms the room
+                - generic [ref=f1e19]: cools it again
+                - generic [ref=f1e20]: −10°C gas
+                - generic [ref=f1e21]: warm liquid
+                - generic [ref=f1e22]: 60°C gas
+                - generic [ref=f1e23]: cold liquid
+        - generic [ref=e92]: "A loop: the outdoor coil gathers heat, the compressor heats the gas to 60°C, the indoor coil releases it, and the expansion valve cools it again."
+      - generic [ref=e94]:
+        - generic [ref=e95]: Opus 5.5
+        - button "Reply" [ref=e96] [cursor=pointer]
+    - article "You said" [ref=e97]:
+      - paragraph [ref=e98]: Book the deposit call for tomorrow morning?
+    - article "Domo said" [ref=e99]:
+      - paragraph [ref=e101]: Tomorrow at 7:30 is their first free slot. I haven't booked it yet.
+      - group "When should I book the deposit call?" [ref=e102]:
+        - generic [ref=e103]: When should I book the deposit call?
+        - generic [ref=e104]:
+          - button "7:30 tomorrow Recommended Their first slot" [ref=e105] [cursor=pointer]:
+            - generic [ref=e106]:
+              - generic [ref=e107]: 7:30 tomorrow
+              - generic [ref=e108]: Recommended
+            - generic [ref=e109]: Their first slot
+          - button "9:00 tomorrow After your standup" [ref=e110] [cursor=pointer]:
+            - generic [ref=e112]: 9:00 tomorrow
+            - generic [ref=e113]: After your standup
+        - button "Something else" [ref=e114] [cursor=pointer]
+      - generic [ref=e116]:
+        - generic [ref=e117]: Opus 5.5
+        - button "Reply" [ref=e118] [cursor=pointer]
+  - generic [ref=e119]:
+    - button "1 needs you" [ref=e121] [cursor=pointer]
+    - generic [ref=e122]:
+      - button "Attach an image" [ref=e123] [cursor=pointer]:
+        - img [ref=e124]
+      - textbox "Message Domo" [ref=e128]:
+        - /placeholder: Message Domo…
+      - button "Send message" [disabled] [ref=e129]:
+        - img [ref=e130]

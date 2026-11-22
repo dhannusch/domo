@@ -1,0 +1,1132 @@
+{
+  "responsive": {
+    "results": [
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 375,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "a-correspondence",
+        "width": 320,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 375,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "b-quiet-utility",
+        "width": 320,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 375,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "c-soft-focus",
+        "width": 320,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 375,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 1440,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "light",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "light",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "light",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "light",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "light",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "dark",
+        "screen": "chat",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "dark",
+        "screen": "components",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "dark",
+        "screen": "settings",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "dark",
+        "screen": "file",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      },
+      {
+        "dir": "d-folio",
+        "width": 320,
+        "theme": "dark",
+        "screen": "states",
+        "overflow": false,
+        "dialogOverflow": false,
+        "smallControls": []
+      }
+    ],
+    "errors": []
+  },
+  "interactions": {
+    "results": [
+      {
+        "dir": "a-correspondence",
+        "sourceVisible": true,
+        "replyVisible": true,
+        "modalOpen": true,
+        "choiceDisabled": true,
+        "checked": true,
+        "receiptExpanded": true,
+        "fileOpened": true
+      },
+      {
+        "dir": "b-quiet-utility",
+        "sourceVisible": true,
+        "replyVisible": true,
+        "modalOpen": true,
+        "choiceDisabled": true,
+        "checked": true,
+        "receiptExpanded": true,
+        "fileOpened": true
+      },
+      {
+        "dir": "c-soft-focus",
+        "sourceVisible": true,
+        "replyVisible": true,
+        "modalOpen": true,
+        "choiceDisabled": true,
+        "checked": true,
+        "receiptExpanded": true,
+        "fileOpened": true
+      },
+      {
+        "dir": "d-folio",
+        "sourceVisible": true,
+        "replyVisible": true,
+        "modalOpen": true,
+        "choiceDisabled": true,
+        "checked": true,
+        "receiptExpanded": true,
+        "fileOpened": true
+      }
+    ],
+    "errors": []
+  }
+}

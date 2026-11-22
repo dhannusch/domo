@@ -1,0 +1,6 @@
+[
+ {"id":"sage","name":"Sage","description":"Cool paper, botanical sage, green charcoal.","tradeoff":"Calm and familiar; the most visibly green overall.","paper":"#eff1ed","accent":"#42654c","ink":"#252b27"},
+ {"id":"olive","name":"Oat & Olive","description":"Warm paper, olive accents, soft charcoal.","tradeoff":"Warmer and more book-like; less crisp and cool.","paper":"#f4f0e7","accent":"#60633e","ink":"#302f28"},
+ {"id":"clay","name":"Clay","description":"Warm porcelain, terracotta, deep brown charcoal.","tradeoff":"Personal and earthy; stronger accent presence.","paper":"#f5eeea","accent":"#94513a","ink":"#352b27"},
+ {"id":"plum","name":"Plum","description":"Pale mineral paper, muted plum, aubergine charcoal.","tradeoff":"Distinctive and quieter than a bright purple; a cooler, more designed mood.","paper":"#f1eef1","accent":"#75546e","ink":"#302a32"}
+]

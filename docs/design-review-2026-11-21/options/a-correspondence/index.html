@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Domo — Correspondence</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="masthead"><span class="wordmark">domo<span aria-hidden="true">.</span></span><span class="date">Saturday, November 21</span><button class="icon" data-action="settings" data-testid="settings-open" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 3-1 3-3 1 1 3-2 2 2 2-1 3 3 1 1 3h4l1-3 3-1-1-3 2-2-2-2 1-3-3-1-1-3Z"/><circle cx="11" cy="12" r="3"/></svg></button></header>
+  <main id="content"></main>
+  <footer class="compose-wrap"><div class="compose-inner"><div class="needs-row"><button class="quiet" data-action="needs" data-testid="needs-you" aria-expanded="false">1 needs you <span aria-hidden="true">⌃</span></button></div><div id="needs-list" hidden><button class="quiet" data-action="jump" data-testid="needs-choice">Where should we start?</button></div><div id="reply-context" hidden></div><div id="attachment-context" hidden></div><form id="compose" class="compose" data-testid="composer"><button class="icon" type="button" data-action="attach" data-testid="composer-attach" aria-label="Attach an image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="8" cy="9" r="1.5"/><path d="m4 17 5-5 4 4 3-3 5 5"/></svg></button><textarea aria-label="Message Domo" placeholder="Message Domo…" rows="1" data-testid="composer-input"></textarea><button class="send" type="submit" data-testid="composer-send" aria-label="Send message">Send <span aria-hidden="true">↑</span></button></form></div></footer>
+  <dialog id="settings" aria-labelledby="settings-title" data-testid="settings"></dialog>
+  <dialog id="file" class="file-dialog" aria-labelledby="file-title" data-testid="file-viewer"></dialog>
+  <div id="status" class="sr-only" role="status" aria-live="polite"></div>
+</body>
+</html>

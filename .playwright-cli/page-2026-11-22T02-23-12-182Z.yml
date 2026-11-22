@@ -1,0 +1,104 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - paragraph [ref=e4]: Domo · Design review · November 21, 2026
+      - heading "Four ways to make room." [level=1] [ref=e5]
+      - paragraph [ref=e6]: One conversation. Four distinct compositions. Research, live-app audit, independent design and peer critique are complete. Choose a direction before implementation.
+    - generic [ref=e7]:
+      - link "Research" [ref=e8] [cursor=pointer]:
+        - /url: research.md
+      - link "Audit" [ref=e9] [cursor=pointer]:
+        - /url: audit.md
+      - link "Peer review" [ref=e10] [cursor=pointer]:
+        - /url: critique.md
+      - link "Validation" [ref=e11] [cursor=pointer]:
+        - /url: validation.md
+  - form "Design review controls" [ref=e12]:
+    - generic [ref=e13]:
+      - text: Screen
+      - combobox "Screen" [ref=e14]:
+        - option "Main conversation" [selected]
+        - option "All six components"
+        - option "Settings"
+        - option "File viewer"
+        - option "Interaction states"
+    - generic [ref=e15]:
+      - text: Viewport
+      - combobox "Viewport" [ref=e16]:
+        - option "Phone · 375px" [selected]
+        - option "Desktop · 1440px"
+    - generic [ref=e17]:
+      - text: Theme
+      - combobox "Theme" [ref=e18]:
+        - option "Light" [selected]
+        - option "Dark"
+    - generic [ref=e19]:
+      - text: Preview
+      - combobox "Preview" [ref=e20]:
+        - option "Captured screenshots" [selected]
+        - option "Interactive HTML"
+    - generic [ref=e21]: Review controls only — these are not navigation proposed for Domo.
+  - main [ref=e22]:
+    - article [ref=e23]:
+      - generic [ref=e24]: Direction A
+      - heading "Correspondence" [level=2] [ref=e25]
+      - paragraph [ref=e26]: Open, editorial and reading-first. Asymmetric speakers and generous typography let the conversation carry the page.
+      - 'img "Correspondence: chat, phone, light" [ref=e28]'
+      - paragraph [ref=e29]: Captured in Chrome. Click to enlarge.
+      - generic [ref=e30]:
+        - link "Open A prototype" [ref=e31] [cursor=pointer]:
+          - /url: options/a-correspondence/?screen=chat&theme=light
+        - link "Rationale" [ref=e32] [cursor=pointer]:
+          - /url: options/a-correspondence/rationale.md
+      - paragraph [ref=e33]:
+        - strong [ref=e34]: "Tradeoff:"
+        - text: The calmest reading rhythm; more scrolling in long histories.
+    - article [ref=e35]:
+      - generic [ref=e36]: Direction B
+      - heading "Quiet Utility" [level=2] [ref=e37]
+      - paragraph [ref=e38]: Compact, precise and capable. Crisp shared controls make decisions and active work easy to scan.
+      - 'img "Quiet Utility: chat, phone, light" [ref=e40]'
+      - paragraph [ref=e41]: Captured in Chrome. Click to enlarge.
+      - generic [ref=e42]:
+        - link "Open B prototype" [ref=e43] [cursor=pointer]:
+          - /url: options/b-quiet-utility/?screen=chat&theme=light
+        - link "Rationale" [ref=e44] [cursor=pointer]:
+          - /url: options/b-quiet-utility/rationale.md
+      - paragraph [ref=e45]:
+        - strong [ref=e46]: "Tradeoff:"
+        - text: Efficient and predictable; less warmth and literary atmosphere.
+    - article [ref=e47]:
+      - generic [ref=e48]: Direction C
+      - heading "Soft Focus" [level=2] [ref=e49]
+      - paragraph [ref=e50]: Comfortable in the hand. Rounded tactile controls, generous fields and a strong phone composition.
+      - 'img "Soft Focus: chat, phone, light" [ref=e52]'
+      - paragraph [ref=e53]: Captured in Chrome. Click to enlarge.
+      - generic [ref=e54]:
+        - link "Open C prototype" [ref=e55] [cursor=pointer]:
+          - /url: options/c-soft-focus/?screen=chat&theme=light
+        - link "Rationale" [ref=e56] [cursor=pointer]:
+          - /url: options/c-soft-focus/rationale.md
+      - paragraph [ref=e57]:
+        - strong [ref=e58]: "Tradeoff:"
+        - text: Best phone comfort; larger interaction surfaces and a source sheet.
+    - article [ref=e59]:
+      - generic [ref=e60]: Direction D
+      - heading "Folio" [level=2] [ref=e61]
+      - paragraph [ref=e62]: A personal working document. Angular surfaces and careful provenance give decisions and finished work more presence.
+      - 'img "Folio: chat, phone, light" [ref=e64]'
+      - paragraph [ref=e65]: Captured in Chrome. Click to enlarge.
+      - generic [ref=e66]:
+        - link "Open D prototype" [ref=e67] [cursor=pointer]:
+          - /url: options/d-folio/?screen=chat&theme=light
+        - link "Rationale" [ref=e68] [cursor=pointer]:
+          - /url: options/d-folio/rationale.md
+      - paragraph [ref=e69]:
+        - strong [ref=e70]: "Tradeoff:"
+        - text: Strongest document emphasis; more formal, with a heavier decision frame.
+  - generic [ref=e71]:
+    - heading "What stays true in all four" [level=2] [ref=e72]
+    - paragraph [ref=e73]: One chat, no sidebar, stable history, checkable sources, Literata and Instrument Sans, cool paper and night paper, graphite and sage, the same six components. Every mock is isolated from the app.
+    - paragraph [ref=e74]: Compare the conversation first. Then switch to components, settings and the viewer. Interactive mode lets you try Choice, Reply, source View, checklist, sheets and settings. These are local demonstrations; no agent or account is connected.
+    - paragraph [ref=e75]:
+      - strong [ref=e76]: "Recommendation:"
+      - text: A for the strongest reading experience; C for the most comfortable phone experience. B suits frequent decisions. D puts the most emphasis on finished documents. These are design judgments; your preference decides.

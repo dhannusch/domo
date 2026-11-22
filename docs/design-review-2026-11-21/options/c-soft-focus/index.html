@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Domo · Soft Focus</title>
+<link rel="stylesheet" href="style.css">
+<script src="script.js" defer></script>
+</head>
+<body>
+<header class="masthead"><div class="identity"><span class="wordmark">domo</span><span class="date">Saturday, November 21</span></div><button class="icon" data-testid="settings-open" aria-label="Settings" aria-haspopup="dialog" data-open="settings">⚙</button></header>
+<main id="conversation" aria-label="Conversation"></main>
+<div class="composer-area"><div class="composer-inner"><div id="needs-panel" hidden><button data-testid="needs-jump">Where should we start? <span>View →</span></button></div><div class="composer-above"><span id="reply-context" hidden></span><button id="needs" data-testid="needs-you" aria-expanded="false"><span class="dot"></span>1 needs you <span aria-hidden="true">⌃</span></button></div><div id="attach-tray" hidden></div><form id="composer" data-testid="composer"><button class="icon" type="button" data-testid="composer-attach" aria-label="Attach an image">＋</button><textarea rows="1" aria-label="Message Domo" placeholder="Message Domo…" data-testid="composer-input"></textarea><button class="send" data-testid="composer-send" aria-label="Send message" type="submit">↑</button></form><div id="model-suggestions" hidden><button type="button" data-testid="mention-opus">Claude Opus 5.5</button><button type="button" data-testid="mention-codex">Codex</button></div></div></div>
+<dialog id="settings" aria-labelledby="settings-title" data-testid="settings"><div class="sheet-head"><h1 id="settings-title">Settings</h1><button data-close="settings" data-testid="settings-done">Done</button></div><div class="sheet-content" id="settings-content"></div></dialog>
+<dialog id="file" aria-labelledby="file-title" data-testid="file-viewer"><div class="sheet-head"><div><span class="eyebrow">Markdown · 2 KB</span><h1 id="file-title">Newsletter outline</h1></div><button data-close="file" data-testid="file-done">Done</button></div><article class="file-content"><p class="eyebrow">First issue · Outline</p><h2>A quieter way to plan</h2><p>A short note about making room for work that matters, without filling every spare hour.</p><h3>1. Start with one good idea</h3><p>Choose a question that stayed with you this week. Open with the moment that made it feel useful.</p><h3>2. Leave something out</h3><p>Three short sections are enough. Give each one a clear point and a little room to breathe.</p><h3>3. Keep the weekend free</h3><p>Draft on Tuesday. Edit on Thursday. Send when the issue feels ready.</p></article></dialog>
+<dialog id="sources" aria-labelledby="sources-title"><div class="sheet-head"><h1 id="sources-title">From Wednesday</h1><button data-close="sources" data-testid="source-done">Done</button></div><div class="sheet-content"><span class="eyebrow">You · Wednesday, 4:12 pm</span><p class="source-original">I have about five hours a week, and I want to keep weekends free.</p><button data-testid="source-correct">Not quite</button></div></dialog>
+<div class="sr-only" id="announcement" role="status"></div>
+</body>
+</html>

@@ -1,0 +1,1263 @@
+{
+  "results": [
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 375,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#eff1ed",
+        "surface": "#fafbf8",
+        "soft": "#e3e8e0",
+        "ink": "#252b27",
+        "muted": "#586359",
+        "accent": "#42654c",
+        "accent-soft": "#dde8dc",
+        "edge": "#7e8b7e",
+        "hair": "#cdd5c9"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "sage",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#1c211e",
+        "surface": "#262e28",
+        "soft": "#303b32",
+        "ink": "#e6eae0",
+        "muted": "#b1bdb0",
+        "accent": "#b4d0b3",
+        "accent-soft": "#344a38",
+        "edge": "#849780",
+        "hair": "#485749"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 375,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f4f0e7",
+        "surface": "#fcf9f1",
+        "soft": "#e9e3d5",
+        "ink": "#302f28",
+        "muted": "#656051",
+        "accent": "#60633e",
+        "accent-soft": "#e6e7d4",
+        "edge": "#8a8775",
+        "hair": "#d7d1c1"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "olive",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#24241f",
+        "surface": "#2d2e26",
+        "soft": "#383a2e",
+        "ink": "#ebe8da",
+        "muted": "#bdbba6",
+        "accent": "#c5cb9c",
+        "accent-soft": "#3b422c",
+        "edge": "#93977a",
+        "hair": "#4e5241"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 375,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f5eeea",
+        "surface": "#fff9f5",
+        "soft": "#eaded7",
+        "ink": "#352b27",
+        "muted": "#705d54",
+        "accent": "#94513a",
+        "accent-soft": "#f0ddd1",
+        "edge": "#9b7e70",
+        "hair": "#ddcbc0"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "clay",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#251f1c",
+        "surface": "#302723",
+        "soft": "#3c302a",
+        "ink": "#f0e5dc",
+        "muted": "#cbb5a5",
+        "accent": "#e4b49a",
+        "accent-soft": "#51382e",
+        "edge": "#ad8f7e",
+        "hair": "#5b4438"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 375,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "light",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "light",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "light",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "light",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#f1eef1",
+        "surface": "#fbf8fb",
+        "soft": "#e7e0e8",
+        "ink": "#302a32",
+        "muted": "#685d6b",
+        "accent": "#75546e",
+        "accent-soft": "#eaddea",
+        "edge": "#958297",
+        "hair": "#d8cdda"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "chat",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "components",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "settings",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    },
+    {
+      "palette": "plum",
+      "width": 1440,
+      "theme": "dark",
+      "screen": "file",
+      "overflow": false,
+      "tokens": {
+        "paper": "#231f24",
+        "surface": "#2d2730",
+        "soft": "#39303c",
+        "ink": "#ece3ed",
+        "muted": "#c2b1c4",
+        "accent": "#d3b4ce",
+        "accent-soft": "#49364a",
+        "edge": "#a48aa8",
+        "hair": "#564159"
+      }
+    }
+  ],
+  "errors": [],
+  "contrast": [
+    {
+      "palette": "sage",
+      "theme": "light",
+      "ratios": {
+        "ink/paper": 12.71,
+        "muted/paper": 5.52,
+        "muted/soft": 5.05,
+        "muted/accent-soft": 4.98,
+        "accent/paper": 5.78,
+        "accent/accent-soft": 5.21,
+        "edge/paper": 3.14
+      }
+    },
+    {
+      "palette": "sage",
+      "theme": "dark",
+      "ratios": {
+        "ink/paper": 13.39,
+        "muted/paper": 8.38,
+        "muted/soft": 6.0,
+        "muted/accent-soft": 4.94,
+        "accent/paper": 9.81,
+        "accent/accent-soft": 5.78,
+        "edge/paper": 5.23
+      }
+    },
+    {
+      "palette": "olive",
+      "theme": "light",
+      "ratios": {
+        "ink/paper": 11.81,
+        "muted/paper": 5.52,
+        "muted/soft": 4.91,
+        "muted/accent-soft": 5.01,
+        "accent/paper": 5.51,
+        "accent/accent-soft": 5.0,
+        "edge/paper": 3.18
+      }
+    },
+    {
+      "palette": "olive",
+      "theme": "dark",
+      "ratios": {
+        "ink/paper": 12.68,
+        "muted/paper": 8.03,
+        "muted/soft": 5.97,
+        "muted/accent-soft": 5.41,
+        "accent/paper": 9.2,
+        "accent/accent-soft": 6.19,
+        "edge/paper": 5.16
+      }
+    },
+    {
+      "palette": "clay",
+      "theme": "light",
+      "ratios": {
+        "ink/paper": 11.99,
+        "muted/paper": 5.41,
+        "muted/soft": 4.71,
+        "muted/accent-soft": 4.72,
+        "accent/paper": 5.23,
+        "accent/accent-soft": 4.57,
+        "edge/paper": 3.26
+      }
+    },
+    {
+      "palette": "clay",
+      "theme": "dark",
+      "ratios": {
+        "ink/paper": 13.12,
+        "muted/paper": 8.28,
+        "muted/soft": 6.49,
+        "muted/accent-soft": 5.47,
+        "accent/paper": 8.75,
+        "accent/accent-soft": 5.78,
+        "edge/paper": 5.43
+      }
+    },
+    {
+      "palette": "plum",
+      "theme": "light",
+      "ratios": {
+        "ink/paper": 12.14,
+        "muted/paper": 5.42,
+        "muted/soft": 4.82,
+        "muted/accent-soft": 4.76,
+        "accent/paper": 5.61,
+        "accent/accent-soft": 4.93,
+        "edge/paper": 3.08
+      }
+    },
+    {
+      "palette": "plum",
+      "theme": "dark",
+      "ratios": {
+        "ink/paper": 12.98,
+        "muted/paper": 8.03,
+        "muted/soft": 6.25,
+        "muted/accent-soft": 5.43,
+        "accent/paper": 8.65,
+        "accent/accent-soft": 5.86,
+        "edge/paper": 5.24
+      }
+    }
+  ]
+}
