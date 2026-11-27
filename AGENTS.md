@@ -161,7 +161,7 @@ The Lab improves domo without a human watching, so every change must be testable
 ## App icons
 
 - The approved icon is the custom lowercase **d**, in neutral Chalk/graphite. Editable masters are `apps/web/public/icons/domo.svg` and the optically adjusted, light/dark `favicon.svg`.
-- `node scripts/make-icons.ts` renders committed PNGs with Chrome and updates content-versioned URLs in the manifest, HTML touch/favicon links and notification worker. Regenerate when either master changes; normal host updates only build/copy the committed assets and need no Chrome for this step.
+- `node scripts/make-icons.ts` renders committed PNGs through SVG-to-canvas encoding in Chrome (never viewport screenshots) and updates content-versioned URLs in the manifest, HTML touch/favicon links and notification worker. Regenerate when either master changes; normal host updates only build/copy the committed assets and need no Chrome for this step.
 - Keep the manifest URL, name, scope and start URL stable across icon updates. Static responses revalidate (`Cache-Control: no-cache`). Installed icon refresh remains browser-controlled; Chrome can ask to review the icon update, and iOS/iPadOS shortcuts may need re-adding.
 
 ## Remote (phone)

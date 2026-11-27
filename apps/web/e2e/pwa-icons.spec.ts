@@ -103,3 +103,56 @@ test("the new d has an open counter, mask-safe opaque app tiles, and a dark-mode
   await page.emulateMedia({ colorScheme: "dark" })
   await expect(page.locator("path")).toHaveCSS("fill", "rgb(245, 245, 245)")
 })
+
+test("every shipped PNG matches its complete SVG at the declared size", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/")
+  await page.emulateMedia({ colorScheme: "light" })
+  const response = await request.get("/manifest.webmanifest")
+  const manifest = Schema.decodeUnknownSync(Manifest)(await response.json())
+  const touch = await page.locator('link[rel="apple-touch-icon"]').getAttribute("href")
+  const version = manifest.icons[0]?.src.match(/-([a-f0-9]{10})\.png$/)?.[1]
+  const app = await (await request.get("/icons/app.svg")).text()
+  const favicon = await (await request.get("/icons/favicon.svg")).text()
+  const badge = (await (await request.get("/icons/domo.svg")).text()).replaceAll(
+    "#292929",
+    "#ffffff",
+  )
+  const exports = [
+    ...manifest.icons.map((icon) => ({
+      src: icon.src,
+      size: Number(icon.sizes.split("x")[0]),
+      svg: app,
+    })),
+    { src: touch ?? "", size: 180, svg: app },
+    { src: `/icons/favicon-16-${version}.png`, size: 16, svg: favicon },
+    { src: `/icons/favicon-32-${version}.png`, size: 32, svg: favicon },
+    { src: `/icons/badge-96-${version}.png`, size: 96, svg: badge },
+  ]
+  for (const asset of exports) {
+    const mismatch = await page.evaluate(async ({ src, size, svg }) => {
+      const pixels = async (url: string) => {
+        const image = new Image()
+        image.src = url
+        await image.decode()
+        const canvas = document.createElement("canvas")
+        canvas.width = size
+        canvas.height = size
+        const context = canvas.getContext("2d")
+        if (context === null) return new Uint8ClampedArray()
+        context.drawImage(image, 0, 0, size, size)
+        return context.getImageData(0, 0, size, size).data
+      }
+      const actual = await pixels(src)
+      const expected = await pixels(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`)
+      let differences = 0
+      for (let i = 0; i < expected.length; i++) {
+        if (Math.abs((actual[i] ?? 0) - (expected[i] ?? 0)) > 2) differences++
+      }
+      return differences
+    }, asset)
+    expect(mismatch, `${asset.src} must contain the complete artwork`).toBe(0)
+  }
+})

@@ -9,8 +9,8 @@ self.addEventListener("push", (event) => {
     self.registration.showNotification(note.title, {
       body: note.body,
       tag: note.tag,
-      icon: "/icons/icon-192-a8a02d7f8f.png",
-      badge: "/icons/badge-96-a8a02d7f8f.png",
+      icon: "/icons/icon-192-cfd7c2f52a.png",
+      badge: "/icons/badge-96-cfd7c2f52a.png",
     }),
   )
 })

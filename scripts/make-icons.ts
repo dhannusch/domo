@@ -16,7 +16,9 @@ const app = mark.replace(
   '<title>Domo</title><path fill="#f5f5f5" d="M0 0h256v256H0z"/>',
 )
 const badge = mark.replaceAll("#292929", "#ffffff")
+// Include the renderer revision: correcting an export must invalidate installed icon URLs.
 const version = createHash("sha256")
+  .update("canvas-png-v2")
   .update(app)
   .update(favicon)
   .update(badge)
@@ -38,12 +40,24 @@ try {
     ["badge-96", 96, badge, "badge-96.png"],
   ]
   for (const [name, size, svg, alias] of outputs) {
-    await page.setViewportSize({ width: size, height: size })
-    await page.setContent(
-      `<body style="margin:0;background:transparent"><img width="${size}" height="${size}" src="data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}"></body>`,
+    // Encode pixels directly. Avoid viewport screenshots between differently sized exports:
+    // the shipped 180px Apple icon contained duplicated, clipped artwork.
+    const dataUrl = await page.evaluate(
+      async ({ source, dimension }) => {
+        const image = new Image()
+        image.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(source)}`
+        await image.decode()
+        const canvas = document.createElement("canvas")
+        canvas.width = dimension
+        canvas.height = dimension
+        const context = canvas.getContext("2d")
+        if (context === null) return ""
+        context.drawImage(image, 0, 0, dimension, dimension)
+        return canvas.toDataURL("image/png")
+      },
+      { source: svg, dimension: size },
     )
-    await page.locator("img").evaluate((image: HTMLImageElement) => image.decode())
-    const png = await page.screenshot({ omitBackground: true })
+    const png = Buffer.from(dataUrl.replace("data:image/png;base64,", ""), "base64")
     writeFileSync(join(ICONS, `${name}-${version}.png`), png)
     // Old pages and notification workers can still use the original URLs.
     writeFileSync(join(ICONS, alias), png)
